@@ -3,67 +3,29 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Blockly</title>
+    <title>Blockly for KeyToKey</title>
+    <link rel="stylesheet" href="css/styles.css">
     <script src="./node_modules/blockly/blockly_compressed.js"></script>
     <script src="./node_modules/blockly/blocks_compressed.js"></script>
     <script src="./node_modules/blockly/javascript_compressed.js"></script>
     <script src="./node_modules/blockly/msg/ja.js"></script>
     <!-- <script src="./node_modules/@blockly/continuous-toolbox/dist/index.js"></script> -->
     <!-- <script src="./node_modules/blockly/core/xml.js"></script> -->
-    <script src="js/myblock.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/blocks.js"></script>
+    <script src="js/generator.js"></script>
     <script src="js/contextmenu.js"></script>
-    <style>
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-            background: #212121;
-        }
-
-        body {
-            background-color: #212121;
-            font-family: sans-serif;
-            overflow: hidden;
-        }
-
-        /* table {
-            height: 100%;
-            width: 100%;
-        } */
-
-        #blocklyArea {
-            /*height: 80%;
-            width: 80%;*/
-            height: 100%;
-            width: 100%;
-        }
-
-        .blocklyTreeSeparator {
-            border-bottom: solid #e5e5e540 1px;
-            margin: 14px 5px;
-        }
-
-        .blocklyTreeIcon {
-            color: white;
-        }
-
-        .toolbox {
-            width: 30%;
-        }
-    </style>
+    <script src="js/main.js" defer></script>
 </head>
 
 <body>
-
-    <div style="display: flex;">
-        <button id="button1" style="width: 100%; height: 35px; ">Create Code</button>
-        <button id="button2" style="width: 100%; height: 35px; ">Create Xml</button>
-        <button id="button3" style="width: 100%; height: 35px; "></button>
-    </div>
     <div id="blocklyArea"></div>
     <div id="blocklyDiv" style="position: absolute; width: 200px"></div>
 
-    <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none;" css-container="toolbox">
+    <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none; width: 200px;" css-container="toolbox">
+        <category name="Main" categorystyle="logic_category">
+            <block type="main" deletable="false" />
+        </category>
         <category name="論理" categorystyle="logic_category">
             <block type="controls_if"></block>
             <block type="logic_compare"></block>
@@ -406,7 +368,21 @@
             <block type="events"></block>
             <block type="action_tap"></block>
             <block type="variable"></block>
-            <block type="statement_loop_by_num"></block>
+            <block type="statement_loop_by_num" deletable="false"></block>
+            <block type="controls_repeat_ext2">
+                <value name="TIMES">
+                    <shadow type="math_number">
+                        <field name="NUM">10</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="test">
+                <value name="a">
+                    <shadow type="math_number">
+                        <field name="NUM">10</field>
+                    </shadow>
+                </value>
+            </block>
         </category>
         <category name="テンプレート">
             <statement name="SACK">
@@ -530,167 +506,6 @@
             </block>
         </category>
     </xml>
-
-    <script defer>
-
-        // ブロックとワークスペースのコンテキストメニュー
-        registerFirstContextMenuOptions();
-
-        // テーマ
-        Blockly.Themes.Classic = Blockly.Theme.defineTheme('myStyle', {
-            'base': Blockly.Themes.Classic,
-            'componentStyles': {
-                'workspaceBackgroundColour': '#212121',
-                'toolboxBackgroundColour': '#2d2e30',
-                'toolboxForegroundColour': '#fff',
-                'flyoutBackgroundColour': '#34343490',
-                'flyoutForegroundColour': '#ccc',
-                'flyoutOpacity': 1,
-                'scrollbarColour': '#43A047',
-                'insertionMarkerColour': '#fff',
-                'insertionMarkerOpacity': 0.3,
-                'scrollbarOpacity': 0.6,
-                'cursorColour': '#d0d0d0',
-                'blackBackground': '#333'
-            }
-        });
-
-        Blockly.HSV_SATURATION = 0.6; // ブロックの彩度
-        Blockly.HSV_VALUE = 0.66; // ブロックの明度
-
-        Blockly.BlockSvg.prototype.showHelp_ = function () {
-            console.log("hey");
-        };
-
-        /* Blocklyのワークスペース表示 */
-        var blocklyArea = document.getElementById('blocklyArea');
-        var blocklyDiv = document.getElementById('blocklyDiv');
-        var workspace = Blockly.inject(blocklyDiv,
-            {
-                media: './node_modules/blockly/media/',
-                toolbox: document.getElementById('toolbox'),
-                //theme: Blockly.Themes.halloween,
-                renderer: 'zelos',
-                collapse: true,
-                comments: true,
-                disable: true,
-                maxBlocks: Infinity,
-                trashcan: true,
-                horizontalLayout: false,
-                toolboxPosition: 'start',
-                css: true,
-                rtl: false,
-                scrollbars: true,
-                sounds: false,
-                oneBasedIndex: true,
-                grid: {
-                    spacing: 36,
-                    length: 2,
-                    colour: '#cccccc40',
-                    snap: true,
-                },
-                trashcan: true,
-                zoom: {
-                    controls: true,
-                    wheel: false,
-                    startScale: 0.87,
-                    maxScale: 3,
-                    minScale: 0.3,
-                    scaleSpeed: 1.2,
-                },
-                move: {
-                    drag: true,
-                    wheel: true
-                },
-                plugins: {
-                    // 'toolbox': ContinuousToolbox,
-                    // 'flyoutsVerticalToolbox': ContinuousFlyout,
-                    // 'metricsManager': ContinuousMetrics,
-                },
-            });
-
-        workspace.addChangeListener(updateEvent);
-
-        /* ワークスペースをリサイズできるようにする */
-        var onresize = function (e) {
-            // Compute the absolute coordinates and dimensions of blocklyArea.
-            var element = blocklyArea;
-            var x = 0;
-            var y = 0;
-            do {
-                x += element.offsetLeft;
-                y += element.offsetTop;
-                element = element.offsetParent;
-            } while (element);
-            // Position blocklyDiv over blocklyArea.
-            blocklyDiv.style.left = x + 'px';
-            blocklyDiv.style.top = y + 'px';
-            blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
-            blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
-            Blockly.svgResize(workspace);
-        };
-        window.addEventListener('resize', onresize, false);
-        onresize();
-        Blockly.svgResize(workspace);
-
-        /* TODO: Change toolbox XML ID if necessary. Can export toolbox XML from Workspace Factory. */
-        // var toolbox = document.getElementById("toolbox");
-
-        /* Inject your workspace */
-        // var workspace = Blockly.inject("blocklyArea", {});
-
-        /* Load Workspace Blocks from XML to workspace. Remove all code below if no blocks to load */
-
-        /* TODO: Change workspace blocks XML ID if necessary. Can export workspace blocks XML from Workspace Factory. */
-        // var workspaceBlocks = document.getElementById("workspaceBlocks");
-
-        /* Load blocks to workspace. */
-        //Blockly.Xml.domToWorkspace(workspaceBlocks, workspace);
-
-
-        /* 各カテゴリの下に余白を追加 */
-        var elements = document.getElementsByClassName("blocklyTreeRow");
-        console.log(elements.length);
-        for (let index = 0; index < elements.length; index++) {
-            const element = elements[index];
-            element.style.paddingBottom = "7px";
-            console.log(element.style);
-        }
-
-        var button = document.getElementById('button1');
-        button.onclick = createCode;
-
-        var blocklyFlyout = document.getElementsByClassName("blocklyFlyout");
-
-        function createCode() {
-            var code = Blockly.JavaScript.workspaceToCode(workspace);
-            if (code != "") {
-                console.log(code);
-                alert(code);
-            }
-
-            var xmlDom = Blockly.Xml.workspaceToDom(workspace);
-            var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
-            console.log(xmlText);
-        }
-
-        function test() {
-            chrome.webview.hostObjects.class.MessageShow(JSON.stringify({
-                test: false,
-                id: 12
-            }));
-            chrome.webview.hostObjects.aaa.MessageShow(JSON.stringify({
-                test: true,
-                id: 2
-            }));
-        }
-
-        function updateEvent(event) {
-            console.log(event);
-            console.log(blocklyFlyout);
-        }
-
-    </script>
 
 </body>
 

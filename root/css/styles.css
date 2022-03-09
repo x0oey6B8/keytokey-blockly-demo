@@ -1,0 +1,16 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: #212121;
+}
+
+#blocklyArea {
+  height: 100%;
+  width: 100%;
+}
+
+.blocklyTreeSeparator {
+  border-bottom: solid #e5e5e540 1px;
+  margin: 14px 5px;
+}
