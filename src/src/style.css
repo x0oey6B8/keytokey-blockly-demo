@@ -1,0 +1,41 @@
+@font-face {
+    font-family: 'Noto Sans JP';
+    src: url('./assets/NotoSansJP-SemiBold.ttf');
+}
+
+@font-face {
+    font-family: 'Noto Sans Mono';
+    src: url('./assets/NotoSansMono-Regular.ttf');
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    background: #212121;
+    /* font-family: 'IBM Plex Sans JP'; */
+    font-family: 'Noto Sans JP';
+    font-weight: normal;
+}
+
+/* ツールボックスカテゴリのスタイル */
+.blocklyTreeRow {
+    padding-bottom: 7px !important;
+}
+
+/* ツールボックスの文字 */
+.blocklyTreeLabel {
+    font-family: 'Noto Sans JP';
+}
+
+/* 接続されてないブロックの色 */
+.blocklyDisabled>.blocklyPath {
+    fill: #ffffff40 !important;
+    filter: none;
+}
+
+/* workspaceのborderを0にする */
+.blocklyMainBackground {
+    stroke-width: 0;
+}
