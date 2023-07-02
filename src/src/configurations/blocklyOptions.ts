@@ -44,7 +44,8 @@ function getToolBoxXml(): string {
 
 
     <category name="システム" colour="270">
-        <block type="main" deletable="false" />
+        <!--<block type="main" deletable="false" />-->
+        <block type="main" />
     </category>
 
     

@@ -100,6 +100,14 @@ export const useBlocklyStore = defineStore("blockly", () => {
         }
     }
 
+    function addMainBlock() {
+        const block = workspaceSvg?.newBlock("main");
+        block?.moveTo(new Blockly.utils.Coordinate(100, 100));
+        block?.initSvg();
+        block?.initModel();
+        block?.render();
+    }
+
     function getState() {
         const workspace = Blockly.common.getMainWorkspace();
         const json = JSON.stringify(Blockly.serialization.workspaces.save(workspace));
