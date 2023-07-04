@@ -9,11 +9,27 @@ export function defineCodeGenerator(javascriptGenerator) {
         return code;
     };
 
-    javascriptGenerator["events"] = function (block) {
-        var statements_name = javascriptGenerator.statementToCode(block, "NAME");
-        // TODO: Assemble JavaScript into code variable.
-        var code = "...;\n";
-        return "KeyStatusChanged += (sender, e) =>\n{\n" + statements_name + "};\n";
+    javascriptGenerator['key_event'] = function (block) {
+        var dropdown_behavior = block.getFieldValue('BEHAVIOR');
+        var variable_key = javascriptGenerator.nameDB_.getName(block.getFieldValue('KEY'), Blockly.Names.NameType.VARIABLE);
+        var statement = javascriptGenerator.statementToCode(block, 'STAMEMENT');
+        var code = `KeyEvents.${dropdown_behavior} = e => {\n`;
+        code += `  ${variable_key} = e.Key;\n`;
+        code += statement;
+        code += "};\n";
+        return code;
+    };
+
+    javascriptGenerator["event_block"] = function (block) {
+        var variable_key = javascriptGenerator.nameDB_.getName(block.getFieldValue("KEY_VARIABLE"), Blockly.Names.NameType.VARIABLE);
+        var variable_is_pressed = javascriptGenerator.nameDB_.getName(block.getFieldValue("IS_PRESSED_VARIABLE"), Blockly.Names.NameType.VARIABLE);
+        var statements_do = javascriptGenerator.statementToCode(block, "DO");
+        var code = "KeyStateChanged += (sender, e) => {\n";
+        code += `    ${variable_key} = e.Key;\n`;
+        code += `    ${variable_is_pressed} = e.IsPressed;\n`;
+        code += statements_do;
+        code += "};\n";
+        return code;
     };
 
     javascriptGenerator["action_tap"] = function (block) {
@@ -47,18 +63,6 @@ export function defineCodeGenerator(javascriptGenerator) {
         return "//@start\n";
     };
 
-    javascriptGenerator["event_block"] = function (block) {
-        var variable_key = javascriptGenerator.nameDB_.getName(block.getFieldValue("KEY_VARIABLE"), Blockly.Names.NameType.VARIABLE);
-        var variable_is_pressed = javascriptGenerator.nameDB_.getName(block.getFieldValue("IS_PRESSED_VARIABLE"), Blockly.Names.NameType.VARIABLE);
-        var statements_do = javascriptGenerator.statementToCode(block, "DO");
-        var code = "KeyStateChanged += (sender, e) => {\n";
-        code += `    ${variable_key} = e.Key;\n`;
-        code += `    ${variable_is_pressed} = e.IsPressed;\n`;
-        code += statements_do;
-        code += "};\n";
-        return code;
-    };
-
     javascriptGenerator["custom_method"] = function (block) {
         var method_name = block.getFieldValue("METHOD_NAME");
         var params = javascriptGenerator.valueToCode(block, "PARAMS", Blockly.CSharp.ORDER_ATOMIC) || "[]";
@@ -90,6 +94,13 @@ export function defineCodeGenerator(javascriptGenerator) {
         var number_wait = javascriptGenerator.valueToCode(block, 'WAIT', javascriptGenerator.ORDER_NONE);
         var code = `${dropdown_behavior}(${value_key}, ${number_wait});\n`;
         return code;
+    };
+
+    javascriptGenerator['tap'] = function (block) {
+        var value_key = javascriptGenerator.valueToCode(block, 'KEY1', javascriptGenerator.ORDER_NONE);
+        var value_wait1 = javascriptGenerator.valueToCode(block, 'WAIT1', javascriptGenerator.ORDER_ATOMIC);
+        var value_wait2 = javascriptGenerator.valueToCode(block, 'WAIT2', javascriptGenerator.ORDER_ATOMIC);
+        return `tap(${value_key}, ${value_wait1}, ${value_wait2});\n`;
     };
 
     javascriptGenerator['keys_value'] = function (block) {

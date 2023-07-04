@@ -1,21 +1,11 @@
 import Blockly, { Block } from "blockly";
 import { defineExpressionBlock } from "./expressionBlock";
 import { keys } from "./keys.ts";
+import { BlockColors } from "../configurations/blockColors.ts";
 
 export function defineBlocks(): void {
 
     defineExpressionBlock();
-
-    Blockly.Blocks['main'] = {
-        init: function () {
-            this.appendDummyInput()
-                .appendField("＠ここから実行");
-            this.setNextStatement(true, null);
-            this.setColour(270);
-            this.setTooltip("");
-            this.setHelpUrl("");
-        }
-    };
 
     Blockly.Blocks["event_block"] = {
         init: function () {
@@ -25,29 +15,35 @@ export function defineBlocks(): void {
             this.appendStatementInput("DO").setCheck(null);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour("#b3b300");
+            this.setColour(BlockColors.Event);
             this.setTooltip("Tooltip");
             this.setHelpUrl("https://keytokey-dev.net");
         },
     } as Block;
 
-    Blockly.Blocks["custom_method"] = {
+    Blockly.Blocks['key_event'] = {
         init: function () {
-            this.appendDummyInput().appendField("メソッド名:").appendField(new Blockly.FieldTextInput("method_name"), "METHOD_NAME");
-            this.appendValueInput("PARAMS").setCheck("Array").appendField("引数:");
+            this.appendDummyInput()
+                .appendField("キー／マウスが")
+                .appendField(new Blockly.FieldDropdown([["押されたら", "PRESSED"], ["離されたら", "RELEASED"]]), "BEHAVIOR")
+                .appendField("代入：")
+                .appendField(new Blockly.FieldVariable("キー"), "KEY");
+            this.appendStatementInput("STAMEMENT")
+                .setCheck(null);
             this.setInputsInline(true);
-            this.setOutput(true, "String");
-            this.setColour(230);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(BlockColors.Event);
             this.setTooltip("");
             this.setHelpUrl("");
-        },
-    };
+        }
+    } as Block;
 
     Blockly.Blocks["trigger_is_pressed"] = {
         init: function () {
             this.appendDummyInput().appendField("トリガーが押されていたら");
             this.setOutput(true, "Boolean");
-            this.setColour(210);
+            this.setColour(BlockColors.Logic);
             this.setTooltip("");
             this.setHelpUrl("");
         },
@@ -68,11 +64,43 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
     };
+
+    Blockly.Blocks['tap'] = {
+        init: function () {
+            this.appendValueInput("KEY1")
+                .setCheck("Keys");
+            this.appendDummyInput()
+                .appendField("を押して");
+            this.appendValueInput("WAIT1")
+                .setCheck("Number");
+            this.appendDummyInput()
+                .appendField("ミリ秒待つ")
+                .appendField("【キーの名前】を離して", "KEY2");
+            this.appendValueInput("WAIT2")
+                .setCheck("Number");
+            this.appendDummyInput()
+                .appendField("ミリ秒待つ");
+            this.setInputsInline(true);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        },
+        onchange: function (_) {
+            const key = this.getInputTargetBlock("KEY1")?.toString();
+            if (key !== undefined) {
+                this.getField("KEY2")?.setValue(`【${key}】を離して`);
+            } else {
+                this.getField("KEY2")?.setValue(`【キーの名前】を離して`);
+            }
+        }
+    } as Block;
 
     Blockly.Blocks['up_all'] = {
         init: function () {
@@ -82,7 +110,7 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -94,7 +122,7 @@ export function defineBlocks(): void {
                 .appendField(new Blockly.FieldDropdown(keys), "VALUE");
             this.setInputsInline(true);
             this.setOutput(true, "Keys");
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -110,7 +138,7 @@ export function defineBlocks(): void {
                 .appendField("Y：");
             this.setInputsInline(true);
             this.setOutput(true, "Point");
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -125,7 +153,7 @@ export function defineBlocks(): void {
                 .appendField(new Blockly.FieldDropdown([["横", "LEFT"], ["縦", "TOP"]]), "DROPDOWN");
             this.setInputsInline(true);
             this.setOutput(true, "Number");
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -137,7 +165,7 @@ export function defineBlocks(): void {
                 .appendField("マウスカーソルの座標を取得");
             this.setInputsInline(true);
             this.setOutput(true, "Point");
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -154,7 +182,7 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -172,7 +200,7 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -192,7 +220,7 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -217,7 +245,7 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -244,7 +272,7 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -258,7 +286,7 @@ export function defineBlocks(): void {
                 .appendField(new Blockly.FieldTextInput("変数名"), "GLOBAL_VARIABLE_NAME");
             this.setInputsInline(true);
             this.setOutput(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -271,7 +299,7 @@ export function defineBlocks(): void {
                 .appendField(new Blockly.FieldVariable("名前"), "NAME");
             this.setInputsInline(true);
             this.setOutput(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -287,7 +315,7 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -302,7 +330,7 @@ export function defineBlocks(): void {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(230);
+            this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }

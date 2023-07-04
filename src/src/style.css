@@ -31,11 +31,33 @@ body {
 
 /* 接続されてないブロックの色 */
 .blocklyDisabled>.blocklyPath {
-    fill: #ffffff40 !important;
-    filter: none;
+    opacity: 0.4;
 }
 
 /* workspaceのborderを0にする */
 .blocklyMainBackground {
     stroke-width: 0;
+}
+
+.blocklyContextMenu {
+    background-color: #383838 !important;
+    /* color: #7E7E7E */
+}
+.blocklyMenuItemContent {
+    color: #E7E7E7;
+}
+
+.blocklyDisabled .blocklyEditableText text {
+    fill: #e7e7e7 !important;
+}
+
+/* Change the hover background color */
+.blocklyContextMenu .goog-menuitem-highlight,
+.blocklyContextMenu .goog-menuitem-hover {
+    background-color: #717171 !important;
+}
+
+/* Change the text color of disabled menu items */
+.blocklyContextMenu .goog-menuitem-disabled .goog-menuitem-content {
+    color: gray !important;
 }

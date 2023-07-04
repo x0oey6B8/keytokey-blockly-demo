@@ -6,7 +6,7 @@ import { defineTheme } from "../configurations/theme";
 import { defineCodeGenerator } from "../generators/defineGenerator";
 import { defineBlocks } from "../blocks/defineBlocks";
 import { options } from "../configurations/blocklyOptions"
-import { defineWorkspaceContextMenu } from "../configurations/workspaceContextMenu";
+import { defineContextMenu } from "../configurations/defineContextMenu";
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
@@ -17,7 +17,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
     defineTheme();
     defineBlocks();
     defineCodeGenerator(generator);
-    defineWorkspaceContextMenu();
+    defineContextMenu();
 
     return {
         generator,
@@ -28,16 +28,33 @@ export const useBlocklyStore = defineStore("blockly", () => {
         createCode,
         createXml,
         copyBlockAsXml,
-        pasteBlock
+        pasteBlock,
+        clearWorkspace
     };
+
+    function addKeyValue() {
+        console.log("addKeyValue");
+    }
 
     function injectBlockly(container: HTMLElement) {
         workspaceSvg = Blockly.inject(container, options);
         workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
+        workspaceSvg.registerButtonCallback("addKeyValue", addKeyValue);
         restoreState();
+        addEntryProcedureBlock(workspaceSvg);
         Blockly.common.getMainWorkspace().addChangeListener(() => {
             backupState();
         });
+    }
+
+    function clearWorkspace() {
+        if (workspaceSvg) {
+            const result = confirm("作業スペースの内容をリセットします。よろしいですか？");
+            if (result) {
+                workspaceSvg.clear();
+                addEntryProcedureBlock(workspaceSvg);
+            }
+        }
     }
 
     function copyBlockAsXml(copyChildren: boolean | undefined) {
@@ -46,11 +63,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
         if (selected) {
             const selectedBlock = workspace.getBlockById(selected.id);
             if (selectedBlock) {
-                if (selectedBlock?.type == "main") {
-                    alert("開始ブロックはコピーできません。");
-                    return;
-                }
-                const dom = Blockly.Xml.blockToDom(selectedBlock, false);
+                const dom = Blockly.Xml.blockToDom(selectedBlock, true);
                 if (!copyChildren) {
                     Blockly.Xml.deleteNext(dom);
                 }
@@ -58,7 +71,6 @@ export const useBlocklyStore = defineStore("blockly", () => {
                 // xml = formatXml(xml, {
                 //     indentation: '  ',
                 //     ignoredPaths: ["field", "comment"]
-
                 // });
                 return xml;
             }
@@ -66,16 +78,16 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return "";
     }
 
-    function pasteBlock(xml: string) {
+    function pasteBlock(xml: string): string[] {
         const workspace = Blockly.common.getMainWorkspace();
         const dom = Blockly.utils.xml.textToDom(xml);
-        const results = Blockly.Xml.domToWorkspace(dom, workspace);
-        console.log(results);
+        const addedBlockIds = Blockly.Xml.domToWorkspace(dom, workspace);
+        return addedBlockIds;
     }
 
     function createXml() {
         const workspace = Blockly.common.getMainWorkspace();
-        const xmlDom = Blockly.Xml.workspaceToDom(workspace);
+        const xmlDom = Blockly.Xml.workspaceToDom(workspace, true);
         const xml = Blockly.Xml.domToText(xmlDom);
         return xml;
     }
@@ -87,7 +99,8 @@ export const useBlocklyStore = defineStore("blockly", () => {
     }
 
     function backupState() {
-        localStorage.setItem("state", getState());
+        const currentState = getState();
+        localStorage.setItem("state", currentState);
     }
 
     function restoreState() {
@@ -100,12 +113,18 @@ export const useBlocklyStore = defineStore("blockly", () => {
         }
     }
 
-    function addMainBlock() {
-        const block = workspaceSvg?.newBlock("main");
-        block?.moveTo(new Blockly.utils.Coordinate(100, 100));
-        block?.initSvg();
-        block?.initModel();
-        block?.render();
+    function addEntryProcedureBlock(workspaceSvg: WorkspaceSvg) {
+        const procedureBlocks = workspaceSvg.getBlocksByType("procedures_defnoreturn", true);
+        const anyEntryBlocks = procedureBlocks.filter(block => block.getFieldValue("NAME") === "ここから実行");
+        if (anyEntryBlocks.length < 1) {
+            const entryBlockXml = `<xml>
+    <block xmlns="https://developers.google.com/blockly/xml" type="procedures_defnoreturn" x="50" y="50">
+        <field name="NAME" >ここから実行</field>
+        <comment pinned="false" h="160" w="160">ここから実行されます。</comment>
+    </block>
+</xml>`
+            pasteBlock(entryBlockXml);
+        }
     }
 
     function getState() {

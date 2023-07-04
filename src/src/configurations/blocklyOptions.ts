@@ -26,7 +26,7 @@ export const options: BlocklyOptions = {
     zoom: {
         controls: true,
         wheel: true,
-        startScale: 0.8,
+        startScale: 0.75,
         maxScale: 3,
         minScale: 0.3,
         scaleSpeed: 1.05,
@@ -42,18 +42,10 @@ function getToolBoxXml(): string {
     return `
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox">
 
-
-    <category name="システム" colour="270">
-        <!--<block type="main" deletable="false" />-->
-        <block type="main" />
-    </category>
-
-    
-
-    <category name="値" colour="10">
+    <category name="値" color="">
         <label text="キーボード／マウス" web-class="ioLabel"></label>
-        <button text="値を検索して追加" callbackKey="myFirstButtonPressed"></button>
-        <button text="値をキー／マウス入力で追加" callbackKey="myFirstButtonPressed"></button>
+        <button text="値を検索して追加" callbackKey="addKeyValue"></button>
+        <button text="値をキー／マウス入力で追加" callbackKey="addKeyValue"></button>
         <block type="keys_value">
             <field name="VALUE">A</field>
         </block>
@@ -83,10 +75,10 @@ function getToolBoxXml(): string {
 
 
 
-    <category name="キーボード／マウス" colour="200">
+    <category name="キーボード／マウス">
         <label text="押す・離す" web-class="ioLabel"></label>
         <block type="down_up">
-            <field name="BEHAVIOR">DOWN</field>
+            <field name="BEHAVIOR">Down</field>
             <value name="KEY">
             <block type="keys_value">
                 <field name="VALUE">A</field>
@@ -96,6 +88,36 @@ function getToolBoxXml(): string {
             <block type="math_number">
                 <field name="NUM">0</field>
             </block>
+            </value>
+        </block>
+        <block type="down_up">
+            <field name="BEHAVIOR">Up</field>
+            <value name="KEY">
+            <block type="keys_value">
+                <field name="VALUE">A</field>
+            </block>
+            </value>
+            <value name="WAIT">
+            <block type="math_number">
+                <field name="NUM">0</field>
+            </block>
+            </value>
+        </block>
+        <block type="tap">
+            <value name="KEY1">
+                <block type="keys_value">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+            <value name="WAIT1">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+            <value name="WAIT2">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
             </value>
         </block>
         <block type="up_all"></block>
@@ -186,11 +208,143 @@ function getToolBoxXml(): string {
 
         <label text="イベント" web-class="ioLabel"></label>
         <block type="event_block"></block>
+        <block type="key_event"></block>
+
+        <label text="テンプレート" web-class="ioLabel"></label>
+        <!-- LCtrl+C -->
+        <label text="Control + C" web-class="ioLabel"></label>
+        <block type="down_up">
+            <field name="BEHAVIOR">Down</field>
+            <value name="KEY">
+                <block type="keys_value">
+                    <field name="VALUE">LControl</field>
+                </block>
+            </value>
+            <value name="WAIT">
+                <block type="math_number">
+                    <field name="NUM">10</field>
+                </block>
+            </value>
+            <next>
+                <block type="tap">
+                    <value name="KEY1">
+                        <block type="keys_value">
+                            <field name="VALUE">C</field>
+                        </block>
+                    </value>
+                    <value name="WAIT1">
+                        <block type="math_number">
+                            <field name="NUM">10</field>
+                        </block>
+                    </value>
+                    <value name="WAIT2">
+                        <block type="math_number">
+                            <field name="NUM">10</field>
+                        </block>
+                    </value>
+                    <next>
+                        <block type="down_up">
+                            <field name="BEHAVIOR">Down</field>
+                            <value name="KEY">
+                                <block type="keys_value">
+                                    <field name="VALUE">LControl</field>
+                                </block>
+                            </value>
+                            <value name="WAIT">
+                                <block type="math_number">
+                                    <field name="NUM">10</field>
+                                </block>
+                            </value>
+                        </block>
+                    </next>
+                </block>
+            </next>
+        </block>
+
+        <!-- LCtrl+LShift+D -->
+        <label text="Control + Shift + D" web-class="ioLabel"></label>
+        <block type="down_up">
+            <field name="BEHAVIOR">Down</field>
+            <value name="KEY">
+                <block type="keys_value">
+                    <field name="VALUE">LControl</field>
+                </block>
+            </value>
+            <value name="WAIT">
+                <block type="math_number">
+                    <field name="NUM">10</field>
+                </block>
+            </value>
+            <next>
+                <block type="down_up">
+                    <field name="BEHAVIOR">Down</field>
+                    <value name="KEY">
+                        <block type="keys_value">
+                            <field name="VALUE">LShift</field>
+                        </block>
+                    </value>
+                    <value name="WAIT">
+                        <block type="math_number">
+                            <field name="NUM">10</field>
+                        </block>
+                    </value>
+                    <next>
+                        <block type="tap">
+                            <value name="KEY1">
+                                <block type="keys_value">
+                                    <field name="VALUE">D</field>
+                                </block>
+                            </value>
+                            <value name="WAIT1">
+                                <block type="math_number">
+                                    <field name="NUM">10</field>
+                                </block>
+                            </value>
+                            <value name="WAIT2">
+                                <block type="math_number">
+                                    <field name="NUM">10</field>
+                                </block>
+                            </value>
+                            <next>
+                                <block type="down_up">
+                                    <field name="BEHAVIOR">Up</field>
+                                    <value name="KEY">
+                                        <block type="keys_value">
+                                            <field name="VALUE">LShift</field>
+                                        </block>
+                                    </value>
+                                    <value name="WAIT">
+                                        <block type="math_number">
+                                            <field name="NUM">10</field>
+                                        </block>
+                                    </value>
+                                    <next>
+                                        <block type="down_up">
+                                            <field name="BEHAVIOR">Up</field>
+                                            <value name="KEY">
+                                                <block type="keys_value">
+                                                    <field name="VALUE">LControl</field>
+                                                </block>
+                                            </value>
+                                            <value name="WAIT">
+                                                <block type="math_number">
+                                                    <field name="NUM">10</field>
+                                                </block>
+                                            </value>
+                                        </block>
+                                    </next>
+                                </block>
+                            </next>
+                        </block>
+                    </next>
+                </block>
+            </next>
+        </block>
     </category>
 
 
 
-    <category name="待機" colour="200">
+    <category name="待機">
         <label text="通常待機" web-class="ioLabel"></label>
         <block type="wait">
             <value name="WAIT_TIME">
@@ -212,7 +366,6 @@ function getToolBoxXml(): string {
 
 
     <category name="カスタム">
-        <block type="custom_method"></block>
         <block type="get_global_variable"></block>
         <block type="custom_variable"></block>
     </category>
@@ -240,7 +393,6 @@ function getToolBoxXml(): string {
                 </shadow>
             </value>
         </block>
-        <block type="controls_repeat" disabled="true"></block>
         <block type="controls_whileUntil"></block>
         <block type="controls_for">
             <value name="FROM">
@@ -529,7 +681,7 @@ function getToolBoxXml(): string {
     </category>
 
 
-
+<!--
     <category name="色" categorystyle="colour_category">
         <block type="colour_picker"></block>
         <block type="colour_random"></block>
@@ -568,7 +720,7 @@ function getToolBoxXml(): string {
             </value>
         </block>
     </category>
-
+-->
 
 
     <sep></sep>

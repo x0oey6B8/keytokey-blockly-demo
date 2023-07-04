@@ -4,9 +4,6 @@ import { useBlocklyStore } from "./stores/blocklyStore";
 import Modal from "./components/modal/Modal.vue"
 import Editor from "./components/Editor.vue";
 import { useEditorStore } from "./stores/editorStore";
-import { toast } from "vue3-toastify"
-import 'vue3-toastify/dist/index.css';
-
 const store = useBlocklyStore();
 const editorStore = useEditorStore();
 
@@ -19,27 +16,6 @@ function createCode() {
     const code = store.createCode();
     editorStore.setCode(code, "javascript", true);
 }
-
-function createXml() {
-    const xml = store.createXml();   
-    showXml(xml);
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(xml);
-    }
-    toastMessage("クリップボードにコピーしました");
-}
-
-function showXml(xml: string) {
-    editorStore.setCode(xml, "xml", true);
-}
-
-function toastMessage(message: string) {
-    toast(message, {
-        autoClose: 3000,
-        theme: "colored",
-        type: "info"
-    });
-}
 </script>
 
 <template>
@@ -47,7 +23,7 @@ function toastMessage(message: string) {
         <div class="button-container">
             <button @click.stop="editorStore.showModal = true;">show modal</button>
             <button @click.stop="createCode()">create javascript code</button>
-            <button @click.stop="createXml()">create and copy xml</button>
+            <button @click.stop="store.clearWorkspace()">clear workspace</button>
         </div>
         <div>
             <div id="blocklyArea"></div>

@@ -1,4 +1,5 @@
 import Blockly from "blockly";
+import { BlockColors } from "./blockColors";
 
 export function defineTheme() {
     const theme = Blockly.Theme.defineTheme("myStyle", {
@@ -6,16 +7,13 @@ export function defineTheme() {
         base: Blockly.Themes.Classic,
         fontStyle: {
             'family': 'Noto Sans JP',
-            // 'family': 'IBM Plex Sans JP',
             'weight': '500',
             'size': 12,
         },
         componentStyles: {
             workspaceBackgroundColour: "#212121",
-            // toolboxBackgroundColour: "#2d2e30",
             toolboxBackgroundColour: "#101010",
             toolboxForegroundColour: "#C7C7C7",
-            // flyoutBackgroundColour: "#2d2e30",
             flyoutBackgroundColour: "#2d2e30",
             flyoutForegroundColour: "#ccc",
             flyoutOpacity: 0.9,
@@ -27,13 +25,41 @@ export function defineTheme() {
         },
         categoryStyles: {
             'logic_category': {
-                colour: '#01579b',
+                colour: BlockColors.Logic,
+            },
+            'procedure_category': {
+                colour: BlockColors.Procedure,
+            },
+            'text_category': {
+                colour: BlockColors.Text,
+            },
+            'math_category': {
+                colour: BlockColors.Math,
+            },
+            'variable_category': {
+                colour: BlockColors.Variable
             }
         },
         blockStyles: {
             'logic_blocks': {
-                'colourPrimary': '#01579b',
-                'colourSecondary': '#01579b',
+                'colourPrimary': BlockColors.Logic,
+                'colourSecondary': BlockColors.Logic,
+            },
+            'procedure_blocks': {
+                'colourPrimary': BlockColors.Procedure,
+                'colourSecondary': BlockColors.Procedure,
+            },
+            'text_blocks': {
+                'colourPrimary': BlockColors.Text,
+                'colourSecondary': BlockColors.Text,
+            },
+            'math_blocks': {
+                'colourPrimary': BlockColors.Math,
+                'colourSecondary': BlockColors.Math,
+            },
+            'variable_blocks': {
+                'colourPrimary': BlockColors.Variable,
+                'colourSecondary': BlockColors.Variable,
             },
             'キーボード／マウス': {
                 'colourPrimary': '#01579b',
@@ -43,7 +69,4 @@ export function defineTheme() {
 
     });
     return theme;
-
-    // Blockly.HSV_SATURATION = 0.6; // ブロックの彩度
-    // Blockly.HSV_VALUE = 0.6; // ブロックの明度
 }
