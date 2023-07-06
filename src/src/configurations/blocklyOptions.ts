@@ -103,6 +103,34 @@ function getToolBoxXml(): string {
             </block>
             </value>
         </block>
+        <block type="down_up">
+            <field name="BEHAVIOR">Down</field>
+            <value name="KEY">
+                <block type="keys_value">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+            <value name="WAIT">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+            <next>
+                <block type="down_up">
+                    <field name="BEHAVIOR">Up</field>
+                    <value name="KEY">
+                        <block type="keys_value">
+                            <field name="VALUE">A</field>
+                        </block>
+                    </value>
+                    <value name="WAIT">
+                        <block type="math_number">
+                            <field name="NUM">0</field>
+                        </block>
+                    </value>
+                </block>
+            </next>
+        </block>
         <block type="tap">
             <value name="KEY1">
                 <block type="keys_value">
@@ -121,7 +149,8 @@ function getToolBoxXml(): string {
             </value>
         </block>
         <block type="up_all"></block>
-
+        
+        <label text="" web-class="ioLabel"></label>
         <label text="マウスの移動（絶対座標）" web-class="ioLabel"></label>
         <block type="origin_point">
             <value name="ORIGIN">
@@ -173,6 +202,7 @@ function getToolBoxXml(): string {
             </value>
         </block>
 
+        <label text="" web-class="ioLabel"></label>
         <label text="マウスの移動（相対座標）" web-class="ioLabel"></label>
         <block type="move_relative">
             <value name="DX">
@@ -200,16 +230,20 @@ function getToolBoxXml(): string {
             </value>
         </block>
 
+        <label text="" web-class="ioLabel"></label>
         <label text="マウスカーソルの座標" web-class="ioLabel"></label>
         <block type="get_cursor_point"></block>
 
+        <label text="" web-class="ioLabel"></label>
         <label text="キー／マウスの状態" web-class="ioLabel"></label>
         <block type="trigger_is_pressed"></block>
 
+        <label text="" web-class="ioLabel"></label>
         <label text="イベント" web-class="ioLabel"></label>
         <block type="event_block"></block>
         <block type="key_event"></block>
 
+        <label text="" web-class="ioLabel"></label>
         <label text="テンプレート" web-class="ioLabel"></label>
         <!-- LCtrl+C -->
         <label text="Control + C" web-class="ioLabel"></label>
@@ -244,7 +278,7 @@ function getToolBoxXml(): string {
                     </value>
                     <next>
                         <block type="down_up">
-                            <field name="BEHAVIOR">Down</field>
+                            <field name="BEHAVIOR">Up</field>
                             <value name="KEY">
                                 <block type="keys_value">
                                     <field name="VALUE">LControl</field>
@@ -368,6 +402,7 @@ function getToolBoxXml(): string {
     <category name="カスタム">
         <block type="get_global_variable"></block>
         <block type="custom_variable"></block>
+        <block type="script"></block>
     </category>
 
 
@@ -736,16 +771,6 @@ function getToolBoxXml(): string {
 
 
     <category name="テンプレート">
-        <statement name="SACK">
-            <block type="entrypoint">
-                <next>
-                    <block type="events"></block>
-                </next>
-            </block>
-        </statement>
-        <block type="action_tap"></block>
-        <block type="variable"></block>
-        <block type="statement_loop_by_num"></block>
         <block type="text_print">
             <value name="TEXT">
                 <block type="text">
@@ -788,34 +813,6 @@ function getToolBoxXml(): string {
                             <field name="NUM">10</field>
                         </shadow>
                     </value>
-                    <statement name="DO">
-                        <block type="events" id="m@i~Mi0XK?TlRAwKK~02">
-                            <statement name="NAME">
-                                <block type="action_tap" id="4Fce3aFs8O*)~$4jjtx9">
-                                    <field name="key">A</field>
-                                    <field name="wait1">0</field>
-                                    <field name="wait2">0</field>
-                                    <field name="NAME">TRUE</field>
-                                    <next>
-                                        <block type="action_tap" id="7SFS_LvVn|SFduhT1}UN">
-                                            <field name="key">A</field>
-                                            <field name="wait1">0</field>
-                                            <field name="wait2">0</field>
-                                            <field name="NAME">TRUE</field>
-                                            <next>
-                                                <block type="action_tap" id="~F7qiYB2ztNTQp5bj9XA">
-                                                    <field name="key">A</field>
-                                                    <field name="wait1">0</field>
-                                                    <field name="wait2">0</field>
-                                                    <field name="NAME">TRUE</field>
-                                                </block>
-                                            </next>
-                                        </block>
-                                    </next>
-                                </block>
-                            </statement>
-                        </block>
-                    </statement>
                 </block>
             </statement>
             <next>

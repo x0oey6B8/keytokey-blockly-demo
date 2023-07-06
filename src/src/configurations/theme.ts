@@ -36,9 +36,9 @@ export function defineTheme() {
             'math_category': {
                 colour: BlockColors.Math,
             },
-            'variable_category': {
-                colour: BlockColors.Variable
-            }
+            // 'variable_category': {
+            //     colour: BlockColors.Action
+            // }
         },
         blockStyles: {
             'logic_blocks': {
@@ -57,10 +57,10 @@ export function defineTheme() {
                 'colourPrimary': BlockColors.Math,
                 'colourSecondary': BlockColors.Math,
             },
-            'variable_blocks': {
-                'colourPrimary': BlockColors.Variable,
-                'colourSecondary': BlockColors.Variable,
-            },
+            // 'variable_blocks': {
+            //     'colourPrimary': BlockColors.Action,
+            //     'colourSecondary': BlockColors.Action,
+            // },
             'キーボード／マウス': {
                 'colourPrimary': '#01579b',
                 'colourSecondary': '#01579b',

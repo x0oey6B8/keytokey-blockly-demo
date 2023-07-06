@@ -1,22 +1,13 @@
 import Blockly from "blockly";
 import { useEditorStore } from "../stores/editorStore";
 import { useBlocklyStore } from "../stores/blocklyStore";
-
-import { toast } from "vue3-toastify"
-import 'vue3-toastify/dist/index.css';
-
-function toastMessage(message: string) {
-    toast(message, {
-        autoClose: 3000,
-        theme: "colored",
-        type: "info"
-    });
-}
+import { useNotificationStore } from "../stores/notificationStore";
 
 export function defineContextMenu() {
 
     const blocklyStore = useBlocklyStore();
     const editorStore = useEditorStore();
+    const notification = useNotificationStore();
 
     Blockly.ContextMenuRegistry.registry.register({
         displayText: "テキストとしてコピー（子ブロックなし）",
@@ -29,7 +20,7 @@ export function defineContextMenu() {
                 editorStore.setCode(xml, "xml", true);
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(xml);
-                    toastMessage("コピーしました。");
+                    notification.toastMessage("コピーしました。");
                 }
             }
         },
@@ -49,7 +40,7 @@ export function defineContextMenu() {
                 editorStore.setCode(xml, "xml", true);
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(xml);
-                    toastMessage("コピーしました。");
+                    notification.toastMessage("コピーしました。");
                 }
             }
         },

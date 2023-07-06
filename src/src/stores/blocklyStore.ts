@@ -34,6 +34,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
 
     function addKeyValue() {
         console.log("addKeyValue");
+        alert("未実装");
     }
 
     function injectBlockly(container: HTMLElement) {

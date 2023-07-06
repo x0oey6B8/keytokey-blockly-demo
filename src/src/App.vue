@@ -4,8 +4,10 @@ import { useBlocklyStore } from "./stores/blocklyStore";
 import Modal from "./components/modal/Modal.vue"
 import Editor from "./components/Editor.vue";
 import { useEditorStore } from "./stores/editorStore";
+import { useNotificationStore } from "./stores/notificationStore";
 const store = useBlocklyStore();
 const editorStore = useEditorStore();
+const notification = useNotificationStore();
 
 onMounted(() => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
@@ -16,14 +18,24 @@ function createCode() {
     const code = store.createCode();
     editorStore.setCode(code, "javascript", true);
 }
+
+function copyWorkspace() {
+    const xml = store.createXml();
+    editorStore.setCode(xml, "xml", true);
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(xml);
+        notification.toastMessage("コピーしました。");
+    }
+}
 </script>
 
 <template>
     <div class="grid-container">
         <div class="button-container">
             <button @click.stop="editorStore.showModal = true;">show modal</button>
-            <button @click.stop="createCode()">create javascript code</button>
-            <button @click.stop="store.clearWorkspace()">clear workspace</button>
+            <button @click.stop="createCode()">javascriptコード生成</button>
+            <button @click.stop="copyWorkspace">ワークスペースの内容をコピー</button>
+            <button @click.stop="store.clearWorkspace()">ワークスペースをクリア</button>
         </div>
         <div>
             <div id="blocklyArea"></div>

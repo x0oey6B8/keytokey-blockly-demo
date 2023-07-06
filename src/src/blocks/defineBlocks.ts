@@ -7,6 +7,19 @@ export function defineBlocks(): void {
 
     defineExpressionBlock();
 
+    Blockly.Blocks['script'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("code:")
+                .appendField(new Blockly.FieldMultilineInput("default value"), "CODE");
+            this.setColour(230);
+            this.setNextStatement(true);
+            this.setPreviousStatement(true);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as Block;
+
     Blockly.Blocks["event_block"] = {
         init: function () {
             const keyVar = new Blockly.FieldVariable("キー");

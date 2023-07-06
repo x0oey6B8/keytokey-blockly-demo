@@ -12,6 +12,7 @@
     "blockly": "^9.3.3",
     "monaco-editor": "^0.39.0",
     "pinia": "^2.1.4",
+    "vite-plugin-static-copy": "^0.16.0",
     "vue": "^3.2.47",
     "vue3-toastify": "^0.1.11",
     "xml-formatter": "^3.4.1"

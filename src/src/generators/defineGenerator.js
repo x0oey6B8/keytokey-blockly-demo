@@ -2,6 +2,12 @@ import Blockly from "blockly";
 
 export function defineCodeGenerator(javascriptGenerator) {
 
+    javascriptGenerator['script'] = function (block) {
+        //var value_name = javascriptGenerator.getFieldValue(block, 'CODE', javascriptGenerator.ORDER_ATOMIC);
+        const value_name = block.getFieldValue("CODE") + "\n";
+        return value_name;
+    };
+
     javascriptGenerator["entrypoint"] = function (block) {
         var statements__entry = javascriptGenerator.statementToCode(block, " Entry");
         // TODO: Assemble JavaScript into code variable.
@@ -13,10 +19,10 @@ export function defineCodeGenerator(javascriptGenerator) {
         var dropdown_behavior = block.getFieldValue('BEHAVIOR');
         var variable_key = javascriptGenerator.nameDB_.getName(block.getFieldValue('KEY'), Blockly.Names.NameType.VARIABLE);
         var statement = javascriptGenerator.statementToCode(block, 'STAMEMENT');
-        var code = `KeyEvents.${dropdown_behavior} = e => {\n`;
+        var code = `Events.subscribe("${dropdown_behavior}", e => {\n`;
         code += `  ${variable_key} = e.Key;\n`;
         code += statement;
-        code += "};\n";
+        code += "});\n";
         return code;
     };
 
@@ -108,10 +114,9 @@ export function defineCodeGenerator(javascriptGenerator) {
         return [`Keys.${dropdown_value}`, javascriptGenerator.ORDER_NONE];
     };
 
-    javascriptGenerator['up_all1'] = function (block) {
+    javascriptGenerator['up_all'] = function (block) {
         var value_excluded_keys = javascriptGenerator.valueToCode(block, 'EXCLUDED_KEYS', javascriptGenerator.ORDER_ATOMIC);
-        // TODO: Assemble JavaScript into code variable.
-        var code = '...;\n';
+        var code = `upAll(${value_excluded_keys});\n`;
         return code;
     };
 
@@ -130,11 +135,8 @@ export function defineCodeGenerator(javascriptGenerator) {
     };
 
     javascriptGenerator['get_cursor_point'] = function (block) {
-        var code = `
-            const p = mouse.getCursorPosition();
-            { x: p.X, y: p.Y }
-        `;
-        return [code, javascriptGenerator.ORDER_ATOMIC];
+        var code = `mouse.getCursorPosition()`;
+        return [code, javascriptGenerator.ORDER_NONE];
     };
 
     javascriptGenerator['origin_point'] = function (block) {
