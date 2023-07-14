@@ -7,6 +7,7 @@ import { defineCodeGenerator } from "../definitions/generators/defineGenerator";
 import { defineBlocks } from "../definitions/blocks/defineBlocks";
 import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
+import { InterpreterInitializer, Interpreter, Runner } from "../runner/runner";
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
@@ -18,9 +19,11 @@ export const useBlocklyStore = defineStore("blockly", () => {
     defineBlocks();
     defineCodeGenerator(generator);
     defineContextMenu();
+    registerGlobalyFunctions();
 
     return {
         generator,
+        runCode,
         injectBlockly,
         disconnectSelectedBlock,
         canDisconnectSelectedBlock,
@@ -33,6 +36,32 @@ export const useBlocklyStore = defineStore("blockly", () => {
         pasteBlock,
         clearWorkspace
     };
+
+    function registerGlobalyFunctions() {
+        const w = (window as any);
+        w.runCode = runCode;
+    }
+
+    function runCode() {
+        const code = `
+        var s = performance.now();
+for (var i = 0; i < 100000; i++) {
+    //alert(i);
+    //console.log(i);
+}
+var e = performance.now();
+console.log((e - s) + "ms");
+var a = "a b c d";
+var array = a.split(' ');
+alert(a);
+alert(array);
+alert(a.endsWith("d", 1))
+`;
+        const initializer = new InterpreterInitializer();
+        const interpreter = Interpreter.Create(code, initializer);
+        const runner = new Runner(interpreter);
+        runner.stepAuto();
+    }
 
     function addKeyValue() {
         console.log("addKeyValue");

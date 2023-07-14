@@ -27,11 +27,13 @@ function copyWorkspace() {
         notification.toastMessage("コピーしました。");
     }
 }
+
 </script>
 
 <template>
     <div class="grid-container">
         <div class="button-container">
+            <button @click.stop="store.runCode">Run</button>
             <button @click.stop="editorStore.showModal = true;">show modal</button>
             <button @click.stop="createCode()">javascriptコード生成</button>
             <button @click.stop="copyWorkspace">ワークスペースの内容をコピー</button>

@@ -28,7 +28,7 @@ body {
 /* ツールボックスの文字 */
 .blocklyTreeLabel {
     font-family: 'Noto Sans JP';
-    font-size: 16px;
+    font-size: 14px;
 }
 
 /* 接続されてないブロックの色 */

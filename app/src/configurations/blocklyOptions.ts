@@ -26,7 +26,7 @@ export const options: BlocklyOptions = {
     zoom: {
         controls: true,
         wheel: true,
-        startScale: 0.75,
+        startScale: 0.70,
         maxScale: 3,
         minScale: 0.3,
         scaleSpeed: 1.05,
