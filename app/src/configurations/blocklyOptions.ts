@@ -1,4 +1,5 @@
 import { BlocklyOptions } from "blockly";
+import { MultiselectBlockDragger } from "@mit-app-inventor/blockly-plugin-workspace-multiselect"
 
 export const options: BlocklyOptions = {
     renderer: "zelos",
@@ -35,7 +36,9 @@ export const options: BlocklyOptions = {
         drag: true,
         wheel: false,
     },
-    plugins: {},
+    plugins: {
+        'blockDragger': MultiselectBlockDragger
+    }
 };
 
 function getToolBoxXml(): string {

@@ -19,6 +19,11 @@ function createCode() {
     editorStore.setCode(code, "javascript", true);
 }
 
+function createDecodedCode() {
+    const code = store.createDecodedCode();
+    editorStore.setCode(code, "javascript", true);
+}
+
 function copyWorkspace() {
     const xml = store.createXml();
     editorStore.setCode(xml, "xml", true);
@@ -33,9 +38,9 @@ function copyWorkspace() {
 <template>
     <div class="grid-container">
         <div class="button-container">
-            <button @click.stop="store.runCode">Run</button>
-            <button @click.stop="editorStore.showModal = true;">show modal</button>
-            <button @click.stop="createCode()">javascriptコード生成</button>
+            <button @click.stop="store.runCode">実行</button>
+            <button @click.stop="createCode()">コード生成</button>
+            <button @click.stop="createDecodedCode()">コード生成（デコード後）</button>
             <button @click.stop="copyWorkspace">ワークスペースの内容をコピー</button>
             <button @click.stop="store.clearWorkspace()">ワークスペースをクリア</button>
         </div>

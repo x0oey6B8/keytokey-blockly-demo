@@ -62,3 +62,7 @@ body {
 .blocklyContextMenu .goog-menuitem-disabled .goog-menuitem-content {
     color: gray !important;
 }
+
+.blocklyCommentTextarea {
+    font-size: 14px;
+}

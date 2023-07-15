@@ -1,5 +1,21 @@
 import Blockly from "blockly";
 
+export const StatementPrefix = {
+    NONE: 0,
+    THROW_INTERUPPTED_EXCEPTION: 1,
+    HIGHLIGHT_BLOCK: 2,
+}
+
+export function setStatementPrefix(javascriptGenerator, prefix) {
+    if (prefix == StatementPrefix.THROW_INTERUPPTED_EXCEPTION) {
+        javascriptGenerator.STATEMENT_PREFIX = 'throwIntrupptedError();\n';
+    } else if (prefix == StatementPrefix.HIGHLIGHT_BLOCK) {
+        javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
+    } else {
+        javascriptGenerator.STATEMENT_PREFIX = '';
+    }
+}
+
 export function defineCodeGenerator(javascriptGenerator) {
 
     javascriptGenerator['comment'] = function (block) {

@@ -3,11 +3,12 @@ import { javascriptGenerator } from "blockly/javascript";
 import Blockly, { WorkspaceSvg } from "blockly/core"
 import { setLocaleToJa } from "../configurations/language";
 import { defineTheme } from "../configurations/theme";
-import { defineCodeGenerator } from "../definitions/generators/defineGenerator";
+import { StatementPrefix, defineCodeGenerator, setStatementPrefix } from "../definitions/generators/defineGenerator";
 import { defineBlocks } from "../definitions/blocks/defineBlocks";
 import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
-import { InterpreterInitializer, Interpreter, Runner } from "../runner/runner";
+import { Runner } from "../runner/runner";
+import { Multiselect } from "@mit-app-inventor/blockly-plugin-workspace-multiselect"
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
@@ -31,6 +32,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
         setState,
         getState,
         createCode,
+        createDecodedCode,
         createXml,
         copyBlockAsXml,
         pasteBlock,
@@ -42,25 +44,25 @@ export const useBlocklyStore = defineStore("blockly", () => {
         w.runCode = runCode;
     }
 
-    function runCode() {
+    async function runCode() {
         const code = `
-        var s = performance.now();
-for (var i = 0; i < 100000; i++) {
-    //alert(i);
-    //console.log(i);
-}
-var e = performance.now();
-console.log((e - s) + "ms");
-var a = "a b c d";
-var array = a.split(' ');
-alert(a);
-alert(array);
-alert(a.endsWith("d", 1))
-`;
-        const initializer = new InterpreterInitializer();
-        const interpreter = Interpreter.Create(code, initializer);
-        const runner = new Runner(interpreter);
-        runner.stepAuto();
+(async function() {
+    var s = performance.now();
+    for (var i = 0; i < 100000; i++) {
+        //alert(i);
+        //console.log(i);
+    }
+    var e = performance.now();
+    console.log((e - s) + "ms");
+    throw new InterruptedError("");
+    var a = "a b c d";
+    var array = a.split(' ');
+    alert(a);
+    alert(array);
+    alert(a.endsWith("d", 1))
+})();`;
+        const runner = new Runner;
+        runner.run(code);
     }
 
     function addKeyValue() {
@@ -72,6 +74,9 @@ alert(a.endsWith("d", 1))
         workspaceSvg = Blockly.inject(container, options);
         workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         workspaceSvg.registerButtonCallback("addKeyValue", addKeyValue);
+        // Initialize plugin.
+        const multiselectPlugin = new Multiselect(workspaceSvg);
+        multiselectPlugin.init(options);
         restoreState();
         addEntryProcedureBlock(workspaceSvg);
         Blockly.common.getMainWorkspace().addChangeListener(() => {
@@ -151,10 +156,50 @@ alert(a.endsWith("d", 1))
         return xml;
     }
 
-    function createCode(): string {
+    function createCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERUPPTED_EXCEPTION): string {
+        setStatementPrefix(generator, prefix);
         const workspace = Blockly.common.getMainWorkspace();
-        const code = javascriptGenerator.workspaceToCode(workspace);
+        const generatedCode = generator.workspaceToCode(workspace);
+        const indentedCode = insertIndentation(generatedCode);
+        //ここから実行：_E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C()
+        const entryFunction = "    _E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C();"
+        const code = `(async () => {\n${indentedCode}\n${entryFunction}\n})();`
         return code;
+    }
+
+    function createDecodedCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERUPPTED_EXCEPTION): string {
+        const code = createCode(prefix);
+        const decodedCode = decode(code);
+        return decodedCode;
+    }
+
+    function decode(text: string) {
+        const regex = /(_[A-Z0-9]{2})+/g;
+        const decodedStr = text.replace(regex, match => {
+            try {
+                const decoded = decodeURIComponent(match.replace(/_/g, '%'));
+                return decoded;
+            } catch (error) {
+                console.log(error);
+                return match;
+            }
+        });
+        return decodedStr;
+    }
+
+    function insertIndentation(text: string) {
+        // 改行文字で文字列を分割し、配列に格納する
+        var lines = text.split('\n');
+
+        // 各行の先頭に半角スペース4つを挿入する
+        for (var i = 0; i < lines.length; i++) {
+            lines[i] = '    ' + lines[i];
+        }
+
+        // 改行文字を用いて配列の要素を結合し、新しい文字列を生成する
+        var indentedText = lines.join('\n');
+
+        return indentedText;
     }
 
     function backupState() {

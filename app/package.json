@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mit-app-inventor/blockly-plugin-workspace-multiselect": "^0.1.5",
     "blockly": "^9.3.3",
     "js-interpreter": "^4.0.0",
     "monaco-editor": "^0.39.0",
