@@ -43,7 +43,8 @@ export function defineContextMenu() {
             }
         },
         preconditionFn: () => {
-            return getEnabledOrDisabled(true);
+            const isSelectedBlockFunction = blocklyStore.isSelectedBlockFunction();
+            return getEnabledOrDisabled(!isSelectedBlockFunction);
         },
     });
 

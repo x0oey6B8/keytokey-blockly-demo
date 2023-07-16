@@ -10,19 +10,19 @@
   },
   "dependencies": {
     "@mit-app-inventor/blockly-plugin-workspace-multiselect": "^0.1.5",
-    "blockly": "^9.3.3",
+    "blockly": "^10.0.1",
     "js-interpreter": "^4.0.0",
-    "monaco-editor": "^0.39.0",
+    "monaco-editor": "^0.40.0",
     "pinia": "^2.1.4",
     "vite-plugin-static-copy": "^0.16.0",
-    "vue": "^3.2.47",
+    "vue": "^3.3.4",
     "vue3-toastify": "^0.1.11",
     "xml-formatter": "^3.4.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.1.0",
-    "typescript": "^5.0.2",
-    "vite": "^4.3.9",
-    "vue-tsc": "^1.4.2"
+    "@vitejs/plugin-vue": "^4.2.3",
+    "typescript": "^5.1.6",
+    "vite": "^4.4.4",
+    "vue-tsc": "^1.8.5"
   }
 }

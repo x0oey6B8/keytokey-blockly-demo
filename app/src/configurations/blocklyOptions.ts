@@ -7,7 +7,7 @@ export const options: BlocklyOptions = {
     media: "media",
     toolbox: getToolBoxXml(),
     collapse: true,
-    comments: true,
+    comments: false,
     disable: true,
     maxBlocks: Infinity,
     trashcan: true,

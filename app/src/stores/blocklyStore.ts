@@ -26,11 +26,13 @@ export const useBlocklyStore = defineStore("blockly", () => {
         generator,
         runCode,
         injectBlockly,
+        isSelectedBlockFunction,
         disconnectSelectedBlock,
         canDisconnectSelectedBlock,
         backupState,
         setState,
         getState,
+        getSelectedBlock,
         createCode,
         createDecodedCode,
         createXml,
@@ -47,19 +49,49 @@ export const useBlocklyStore = defineStore("blockly", () => {
     async function runCode() {
         const code = `
 (async function() {
-    var s = performance.now();
-    for (var i = 0; i < 100000; i++) {
-        //alert(i);
-        //console.log(i);
+
+
+    {
+        const results = [];
+        for (var i = 0; i < 10000; i++){
+        const s = performance.now();
+        const v = await chrome.webview.hostObjects.aaa.Test();
+        const e = performance.now();
+        const elapsed = e - s;
+            results.push(elapsed);
+        //console.log(elapsed);
+        if (i % 100 == 0){
+            console.log(i);
+        }
+        }
+        console.log("ave: " + results.reduce((a, b) => a + b) / results.length);
+        return;
     }
-    var e = performance.now();
-    console.log((e - s) + "ms");
-    throw new InterruptedError("");
-    var a = "a b c d";
-    var array = a.split(' ');
-    alert(a);
-    alert(array);
-    alert(a.endsWith("d", 1))
+
+
+    //const sleep = (wait) => new Promise(resolve => setTimeout(resolve, wait));
+    try{
+        var s = performance.now();
+        for (var i = 0; i < 10; i++) {
+            //alert(i);
+            //await sleep(1000);
+            await chrome.webview.hostObjects.aaa.Sleep(1000);
+            console.log(i);
+        }
+        var e = performance.now();
+        console.log((e - s) + "ms");
+        //throw new InterruptedError("");
+        var a = "a b c d";
+        var array = a.split(' ');
+        alert(a);
+        alert(array);
+        alert(a.endsWith("d", 1))
+
+    } catch(error){
+        if (error instanceof InterruptedError){
+
+        }
+    }
 })();`;
         const runner = new Runner;
         runner.run(code);
@@ -104,6 +136,17 @@ export const useBlocklyStore = defineStore("blockly", () => {
             }
         }
         return null;
+    }
+
+    function isSelectedBlockFunction(): boolean {
+        const selectedBlock = getSelectedBlock();
+        if (selectedBlock) {
+            if (selectedBlock.type === "procedures_defnoreturn"
+                || selectedBlock.type === "procedures_defreturn") {
+                return true;
+            }
+        }
+        return false;
     }
 
     function canDisconnectSelectedBlock(): boolean {
@@ -156,18 +199,33 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return xml;
     }
 
-    function createCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERUPPTED_EXCEPTION): string {
+    function createCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERRUPTED_EXCEPTION): string {
         setStatementPrefix(generator, prefix);
         const workspace = Blockly.common.getMainWorkspace();
         const generatedCode = generator.workspaceToCode(workspace);
         const indentedCode = insertIndentation(generatedCode);
         //ここから実行：_E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C()
-        const entryFunction = "    _E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C();"
-        const code = `(async () => {\n${indentedCode}\n${entryFunction}\n})();`
+        const entryFunction = "        _E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C();"
+        const codes = [
+            "(async() => {",
+            indentedCode,
+            "    try {",
+            entryFunction,
+            "    } catch (error) {",
+            "        if (error instanceof InterruptedError) {",
+            "            console.log('interrupted');",
+            "        } else {",
+            "            console.log(error);",
+            "        }",
+            "    }",
+            "})();"
+        ]
+        const code = codes.join("\n");
+        //const code = `(async () => {\n${indentedCode}\n${entryFunction}\n})();`
         return code;
     }
 
-    function createDecodedCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERUPPTED_EXCEPTION): string {
+    function createDecodedCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERRUPTED_EXCEPTION): string {
         const code = createCode(prefix);
         const decodedCode = decode(code);
         return decodedCode;
@@ -224,7 +282,6 @@ export const useBlocklyStore = defineStore("blockly", () => {
             const entryBlockXml = `<xml>
     <block type="procedures_defnoreturn" x="50" y="50">
         <field name="NAME" >ここから実行</field>
-        <comment pinned="false" h="160" w="160"></comment>
     </block>
 </xml>`
             pasteBlock(entryBlockXml);

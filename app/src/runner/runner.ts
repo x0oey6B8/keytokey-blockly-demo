@@ -11,17 +11,10 @@ export class Runner {
         }
 
         new Promise(() => {
-            try {
-                this._isRunning = true;
-                eval(code)
-            } catch (error) {
-                if (error instanceof InterruptedError) {
-                    console.log("interrupted");
-                }
-            } finally {
-                this._isRunning = false;
-            }
-        });
+            this._isRunning = true;
+            eval(code)
+            this._isRunning = false;
+        })
     }
 
     private canRun() {

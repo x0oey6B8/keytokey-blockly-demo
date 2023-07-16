@@ -5,22 +5,58 @@ import Modal from "./components/modal/Modal.vue"
 import Editor from "./components/Editor.vue";
 import { useEditorStore } from "./stores/editorStore";
 import { useNotificationStore } from "./stores/notificationStore";
+import { IDropDownMenuItem } from "./components/DropdownMenu.vue";
+import DropdownMenu from "./components/DropdownMenu.vue";
+import { StatementPrefix } from "./definitions/generators/defineGenerator";
 const store = useBlocklyStore();
 const editorStore = useEditorStore();
 const notification = useNotificationStore();
+
+const generatingMenuItems: IDropDownMenuItem[] = [
+    {
+        header: "デコードなし",
+        enabled: true,
+        clicked: () => createCode(),
+    },
+    {
+        header: "デコードなし（デバッグ用）",
+        enabled: true,
+        clicked: () => createCode(StatementPrefix.HIGHLIGHT_BLOCK)
+    },
+    {
+        header: "デコードなし（PREFIXなし）",
+        enabled: true,
+        clicked: () => createCode(StatementPrefix.NONE)
+    },
+    {
+        header: "デコードあり",
+        enabled: true,
+        clicked: () => createDecodedCode()
+    },
+    {
+        header: "デコードあり（デバッグ用）",
+        enabled: true,
+        clicked: () => createDecodedCode(StatementPrefix.HIGHLIGHT_BLOCK)
+    },
+    {
+        header: "デコードあり（PREFIXなし）",
+        enabled: true,
+        clicked: () => createDecodedCode(StatementPrefix.NONE)
+    }
+]
 
 onMounted(() => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
     store.injectBlockly(container);
 });
 
-function createCode() {
-    const code = store.createCode();
+function createCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERRUPTED_EXCEPTION) {
+    const code = store.createCode(prefix);
     editorStore.setCode(code, "javascript", true);
 }
 
-function createDecodedCode() {
-    const code = store.createDecodedCode();
+function createDecodedCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERRUPTED_EXCEPTION) {
+    const code = store.createDecodedCode(prefix);
     editorStore.setCode(code, "javascript", true);
 }
 
@@ -32,15 +68,19 @@ function copyWorkspace() {
         notification.toastMessage("コピーしました。");
     }
 }
-
 </script>
 
 <template>
     <div class="grid-container">
         <div class="button-container">
-            <button @click.stop="store.runCode">実行</button>
-            <button @click.stop="createCode()">コード生成</button>
-            <button @click.stop="createDecodedCode()">コード生成（デコード後）</button>
+            <button @click.stop="store.runCode">実行（開発中）</button>
+            <DropdownMenu ref="generatingMenu" :items="generatingMenuItems">
+                <template #button>
+                    <div>
+                        コード生成
+                    </div>
+                </template>
+            </DropdownMenu>
             <button @click.stop="copyWorkspace">ワークスペースの内容をコピー</button>
             <button @click.stop="store.clearWorkspace()">ワークスペースをクリア</button>
         </div>
@@ -51,12 +91,14 @@ function copyWorkspace() {
     </div>
     <Teleport to="body">
         <Modal :show="editorStore.showModal" @close="editorStore.showModal = false">
-            <template #content><Editor></Editor></template>
+            <template #content>
+                <Editor></Editor>
+            </template>
         </Modal>
     </Teleport>
 </template>
 
-<style scoped>
+<style>
 #blocklyDiv {
     height: 96%;
     width: 100%;
@@ -85,6 +127,17 @@ button {
     padding: 7px 10px;
     border-radius: 2px;
 
+}
+
+.dropBtn {
+        background-color: #121212;
+    border: none;
+    font-size: 12px;
+    color: #e9e9e9;
+    box-shadow: 2;
+    font-family: Noto Sans Jp;
+    padding: 7px 10px;
+    border-radius: 2px;
 }
 
 button:hover {

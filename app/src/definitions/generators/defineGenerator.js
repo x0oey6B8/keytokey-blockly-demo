@@ -2,12 +2,12 @@ import Blockly from "blockly";
 
 export const StatementPrefix = {
     NONE: 0,
-    THROW_INTERUPPTED_EXCEPTION: 1,
+    THROW_INTERRUPTED_EXCEPTION: 1,
     HIGHLIGHT_BLOCK: 2,
 }
 
 export function setStatementPrefix(javascriptGenerator, prefix) {
-    if (prefix == StatementPrefix.THROW_INTERUPPTED_EXCEPTION) {
+    if (prefix == StatementPrefix.THROW_INTERRUPTED_EXCEPTION) {
         javascriptGenerator.STATEMENT_PREFIX = 'throwIntrupptedError();\n';
     } else if (prefix == StatementPrefix.HIGHLIGHT_BLOCK) {
         javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';

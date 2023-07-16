@@ -15,12 +15,10 @@ export interface IGlobalFactory {
 
 export class GlobalFactory implements IGlobalFactory {
     create(): IGlobal {
-        // 注意：methodではなくfunctionにすること
         return {
             keyboard: new Keyboard,
             mouse: new Mouse,
             alert: function (text: string) {
-                //window.alert(text)
             },
             wait: function (time, highPrecision) {
                 return true;

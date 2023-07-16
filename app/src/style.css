@@ -31,6 +31,11 @@ body {
     font-size: 14px;
 }
 
+.blocklyFlyoutLabelText {
+    font-size: 18px !important;
+    x: 50 !important;
+}
+
 /* 接続されてないブロックの色 */
 .blocklyDisabled>.blocklyPath {
     opacity: 0.4;
@@ -44,6 +49,7 @@ body {
 .blocklyContextMenu {
     background-color: #383838 !important;
 }
+
 .blocklyMenuItemContent {
     color: #E7E7E7;
 }
@@ -65,4 +71,8 @@ body {
 
 .blocklyCommentTextarea {
     font-size: 14px;
+}
+
+.blocklyEditableText {
+    color: #212121 !important;
 }
