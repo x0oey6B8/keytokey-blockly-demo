@@ -18,6 +18,7 @@ export class GlobalFactory implements IGlobalFactory {
         return {
             keyboard: new Keyboard,
             mouse: new Mouse,
+            // @ts-ignore
             alert: function (text: string) {
             },
             wait: function (time, highPrecision) {
