@@ -21,6 +21,7 @@ export class GlobalFactory implements IGlobalFactory {
             alert: function (text: string) {
             },
             wait: function (time, highPrecision) {
+                console.log(time, highPrecision);
                 return true;
             },
             cancelWait: function () {

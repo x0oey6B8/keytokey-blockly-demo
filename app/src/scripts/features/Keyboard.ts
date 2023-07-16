@@ -10,6 +10,7 @@ export interface IKey {
 
 export class Keyboard implements IKeyboard {
     findKey(keyName: string): IKey {
+        console.log(keyName);
         throw new Error("Method not implemented.");
     }
 }
