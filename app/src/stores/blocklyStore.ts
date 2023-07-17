@@ -106,14 +106,22 @@ export const useBlocklyStore = defineStore("blockly", () => {
         workspaceSvg = Blockly.inject(container, options);
         workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         workspaceSvg.registerButtonCallback("addKeyValue", addKeyValue);
-        // Initialize plugin.
-        const multiselectPlugin = new Multiselect(workspaceSvg);
-        multiselectPlugin.init(options);
+        initPlugin();
         restoreState();
         addEntryProcedureBlock(workspaceSvg);
         Blockly.common.getMainWorkspace().addChangeListener(() => {
             backupState();
         });
+    }
+
+    function initPlugin() {
+        try {
+            // Initialize plugin.
+            const multiselectPlugin = new Multiselect(workspaceSvg);
+            multiselectPlugin.init(options);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     function clearWorkspace() {
@@ -207,7 +215,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
         //ここから実行：_E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C()
         const entryFunction = "        _E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C();"
         const codes = [
-            "(async() => {",
+            "(async () => {",
             indentedCode,
             "    try {",
             entryFunction,
@@ -238,7 +246,6 @@ export const useBlocklyStore = defineStore("blockly", () => {
                 const decoded = decodeURIComponent(match.replace(/_/g, '%'));
                 return decoded;
             } catch (error) {
-                console.log(error);
                 return match;
             }
         });

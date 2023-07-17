@@ -91,10 +91,9 @@ onMounted(async () => {
         theme: "custom-theme",
     })
 
-    console.log((editor as any)._themeService._theme);
-
+    // @ts-ignore
     editor.onDidChangeConfiguration(e => {
-        console.log(e.hasChanged);
+        //console.log(e.hasChanged);
     });
 
     editor.onDidChangeModelContent(() => {
@@ -102,15 +101,12 @@ onMounted(async () => {
         store.textValue = newValue;
     });
 
-    remeasureFontsWhenItsReady();
-
     window.onresize = function () {
         editor.layout();
     };
 
-    //console.log(module);
-
-
+    remeasureFontsWhenItsReady();
+    //console.log((editor as any)._themeService._theme);
     
 })
 </script>
@@ -120,11 +116,3 @@ onMounted(async () => {
         <div id="container" style="width: 99%; height: 99%; margin: auto;"></div>
     </div>
 </template>
-
-<style scoped>
-.monaco-editor {
-}
-.scrollbar {
-    width: 0px !important;
-}
-</style>

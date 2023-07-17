@@ -8,11 +8,12 @@ import { useNotificationStore } from "./stores/notificationStore";
 import { IDropDownMenuItem } from "./components/DropdownMenu.vue";
 import DropdownMenu from "./components/DropdownMenu.vue";
 import { StatementPrefix } from "./definitions/generators/defineGenerator";
+import { GlobalFactory, GlobalRegister } from "./scripts/global";
 const store = useBlocklyStore();
 const editorStore = useEditorStore();
 const notification = useNotificationStore();
 
-const generatingMenuItems: IDropDownMenuItem[] = [
+const codeGenerationMenuItems: IDropDownMenuItem[] = [
     {
         header: "デコードなし",
         enabled: true,
@@ -68,13 +69,20 @@ function copyWorkspace() {
         notification.toastMessage("コピーしました。");
     }
 }
+
+function runCode() {
+    const instance = new GlobalFactory().create();
+    const register = new GlobalRegister();
+    register.register(instance);
+    //store.runCode();
+}
 </script>
 
 <template>
     <div class="grid-container">
         <div class="button-container">
-            <button @click.stop="store.runCode">実行（開発中）</button>
-            <DropdownMenu ref="generatingMenu" :items="generatingMenuItems">
+            <button @click.stop="runCode">実行（開発中）</button>
+            <DropdownMenu ref="generatingMenu" :items="codeGenerationMenuItems">
                 <template #button>
                     <div>
                         コード生成
@@ -82,7 +90,7 @@ function copyWorkspace() {
                 </template>
             </DropdownMenu>
             <button @click.stop="copyWorkspace">ワークスペースの内容をコピー</button>
-            <button @click.stop="store.clearWorkspace()">ワークスペースをクリア</button>
+            <button @click.stop="store.clearWorkspace">ワークスペースをクリア</button>
         </div>
         <div>
             <div id="blocklyArea"></div>

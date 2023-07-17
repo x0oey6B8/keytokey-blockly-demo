@@ -69,10 +69,6 @@ body {
     color: gray !important;
 }
 
-.blocklyCommentTextarea {
-    font-size: 14px;
-}
-
-.blocklyEditableText {
-    color: #212121 !important;
-}
+/* .blocklyEditableText .blocklyText {
+    fill: #414141 !important;
+} */

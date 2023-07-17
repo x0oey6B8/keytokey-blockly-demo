@@ -12,7 +12,7 @@ export function defineBlocks(): void {
             this.appendDummyInput()
                 .appendField("メモ：")
                 .appendField(new Blockly.FieldMultilineInput("めもめも"), "COMMENT");
-            this.setColour("#212121");
+            this.setColour("#4FA65A");
             this.setNextStatement(true);
             this.setPreviousStatement(true);
             this.setTooltip("");
