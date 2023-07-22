@@ -7,23 +7,25 @@ import { StatementPrefix, defineCodeGenerator, setStatementPrefix } from "../def
 import { defineBlocks } from "../definitions/blocks/defineBlocks";
 import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
-import { Runner } from "../runner/runner";
-import { Multiselect } from "@mit-app-inventor/blockly-plugin-workspace-multiselect"
+import { Runner } from "../debugger/runner";
+import { ref } from "vue";
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
     const generator = javascriptGenerator;
 
     let workspaceSvg: WorkspaceSvg | null = null;
+    const isScriptRunning = ref(false);
     setLocaleToJa();
     defineTheme();
     defineBlocks();
     defineCodeGenerator(generator);
     defineContextMenu();
-    registerGlobalyFunctions();
+    registerGlobalFunctions();
 
     return {
         generator,
+        isScriptRunning,
         runCode,
         injectBlockly,
         isSelectedBlockFunction,
@@ -41,60 +43,16 @@ export const useBlocklyStore = defineStore("blockly", () => {
         clearWorkspace
     };
 
-    function registerGlobalyFunctions() {
+    function registerGlobalFunctions() {
         const w = (window as any);
         w.runCode = runCode;
     }
 
-    async function runCode() {
-        const code = `
-(async function() {
-
-
-    {
-        const results = [];
-        for (var i = 0; i < 10000; i++){
-        const s = performance.now();
-        const v = await chrome.webview.hostObjects.aaa.Test();
-        const e = performance.now();
-        const elapsed = e - s;
-            results.push(elapsed);
-        //console.log(elapsed);
-        if (i % 100 == 0){
-            console.log(i);
-        }
-        }
-        console.log("ave: " + results.reduce((a, b) => a + b) / results.length);
-        return;
-    }
-
-
-    //const sleep = (wait) => new Promise(resolve => setTimeout(resolve, wait));
-    try{
-        var s = performance.now();
-        for (var i = 0; i < 10; i++) {
-            //alert(i);
-            //await sleep(1000);
-            await chrome.webview.hostObjects.aaa.Sleep(1000);
-            console.log(i);
-        }
-        var e = performance.now();
-        console.log((e - s) + "ms");
-        //throw new InterruptedError("");
-        var a = "a b c d";
-        var array = a.split(' ');
-        alert(a);
-        alert(array);
-        alert(a.endsWith("d", 1))
-
-    } catch(error){
-        if (error instanceof InterruptedError){
-
-        }
-    }
-})();`;
+    async function runCode(code: string) {
         const runner = new Runner;
+        isScriptRunning.value = true;
         runner.run(code);
+        isScriptRunning.value = false;
     }
 
     function addKeyValue() {
@@ -106,22 +64,20 @@ export const useBlocklyStore = defineStore("blockly", () => {
         workspaceSvg = Blockly.inject(container, options);
         workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         workspaceSvg.registerButtonCallback("addKeyValue", addKeyValue);
-        initPlugin();
+
         restoreState();
         addEntryProcedureBlock(workspaceSvg);
         Blockly.common.getMainWorkspace().addChangeListener(() => {
             backupState();
+            if (workspaceSvg) {
+                workspaceSvg.getAllBlocks(true).forEach(b => {
+                    const comment = b.getIcon(Blockly.icons.IconType.COMMENT);
+                    if (comment) {
+                        comment.setBubbleSize({ width: 500, height: 500 });
+                    }
+                });
+            }
         });
-    }
-
-    function initPlugin() {
-        try {
-            // Initialize plugin.
-            const multiselectPlugin = new Multiselect(workspaceSvg);
-            multiselectPlugin.init(options);
-        } catch (error) {
-            console.log(error);
-        }
     }
 
     function clearWorkspace() {
@@ -222,6 +178,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
             "    } catch (error) {",
             "        if (error instanceof InterruptedError) {",
             "            console.log('interrupted');",
+            "            console.log(error);",
             "        } else {",
             "            console.log(error);",
             "        }",
@@ -307,3 +264,4 @@ export const useBlocklyStore = defineStore("blockly", () => {
         Blockly.serialization.workspaces.load(state, workspace);
     }
 });
+

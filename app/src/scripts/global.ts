@@ -54,12 +54,9 @@ export class DebuggableGlobalFactory implements IGlobalFactory {
     }
 }
 
-export interface IGlobalRegister {
-    register(global: IGlobal): void;
-}
 
-export class GlobalRegister implements IGlobalRegister {
-    register(global: IGlobal): void {
+export class GlobalRegistry {
+    public static register(global: IGlobal): void {
         if (!global) {
             return;
         }

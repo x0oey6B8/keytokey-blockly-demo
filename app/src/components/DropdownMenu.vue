@@ -46,7 +46,12 @@ export interface IDropDownMenuItem {
             <ChevronDown class="svg"></ChevronDown>
         </button>
         <div class="dropdown-content" v-if="isMenuOpen">
-            <a v-for="item in items" @click="clicked(item)" :disabled="!item.enabled">{{ item.header }}</a>
+            <a 
+            v-for="item in items"
+            @click="clicked(item)" 
+            :class="{ 'disabled-link': !item.enabled }">
+                {{ item.header }}
+            </a>
         </div>
     </div>
 </template>
@@ -85,8 +90,10 @@ export interface IDropDownMenuItem {
   display: block;
 }
 
-.dropdown-content a:disabled {
-  color: #313131;  
+.disabled-link {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .dropdown-content a:hover {
