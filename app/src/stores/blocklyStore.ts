@@ -163,7 +163,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return xml;
     }
 
-    function createCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERRUPTED_EXCEPTION): string {
+    function createCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
         setStatementPrefix(generator, prefix);
         const workspace = Blockly.common.getMainWorkspace();
         const generatedCode = generator.workspaceToCode(workspace);
@@ -182,6 +182,8 @@ export const useBlocklyStore = defineStore("blockly", () => {
             "        } else {",
             "            console.log(error);",
             "        }",
+            "    } finally {",
+            "        done.Set();",
             "    }",
             "})();"
         ]
@@ -190,7 +192,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return code;
     }
 
-    function createDecodedCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERRUPTED_EXCEPTION): string {
+    function createDecodedCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
         const code = createCode(prefix);
         const decodedCode = decode(code);
         return decodedCode;

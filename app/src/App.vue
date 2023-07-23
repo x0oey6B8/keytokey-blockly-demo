@@ -25,11 +25,6 @@ const codeGenerationMenuItems: IDropDownMenuItem[] = [
         clicked: () => createCode(StatementPrefix.HIGHLIGHT_BLOCK)
     },
     {
-        header: "デコードなし（PREFIXなし）",
-        enabled: true,
-        clicked: () => createCode(StatementPrefix.NONE)
-    },
-    {
         header: "デコードあり",
         enabled: true,
         clicked: () => createDecodedCode()
@@ -39,11 +34,6 @@ const codeGenerationMenuItems: IDropDownMenuItem[] = [
         enabled: true,
         clicked: () => createDecodedCode(StatementPrefix.HIGHLIGHT_BLOCK)
     },
-    {
-        header: "デコードあり（PREFIXなし）",
-        enabled: true,
-        clicked: () => createDecodedCode(StatementPrefix.NONE)
-    }
 ]
 
 const runButtonText = computed(() => store.isScriptRunning ? "停止" : "実行");
@@ -55,12 +45,12 @@ onMounted(() => {
     store.injectBlockly(container);
 });
 
-function createCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERRUPTED_EXCEPTION) {
+function createCode(prefix: StatementPrefix = StatementPrefix.NONE) {
     const code = store.createCode(prefix);
     editorStore.setCode(code, "javascript", true);
 }
 
-function createDecodedCode(prefix: StatementPrefix = StatementPrefix.THROW_INTERRUPTED_EXCEPTION) {
+function createDecodedCode(prefix: StatementPrefix = StatementPrefix.NONE) {
     const code = store.createDecodedCode(prefix);
     editorStore.setCode(code, "javascript", true);
 }
