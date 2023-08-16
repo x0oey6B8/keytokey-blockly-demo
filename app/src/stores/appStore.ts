@@ -6,7 +6,7 @@ import { useEditorStore } from "./editorStore";
 import { useBlocklyStore } from "./blocklyStore";
 import { useCommandStore } from "./commandStore";
 import { ICommandItem } from "../components/Command.vue";
-import { Block, BlockSvg } from "blockly";
+import { BlockSvg } from "blockly";
 
 export const useAppStore = defineStore("AppStore", () => {
 
