@@ -5,7 +5,7 @@ export function defineJavascriptBlocks() {
     Blockly.Blocks['run_js'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("  javascriptコードを実行")
+                .appendField("  javascriptを埋め込む</>")
             this.appendDummyInput()
                 .appendField(new Blockly.FieldMultilineInput("console.log('execute!')"), "CODE");
             this.setColour(BlockColors.Action);
@@ -19,8 +19,9 @@ export function defineJavascriptBlocks() {
     Blockly.Blocks['evaluate_js'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("return: ")
-                .appendField(new Blockly.FieldMultilineInput("Math.random() * 12"), "CODE");
+                .appendField("js(")
+                .appendField(new Blockly.FieldMultilineInput("Math.random() * 12"), "CODE")
+                .appendField(")")
             this.setColour(BlockColors.Action);
             this.setOutput(true, null);
             this.setTooltip("");

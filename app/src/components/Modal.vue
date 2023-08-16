@@ -1,27 +1,29 @@
 <script lang="ts" setup>
-const props = defineProps({
-    show: Boolean,
-    lock: Boolean
-})
 
-const emit = defineEmits<{
-    close: []
-}>()
+const props = defineProps<Props>();
 
 function close() {
-    if (!props.lock) {
-        emit('close');
+    if (!props.state.lock) {
+        props.state.isShowing = false;
     }
+}
+
+export interface Props {
+    state: IModalState;
+}
+
+export interface IModalState {
+    isShowing: boolean;
+    lock: boolean;
+    stateChanged: () => void; 
 }
 
 </script>
 
 <template>
     <Transition name="modal">
-        <div v-if="show" class="modal-mask" @click="close">
-            <div class="modal-container" @click.stop>
-                <slot name="content"></slot>
-            </div>
+        <div v-if="props.state.isShowing" class="modal-mask" @click="close">
+            <slot name="content"></slot>
         </div>
     </Transition>
 </template>
@@ -36,19 +38,7 @@ function close() {
     height: 100%;
     background-color: rgba(10, 10, 10, 0.7);
     display: flex;
-    transition: opacity 0.1s ease;
-}
-
-.modal-container {
-    width: 80%;
-    height: 80%;
-    margin: auto;
-    padding: 5px;
-    background-color: #3d3d3d;
-    border-radius: 5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    transition: all 0.1s ease;
-    color: rgba(255, 255, 255, 0.781);
+    transition: opacity 0.0001s ease;
 }
 
 .modal-header h3 {

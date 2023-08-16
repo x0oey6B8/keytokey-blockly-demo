@@ -1,13 +1,12 @@
 import { defineStore } from "pinia";
 import { javascriptGenerator } from "blockly/javascript";
-import Blockly, { WorkspaceSvg } from "blockly/core"
+import Blockly, { Block, BlockSvg, WorkspaceSvg } from "blockly/core"
 import { setLocaleToJa } from "../configurations/language";
 import { defineTheme } from "../configurations/theme";
 import { StatementPrefix, defineCodeGenerator, setStatementPrefix } from "../definitions/generators/defineGenerator";
 import { defineBlocks } from "../definitions/blocks/defineBlocks";
 import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
-import { Runner } from "../debugger/runner";
 import { ref } from "vue";
 //import formatXml from "xml-formatter"
 
@@ -26,33 +25,28 @@ export const useBlocklyStore = defineStore("blockly", () => {
     return {
         generator,
         isScriptRunning,
-        runCode,
         injectBlockly,
         isSelectedBlockFunction,
         disconnectSelectedBlock,
         canDisconnectSelectedBlock,
         backupState,
         setState,
+        getAllBlocks,
         getState,
         getSelectedBlock,
+        centerToEntryBlock,
+        centerTo,
         createCode,
         createDecodedCode,
         createXml,
         copyBlockAsXml,
         pasteBlock,
-        clearWorkspace
+        clearWorkspace,
+        resizeWorkspaceSvg
     };
 
     function registerGlobalFunctions() {
         const w = (window as any);
-        w.runCode = runCode;
-    }
-
-    async function runCode(code: string) {
-        const runner = new Runner;
-        isScriptRunning.value = true;
-        runner.run(code);
-        isScriptRunning.value = false;
     }
 
     function addKeyValue() {
@@ -64,6 +58,9 @@ export const useBlocklyStore = defineStore("blockly", () => {
         workspaceSvg = Blockly.inject(container, options);
         workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         workspaceSvg.registerButtonCallback("addKeyValue", addKeyValue);
+
+        //window.addEventListener('resize', onresize, false);
+        // onresize();
 
         restoreState();
         addEntryProcedureBlock(workspaceSvg);
@@ -80,13 +77,44 @@ export const useBlocklyStore = defineStore("blockly", () => {
         });
     }
 
+    function centerToEntryBlock() {
+        if (workspaceSvg) {
+            const blocks = workspaceSvg.getAllBlocks(true);
+            const anyEntryBlocks = blocks.filter(block => block.type == "procedures_defnoreturn" && block.getFieldValue("NAME") === "ここから実行");
+            if (anyEntryBlocks.length > 0) {
+                const block = anyEntryBlocks[0];
+                workspaceSvg.centerOnBlock(block.id);
+                block.select();
+            }
+        }
+    }
+
+    function centerTo(block: BlockSvg) {
+        if (workspaceSvg) {
+            workspaceSvg.centerOnBlock(block.id);
+            block.select();
+        }
+    }
+
+    function resizeWorkspaceSvg() {
+        Blockly.svgResize(workspaceSvg as Blockly.WorkspaceSvg);
+    }
+
     function clearWorkspace() {
         if (workspaceSvg) {
-            const result = confirm("作業スペースの内容をリセットします。よろしいですか？");
+            const result = confirm("ワークスペースの内容をリセットします。\nよろしいですか？");
             if (result) {
                 workspaceSvg.clear();
                 addEntryProcedureBlock(workspaceSvg);
             }
+        }
+    }
+
+    function getAllBlocks(): Blockly.BlockSvg[] {
+        if (workspaceSvg) {
+            return workspaceSvg.getAllBlocks(true);
+        } else {
+            return []
         }
     }
 
@@ -169,26 +197,15 @@ export const useBlocklyStore = defineStore("blockly", () => {
         const generatedCode = generator.workspaceToCode(workspace);
         const indentedCode = insertIndentation(generatedCode);
         //ここから実行：_E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C()
-        const entryFunction = "        _E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C();"
+        const entryFunction = "    _E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C();"
         const codes = [
-            "(async () => {",
+            "(() => {",
             indentedCode,
-            "    try {",
             entryFunction,
-            "    } catch (error) {",
-            "        if (error instanceof InterruptedError) {",
-            "            console.log('interrupted');",
-            "            console.log(error);",
-            "        } else {",
-            "            console.log(error);",
-            "        }",
-            "    } finally {",
-            "        done.Set();",
-            "    }",
+            "",
             "})();"
         ]
         const code = codes.join("\n");
-        //const code = `(async () => {\n${indentedCode}\n${entryFunction}\n})();`
         return code;
     }
 

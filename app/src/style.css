@@ -22,13 +22,16 @@ body {
 /* ツールボックスカテゴリのスタイル */
 .blocklyTreeRow {
     padding-bottom: 7px !important;
-    border-left: none !important;
+    /* border-left: none !important; */
 }
 
 /* ツールボックスの文字 */
 .blocklyTreeLabel {
     font-family: 'Noto Sans JP';
+    display: inline;
     font-size: 14px;
+    max-width: 30px !important;
+    word-wrap: break-word;
 }
 
 .blocklyFlyoutLabelText {
@@ -36,14 +39,37 @@ body {
     x: 50 !important;
 }
 
+.blocklyTreeSeparator {
+    border-bottom: solid #444 1px;
+    margin: 10px;
+}
+
+/* ツールボックスの枠線を右側に表示  */
+.blocklyToolboxDiv {
+    border-right: solid 0.5px #333333 !important;
+}
+
+/* ツールボックスのスクロールバーのスタイル */
+.blocklyToolboxDiv::-webkit-scrollbar {
+    background-color: #252525;
+    width: 12px !important;
+}
+
+.blocklyToolboxDiv::-webkit-scrollbar-thumb {
+    background-color: #43A04780;
+    border-radius: 12px;
+    width: 12px !important;
+}
+
 /* 接続されてないブロックの色 */
 .blocklyDisabled>.blocklyPath {
-    opacity: 0.4;
+    /* opacity: 0.99; */
 }
 
 /* workspaceのborderを0にする */
 .blocklyMainBackground {
-    stroke-width: 0;
+    stroke: #333333;
+    stroke-width: 2;
 }
 
 .blocklyContextMenu {
@@ -68,7 +94,3 @@ body {
 .blocklyContextMenu .goog-menuitem-disabled .goog-menuitem-content {
     color: gray !important;
 }
-
-/* .blocklyEditableText .blocklyText {
-    fill: #414141 !important;
-} */

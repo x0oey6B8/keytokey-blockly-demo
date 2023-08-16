@@ -5,6 +5,7 @@ import { defineWaitBlocks } from "./wait/defineWaitBlocks.ts";
 import { defineLogicBlocks } from "./logic/defineLogicBlocks.ts";
 import { defineJavascriptBlocks } from "./javascript/defineJavascriptBlocks.ts";
 import { defineValueBlocks } from "./value/defineValueBlocks.ts";
+import { defineUtilityBlocks } from "./utility/defineUtilityBlocks.ts";
 
 export function defineBlocks(): void {
 
@@ -13,6 +14,7 @@ export function defineBlocks(): void {
     defineLogicBlocks();
     defineJavascriptBlocks();
     defineValueBlocks();
+    defineUtilityBlocks();
 
     Blockly.Blocks['comment'] = {
         init: function () {

@@ -18,15 +18,15 @@ export const options: BlocklyOptions = {
     sounds: false,
     oneBasedIndex: true,
     grid: {
-        spacing: 36,
-        length: 2,
-        colour: "#cccccc40",
+        spacing: 32,
+        length: 3,
+        colour: "#bbbbbb40",
         snap: true,
     },
     zoom: {
         controls: true,
         wheel: true,
-        startScale: 0.70,
+        startScale: 0.75,
         maxScale: 3,
         minScale: 0.3,
         scaleSpeed: 1.05,
@@ -43,14 +43,19 @@ function getToolBoxXml(): string {
     return `
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox">
 
-    <category name="システム">
-        <block type="comment"></block>
-        <block type="get_global_variable"></block>
+    <category name="変数" categorystyle="variable_category" custom="VARIABLE">
     </category>
 
 
+    <category name="変数（マクロ用）" categorystyle="variable_category">
+    </category>
 
-    <category name="値" color="">
+
+    <category name="関数" categorystyle="procedure_category" custom="PROCEDURE"></category>
+
+
+
+    <category name="値" colour="250">
         <label text="キーボード／マウス"></label>
         <button text="値を検索して追加" callbackKey="addKeyValue"></button>
         <button text="値をキー／マウス入力で追加" callbackKey="addKeyValue"></button>
@@ -83,328 +88,9 @@ function getToolBoxXml(): string {
 
 
 
-    <category name="キーボード／マウス">
-        <label text="押す・離す"></label>
-        <block type="down_up">
-            <field name="BEHAVIOR">Down</field>
-            <value name="KEY">
-            <block type="keys_value">
-                <field name="VALUE">A</field>
-            </block>
-            </value>
-            <value name="WAIT">
-            <block type="math_number">
-                <field name="NUM">0</field>
-            </block>
-            </value>
-        </block>
-        <block type="down_up">
-            <field name="BEHAVIOR">Up</field>
-            <value name="KEY">
-            <block type="keys_value">
-                <field name="VALUE">A</field>
-            </block>
-            </value>
-            <value name="WAIT">
-            <block type="math_number">
-                <field name="NUM">0</field>
-            </block>
-            </value>
-        </block>
-        <block type="down_up">
-            <field name="BEHAVIOR">Down</field>
-            <value name="KEY">
-                <block type="keys_value">
-                    <field name="VALUE">A</field>
-                </block>
-            </value>
-            <value name="WAIT">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-            <next>
-                <block type="down_up">
-                    <field name="BEHAVIOR">Up</field>
-                    <value name="KEY">
-                        <block type="keys_value">
-                            <field name="VALUE">A</field>
-                        </block>
-                    </value>
-                    <value name="WAIT">
-                        <block type="math_number">
-                            <field name="NUM">0</field>
-                        </block>
-                    </value>
-                </block>
-            </next>
-        </block>
-        <block type="tap">
-            <value name="KEY1">
-                <block type="keys_value">
-                    <field name="VALUE">A</field>
-                </block>
-            </value>
-            <value name="WAIT1">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-            <value name="WAIT2">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-        </block>
-        <block type="up_all"></block>
-        
-        <label text=""></label>
-        <label text="マウスの移動（絶対座標）"></label>
-        <block type="origin_point">
-            <value name="ORIGIN">
-                <block type="point">
-                    <value name="X">
-                        <block type="math_number">
-                        <field name="NUM">0</field>
-                        </block>
-                    </value>
-                    <value name="Y">
-                        <block type="math_number">
-                        <field name="NUM">0</field>
-                        </block>
-                    </value>
-                </block>
-            </value>
-        </block>
-        <block type="move_absolute">
-            <value name="POINT">
-                <block type="point">
-                    <value name="X">
-                        <block type="math_number">
-                        <field name="NUM">0</field>
-                        </block>
-                    </value>
-                    <value name="Y">
-                        <block type="math_number">
-                        <field name="NUM">0</field>
-                        </block>
-                    </value>
-                </block>
-            </value>
-        </block>
-        <block type="move_absolute_smoothly">
-            <field name="SPEED">NORMAL</field>
-            <value name="POINT">
-                <block type="point">
-                    <value name="X">
-                    <block type="math_number">
-                        <field name="NUM">0</field>
-                    </block>
-                    </value>
-                    <value name="Y">
-                    <block type="math_number">
-                        <field name="NUM">0</field>
-                    </block>
-                    </value>
-                </block>
-            </value>
-        </block>
+    <sep></sep>
 
-        <label text=""></label>
-        <label text="マウスの移動（相対座標）"></label>
-        <block type="move_relative">
-            <value name="DX">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-            <value name="DY">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-        </block>
-        <block type="move_relative_smoothly">
-            <field name="SPEED">NORMAL</field>
-            <value name="DX">
-            <block type="math_number">
-                <field name="NUM">0</field>
-            </block>
-            </value>
-            <value name="DY">
-            <block type="math_number">
-                <field name="NUM">0</field>
-            </block>
-            </value>
-        </block>
-
-        <label text=""></label>
-        <label text="マウスカーソルの座標"></label>
-        <block type="get_cursor_point"></block>
-
-        <label text=""></label>
-        <label text="キー／マウスの状態"></label>
-        <block type="trigger_is_pressed"></block>
-
-        <label text=""></label>
-        <label text="イベント"></label>
-        <block type="key_event"></block>
-
-        <label text=""></label>
-        <label text="テンプレート"></label>
-        <!-- LCtrl+C -->
-        <label text="Control + C"></label>
-        <block type="down_up">
-            <field name="BEHAVIOR">Down</field>
-            <value name="KEY">
-                <block type="keys_value">
-                    <field name="VALUE">LControl</field>
-                </block>
-            </value>
-            <value name="WAIT">
-                <block type="math_number">
-                    <field name="NUM">10</field>
-                </block>
-            </value>
-            <next>
-                <block type="tap">
-                    <value name="KEY1">
-                        <block type="keys_value">
-                            <field name="VALUE">C</field>
-                        </block>
-                    </value>
-                    <value name="WAIT1">
-                        <block type="math_number">
-                            <field name="NUM">10</field>
-                        </block>
-                    </value>
-                    <value name="WAIT2">
-                        <block type="math_number">
-                            <field name="NUM">10</field>
-                        </block>
-                    </value>
-                    <next>
-                        <block type="down_up">
-                            <field name="BEHAVIOR">Up</field>
-                            <value name="KEY">
-                                <block type="keys_value">
-                                    <field name="VALUE">LControl</field>
-                                </block>
-                            </value>
-                            <value name="WAIT">
-                                <block type="math_number">
-                                    <field name="NUM">10</field>
-                                </block>
-                            </value>
-                        </block>
-                    </next>
-                </block>
-            </next>
-        </block>
-
-        <!-- LCtrl+LShift+D -->
-        <label text="Control + Shift + D"></label>
-        <block type="down_up">
-            <field name="BEHAVIOR">Down</field>
-            <value name="KEY">
-                <block type="keys_value">
-                    <field name="VALUE">LControl</field>
-                </block>
-            </value>
-            <value name="WAIT">
-                <block type="math_number">
-                    <field name="NUM">10</field>
-                </block>
-            </value>
-            <next>
-                <block type="down_up">
-                    <field name="BEHAVIOR">Down</field>
-                    <value name="KEY">
-                        <block type="keys_value">
-                            <field name="VALUE">LShift</field>
-                        </block>
-                    </value>
-                    <value name="WAIT">
-                        <block type="math_number">
-                            <field name="NUM">10</field>
-                        </block>
-                    </value>
-                    <next>
-                        <block type="tap">
-                            <value name="KEY1">
-                                <block type="keys_value">
-                                    <field name="VALUE">D</field>
-                                </block>
-                            </value>
-                            <value name="WAIT1">
-                                <block type="math_number">
-                                    <field name="NUM">10</field>
-                                </block>
-                            </value>
-                            <value name="WAIT2">
-                                <block type="math_number">
-                                    <field name="NUM">10</field>
-                                </block>
-                            </value>
-                            <next>
-                                <block type="down_up">
-                                    <field name="BEHAVIOR">Up</field>
-                                    <value name="KEY">
-                                        <block type="keys_value">
-                                            <field name="VALUE">LShift</field>
-                                        </block>
-                                    </value>
-                                    <value name="WAIT">
-                                        <block type="math_number">
-                                            <field name="NUM">10</field>
-                                        </block>
-                                    </value>
-                                    <next>
-                                        <block type="down_up">
-                                            <field name="BEHAVIOR">Up</field>
-                                            <value name="KEY">
-                                                <block type="keys_value">
-                                                    <field name="VALUE">LControl</field>
-                                                </block>
-                                            </value>
-                                            <value name="WAIT">
-                                                <block type="math_number">
-                                                    <field name="NUM">10</field>
-                                                </block>
-                                            </value>
-                                        </block>
-                                    </next>
-                                </block>
-                            </next>
-                        </block>
-                    </next>
-                </block>
-            </next>
-        </block>
-    </category>
-
-
-
-    <category name="待機">
-        <label text="通常待機"></label>
-        <block type="wait">
-            <value name="WAIT_TIME">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-        </block>
-        <label text="高精度／高負荷"></label>
-        <block type="highprecision_wait">
-            <value name="WAIT_TIME">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-        </block>
-    </category>
-
-
+    
 
     <category name="条件" categorystyle="logic_category">
         <block type="controls_if"></block>
@@ -413,8 +99,10 @@ function getToolBoxXml(): string {
         <block type="logic_operation"></block>
         <block type="logic_negate"></block>
         <block type="logic_boolean"></block>
+        <!--
         <block type="logic_null" disabled="true"></block>
         <block type="logic_ternary"></block>
+        -->
     </category>
 
 
@@ -448,7 +136,6 @@ function getToolBoxXml(): string {
         <block type="controls_forEach"></block>
         <block type="controls_flow_statements"></block>
     </category>
-
 
 
     <category name="数学" categorystyle="math_category">
@@ -715,13 +402,415 @@ function getToolBoxXml(): string {
     </category>
 
 
+    <sep></sep>
 
-    <category name="javascript" categorystyle="list_category">
+
+    <category name="キーボード／マウス">
+        <label text="押す・離す"></label>
+        <block type="down_up">
+            <field name="BEHAVIOR">Down</field>
+            <value name="KEY">
+            <block type="keys_value">
+                <field name="VALUE">A</field>
+            </block>
+            </value>
+            <value name="WAIT">
+            <block type="math_number">
+                <field name="NUM">0</field>
+            </block>
+            </value>
+        </block>
+        <block type="down_up">
+            <field name="BEHAVIOR">Up</field>
+            <value name="KEY">
+            <block type="keys_value">
+                <field name="VALUE">A</field>
+            </block>
+            </value>
+            <value name="WAIT">
+            <block type="math_number">
+                <field name="NUM">0</field>
+            </block>
+            </value>
+        </block>
+        <block type="down_up">
+            <field name="BEHAVIOR">Down</field>
+            <value name="KEY">
+                <block type="keys_value">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+            <value name="WAIT">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+            <next>
+                <block type="down_up">
+                    <field name="BEHAVIOR">Up</field>
+                    <value name="KEY">
+                        <block type="keys_value">
+                            <field name="VALUE">A</field>
+                        </block>
+                    </value>
+                    <value name="WAIT">
+                        <block type="math_number">
+                            <field name="NUM">0</field>
+                        </block>
+                    </value>
+                </block>
+            </next>
+        </block>
+        <block type="tap">
+            <value name="KEY1">
+                <block type="keys_value">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+            <value name="WAIT1">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+            <value name="WAIT2">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+        </block>
+        <block type="up_all"></block>
+
+        <label text=""></label>
+        <label text="マウスの移動（絶対座標）"></label>
+        <block type="move_absolute">
+            <value name="POINT">
+                <block type="point">
+                    <value name="X">
+                        <block type="math_number">
+                        <field name="NUM">0</field>
+                        </block>
+                    </value>
+                    <value name="Y">
+                        <block type="math_number">
+                        <field name="NUM">0</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+        <block type="move_absolute_smoothly">
+            <field name="SPEED">NORMAL</field>
+            <value name="POINT">
+                <block type="point">
+                    <value name="X">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                    </value>
+                    <value name="Y">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+        <block type="origin_point">
+            <value name="ORIGIN">
+                <block type="point">
+                    <value name="X">
+                        <block type="math_number">
+                        <field name="NUM">0</field>
+                        </block>
+                    </value>
+                    <value name="Y">
+                        <block type="math_number">
+                        <field name="NUM">0</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+        <block type="set_random_offset_range">
+            <value name="X">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+            <value name="Y">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+        </block>
+        <block type="random_point">
+            <value name="X_FROM">
+                <block type="math_number">
+                    <field name="NUM">-10</field>
+                </block>
+            </value>
+            <value name="X_TO">
+                <block type="math_number">
+                    <field name="NUM">10</field>
+                </block>
+            </value>
+            <value name="Y_FROM">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+            <value name="Y_TO">
+                <block type="math_number">
+                    <field name="NUM">100</field>
+                </block>
+            </value>
+        </block>
+
+        <label text=""></label>
+        <label text="マウスの移動（相対座標）"></label>
+        <block type="move_relative">
+            <value name="DX">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+            <value name="DY">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+        </block>
+        <block type="move_relative_smoothly">
+            <field name="SPEED">NORMAL</field>
+            <value name="DX">
+            <block type="math_number">
+                <field name="NUM">0</field>
+            </block>
+            </value>
+            <value name="DY">
+            <block type="math_number">
+                <field name="NUM">0</field>
+            </block>
+            </value>
+        </block>
+
+        <label text=""></label>
+        <label text="マウスカーソルの座標"></label>
+        <block type="get_cursor_point"></block>
+        <block type="get_point">
+            <field name="DROPDOWN">X</field>
+            <value name="POINT">
+                <block type="get_cursor_point"></block>
+            </value>
+        </block>
+        <block type="get_point">
+            <field name="DROPDOWN">Y</field>
+            <value name="POINT">
+                <block type="get_cursor_point"></block>
+            </value>
+        </block>
+
+        <label text=""></label>
+        <label text="キー／マウスの状態"></label>
+        <block type="trigger_is_pressed"></block>
+        <block type="trigger_is_not_pressed"></block>
+
+        <!--
+        <label text=""></label>
+        <label text="イベント"></label>
+        <block type="key_event"></block>
+        -->
+
+        <label text=""></label>
+        <label text="テンプレート"></label>
+        <!-- LCtrl+C -->
+        <label text="Control + C"></label>
+        <block type="down_up">
+            <field name="BEHAVIOR">Down</field>
+            <value name="KEY">
+                <block type="keys_value">
+                    <field name="VALUE">LControl</field>
+                </block>
+            </value>
+            <value name="WAIT">
+                <block type="math_number">
+                    <field name="NUM">10</field>
+                </block>
+            </value>
+            <next>
+                <block type="tap">
+                    <value name="KEY1">
+                        <block type="keys_value">
+                            <field name="VALUE">C</field>
+                        </block>
+                    </value>
+                    <value name="WAIT1">
+                        <block type="math_number">
+                            <field name="NUM">10</field>
+                        </block>
+                    </value>
+                    <value name="WAIT2">
+                        <block type="math_number">
+                            <field name="NUM">10</field>
+                        </block>
+                    </value>
+                    <next>
+                        <block type="down_up">
+                            <field name="BEHAVIOR">Up</field>
+                            <value name="KEY">
+                                <block type="keys_value">
+                                    <field name="VALUE">LControl</field>
+                                </block>
+                            </value>
+                            <value name="WAIT">
+                                <block type="math_number">
+                                    <field name="NUM">10</field>
+                                </block>
+                            </value>
+                        </block>
+                    </next>
+                </block>
+            </next>
+        </block>
+
+        <!-- LCtrl+LShift+D -->
+        <label text="Control + Shift + D"></label>
+        <block type="down_up">
+            <field name="BEHAVIOR">Down</field>
+            <value name="KEY">
+                <block type="keys_value">
+                    <field name="VALUE">LControl</field>
+                </block>
+            </value>
+            <value name="WAIT">
+                <block type="math_number">
+                    <field name="NUM">10</field>
+                </block>
+            </value>
+            <next>
+                <block type="down_up">
+                    <field name="BEHAVIOR">Down</field>
+                    <value name="KEY">
+                        <block type="keys_value">
+                            <field name="VALUE">LShift</field>
+                        </block>
+                    </value>
+                    <value name="WAIT">
+                        <block type="math_number">
+                            <field name="NUM">10</field>
+                        </block>
+                    </value>
+                    <next>
+                        <block type="tap">
+                            <value name="KEY1">
+                                <block type="keys_value">
+                                    <field name="VALUE">D</field>
+                                </block>
+                            </value>
+                            <value name="WAIT1">
+                                <block type="math_number">
+                                    <field name="NUM">10</field>
+                                </block>
+                            </value>
+                            <value name="WAIT2">
+                                <block type="math_number">
+                                    <field name="NUM">10</field>
+                                </block>
+                            </value>
+                            <next>
+                                <block type="down_up">
+                                    <field name="BEHAVIOR">Up</field>
+                                    <value name="KEY">
+                                        <block type="keys_value">
+                                            <field name="VALUE">LShift</field>
+                                        </block>
+                                    </value>
+                                    <value name="WAIT">
+                                        <block type="math_number">
+                                            <field name="NUM">10</field>
+                                        </block>
+                                    </value>
+                                    <next>
+                                        <block type="down_up">
+                                            <field name="BEHAVIOR">Up</field>
+                                            <value name="KEY">
+                                                <block type="keys_value">
+                                                    <field name="VALUE">LControl</field>
+                                                </block>
+                                            </value>
+                                            <value name="WAIT">
+                                                <block type="math_number">
+                                                    <field name="NUM">10</field>
+                                                </block>
+                                            </value>
+                                        </block>
+                                    </next>
+                                </block>
+                            </next>
+                        </block>
+                    </next>
+                </block>
+            </next>
+        </block>
+    </category>
+
+
+
+    <category name="待機">
+        <label text="通常待機"></label>
+        <block type="wait">
+            <value name="WAIT_TIME">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+        </block>
+        <label text="高精度／高負荷"></label>
+        <block type="highprecision_wait">
+            <value name="WAIT_TIME">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+        </block>
+    </category>
+
+
+
+
+    <category name="javascript">
         <block type="run_js"></block>
         <block type="evaluate_js"></block>
     </category>
 
 
+    <category name="コントローラー">
+    </category>
+
+
+    <category name="仮想コントローラー">
+    </category>
+
+    <category name="画像認識">
+    </category>
+
+    <category name="ウィンドウ">
+    </category>
+
+    <category name="コンソール">
+    </category>
+
+    <category name="ファイル">
+    </category>
+
+    <category name="サウンド">
+    </category>
+
+    <category name="時間">
+    </category>
+
+    <category name="IME">
+    </category>
 
 <!--
     <category name="色" categorystyle="colour_category">
@@ -764,18 +853,10 @@ function getToolBoxXml(): string {
     </category>
 -->
 
-
-    <sep></sep>
-
-
-
-    <category name="変数" categorystyle="variable_category" custom="VARIABLE"></category>
-
-
-
-    <category name="関数" categorystyle="procedure_category" custom="PROCEDURE"></category>
-
-
+    <category name="その他">
+        <block type="comment"></block>
+        <block type="get_global_variable"></block>
+    </category>
 
     <category name="テンプレート">
         <block type="text_print">

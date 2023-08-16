@@ -50,11 +50,11 @@ export const keys: Blockly.MenuOption[] = [
         "RAlt"
     ],
     [
-        "左Win",
+        "Windows（左）",
         "LWin"
     ],
     [
-        "右Win",
+        "Windows（右）",
         "RWin"
     ],
     [

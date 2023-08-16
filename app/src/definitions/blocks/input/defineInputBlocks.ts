@@ -23,7 +23,17 @@ export function defineInputBlocks() {
 
     Blockly.Blocks["trigger_is_pressed"] = {
         init: function () {
-            this.appendDummyInput().appendField("トリガーが押されていたら");
+            this.appendDummyInput().appendField("トリガーが押されている");
+            this.setOutput(true, "Boolean");
+            this.setColour(BlockColors.Logic);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        },
+    };
+
+    Blockly.Blocks["trigger_is_not_pressed"] = {
+        init: function () {
+            this.appendDummyInput().appendField("トリガーが押されていない");
             this.setOutput(true, "Boolean");
             this.setColour(BlockColors.Logic);
             this.setTooltip("");
@@ -110,12 +120,57 @@ export function defineInputBlocks() {
         }
     };
 
+    Blockly.Blocks['random_point'] = {
+        init: function () {
+            this.appendValueInput("X_FROM")
+                .setCheck("Number")
+                .appendField("ランダムな座標：X（");
+            this.appendValueInput("X_TO")
+                .setCheck("Number")
+                .appendField("～");
+            this.appendDummyInput()
+                .appendField("）");
+            this.appendValueInput("Y_FROM")
+                .setCheck("Number")
+                .appendField("Y（");
+            this.appendValueInput("Y_TO")
+                .setCheck("Number")
+                .appendField("～");
+            this.appendDummyInput()
+                .appendField("）");
+            this.setInputsInline(true);
+            this.setOutput(true, "Point");
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as Block;
 
+    Blockly.Blocks['set_random_offset_range'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("マウス：（");
+            this.appendValueInput("X")
+                .setCheck("Number")
+                .appendField("X：");
+            this.appendValueInput("Y")
+                .setCheck("Number")
+                .appendField("Y：");
+            this.appendDummyInput()
+                .appendField("）の範囲で移動先にランダム性を加える");
+            this.setInputsInline(true);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as Block;
 
     Blockly.Blocks['get_cursor_point'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("マウスカーソルの座標を取得");
+                .appendField("マウスカーソルの座標");
             this.setInputsInline(true);
             this.setOutput(true, "Point");
             this.setColour(BlockColors.Action);
@@ -163,7 +218,7 @@ export function defineInputBlocks() {
         init: function () {
             this.appendDummyInput()
                 .appendField("マウスを")
-                .appendField(new Blockly.FieldDropdown([["とても速い", "REALLY_FAST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "REALLY_SLOW"]]), "SPEED")
+                .appendField(new Blockly.FieldDropdown([["とても速い", "FASTEST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "SLOWEST"]]), "SPEED")
                 .appendField("速度で");
             this.appendValueInput("POINT")
                 .setCheck("Point")
@@ -208,7 +263,7 @@ export function defineInputBlocks() {
         init: function () {
             this.appendDummyInput()
                 .appendField("マウスを")
-                .appendField(new Blockly.FieldDropdown([["とても速い", "REALLY_FAST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "REALLY_SLOW"]]), "SPEED")
+                .appendField(new Blockly.FieldDropdown([["とても速い", "FASTEST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "SLOWEST"]]), "SPEED")
                 .appendField("の速度で");
             this.appendDummyInput()
                 .appendField("横に");

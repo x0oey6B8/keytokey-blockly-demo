@@ -1,20 +1,26 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { Ref, ref } from "vue";
+import { IModalState } from "../components/Modal.vue";
 
 export const useEditorStore = defineStore("editorStore", () => {
     let textValue = ref("");
     let language = ref("");
-    let showModal = ref(false);
+    const modalState: Ref<IModalState> = ref({
+        isShowing: false,
+        lock: false,
+        stateChanged: () => console.log("aaa")
+    });
+
     return {
         textValue,
         language,
-        showModal,
+        modalState,
         setCode
     }
 
     function setCode(code: string, language_: string, showModal_: boolean) {
         textValue.value = code;
-        showModal.value = showModal_;
+        modalState.value.isShowing = showModal_;
         language.value = language_;
     }
 });

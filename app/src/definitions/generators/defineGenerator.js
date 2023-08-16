@@ -2,8 +2,10 @@ import Blockly from "blockly";
 
 export const StatementPrefix = {
     NONE: 0,
-    THROW_INTERRUPTED_EXCEPTION: 1,
-    HIGHLIGHT_BLOCK: 2,
+    COMMENT_WITH_BLOCK_ID: 1,
+    THROW_INTERRUPTED_EXCEPTION: 2,
+    HIGHLIGHT_BLOCK: 3,
+    CHECK_POINT: 4
 }
 
 export function setStatementPrefix(javascriptGenerator, prefix) {
@@ -11,6 +13,10 @@ export function setStatementPrefix(javascriptGenerator, prefix) {
         javascriptGenerator.STATEMENT_PREFIX = 'throwIntrupptedError();\n';
     } else if (prefix == StatementPrefix.HIGHLIGHT_BLOCK) {
         javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
+    } else if (prefix == StatementPrefix.COMMENT_WITH_BLOCK_ID) {
+        javascriptGenerator.STATEMENT_PREFIX = '// ⇓ブロックID: %1\n';
+    } else if (prefix == StatementPrefix.CHECK_POINT) {
+        javascriptGenerator.STATEMENT_PREFIX = 'checkPoint(%1);\n';
     } else {
         javascriptGenerator.STATEMENT_PREFIX = '';
     }
@@ -52,7 +58,11 @@ export function defineCodeGenerator(javascriptGenerator) {
     };
 
     javascriptGenerator.forBlock['trigger_is_pressed'] = function (block) {
-        return ["Trigger.IsPressed", javascriptGenerator.ORDER_NONE];
+        return ["isTriggerPressed()", javascriptGenerator.ORDER_NONE];
+    };
+
+    javascriptGenerator.forBlock['trigger_is_not_pressed'] = function (block) {
+        return ["!isTriggerPressed()", javascriptGenerator.ORDER_NONE];
     };
 
     javascriptGenerator.forBlock['logic_expression'] = function (block) {
@@ -104,6 +114,22 @@ export function defineCodeGenerator(javascriptGenerator) {
         return [code, javascriptGenerator.ORDER_NONE];
     };
 
+    javascriptGenerator.forBlock['random_point'] = function (block) {
+        var value_x_from = javascriptGenerator.valueToCode(block, 'X_FROM', javascriptGenerator.ORDER_ATOMIC);
+        var value_x_to = javascriptGenerator.valueToCode(block, 'X_TO', javascriptGenerator.ORDER_ATOMIC);
+        var value_y_from = javascriptGenerator.valueToCode(block, 'Y_FROM', javascriptGenerator.ORDER_ATOMIC);
+        var value_y_to = javascriptGenerator.valueToCode(block, 'Y_TO', javascriptGenerator.ORDER_ATOMIC);
+        const code = `getRandomPoint(${value_x_from}, ${value_x_to}, ${value_y_from}, ${value_y_to})`;
+        return [code, javascriptGenerator.ORDER_ATOMIC];
+    };
+
+    javascriptGenerator.forBlock['set_random_offset_range'] = function (block) {
+        var value_x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC);
+        var value_y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC);
+        var code = `setRandomOffsetRange(${value_x}, ${value_y})\n`;
+        return code;
+    };
+
     javascriptGenerator.forBlock['get_cursor_point'] = function (block) {
         var code = `mouse.getCursorPosition()`;
         return [code, javascriptGenerator.ORDER_NONE];
@@ -122,14 +148,7 @@ export function defineCodeGenerator(javascriptGenerator) {
     javascriptGenerator.forBlock['move_absolute_smoothly'] = function (block) {
         var point = javascriptGenerator.valueToCode(block, 'POINT', javascriptGenerator.ORDER_ATOMIC);
         var speed = block.getFieldValue('SPEED');
-        if (speed == "FAST") {
-
-        } else if (speed == "NORMAL") {
-
-        } else if (speed == "SLOW") {
-
-        }
-        return `move_smoothly(${point}, "${speed}");\n`;
+        return `moveTo(${point}, "${speed}");\n`;
     };
 
     javascriptGenerator.forBlock['move_relative'] = function (block) {
@@ -142,14 +161,7 @@ export function defineCodeGenerator(javascriptGenerator) {
         var x = javascriptGenerator.valueToCode(block, 'DX', javascriptGenerator.ORDER_ATOMIC);
         var y = javascriptGenerator.valueToCode(block, 'DY', javascriptGenerator.ORDER_ATOMIC);
         var speed = block.getFieldValue('SPEED');
-        if (speed == "FAST") {
-
-        } else if (speed == "NORMAL") {
-
-        } else if (speed == "SLOW") {
-
-        }
-        return `moverel_smoothly({ deltaX: ${x}, deltaY: ${y} }, "${speed}");\n`;
+        return `moveRelTo({ x: ${x}, y: ${y} }, "${speed}");\n`;
     };
 
     javascriptGenerator.forBlock['get_global_variable'] = function (block) {
@@ -166,7 +178,7 @@ export function defineCodeGenerator(javascriptGenerator) {
 
     javascriptGenerator.forBlock['highprecision_wait'] = function (block) {
         var value_wait_time = javascriptGenerator.valueToCode(block, 'WAIT_TIME', javascriptGenerator.ORDER_ATOMIC);
-        var code = `highprecision_wait(${value_wait_time})\n`;
+        var code = `highPrecisionWait(${value_wait_time})\n`;
         return code;
     };
 }

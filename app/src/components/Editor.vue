@@ -112,7 +112,33 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div style="width: 100%; height: 100%; background-color: #1e1e1e; display: flex; align-items: center; border-radius: 5px;">
-        <div id="container" style="width: 99%; height: 99%; margin: auto;"></div>
+    <div class="background">
+        <div class="sub-background">
+            <div id="container" style="width: 99%; height: 99%; margin: auto;"></div>
+        </div>
     </div>
 </template>
+
+<style scoped>
+.background {
+    border-radius: 5px;
+    padding: 5px;
+    width: 100%;
+    height: 100%;
+    background-color: #3d3d3d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sub-background {
+    background-color: #212121;
+    border-radius: 5px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+</style>
