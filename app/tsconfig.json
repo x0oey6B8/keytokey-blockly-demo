@@ -28,6 +28,6 @@
     "src/**/*.vue",
     "src/definitions/blocks/defineGenerator.js",
     "src/debugger/runner-core.js"
-],
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

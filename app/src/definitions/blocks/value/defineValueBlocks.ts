@@ -1,7 +1,21 @@
 import Blockly, { Block } from "blockly";
+import { keys } from "./keys.ts";
 import { BlockColors } from "../../../configurations/blockColors.ts";
 
 export function defineValueBlocks() {
+
+    Blockly.Blocks['keys_value'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown(keys), "VALUE");
+            this.setInputsInline(true);
+            this.setOutput(true, "Keys");
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as Block;
+
     Blockly.Blocks['point'] = {
         init: function () {
             this.appendValueInput("X")

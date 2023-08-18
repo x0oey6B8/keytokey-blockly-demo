@@ -46,19 +46,20 @@ body {
 
 /* ツールボックスの枠線を右側に表示  */
 .blocklyToolboxDiv {
+    border-left: solid 0.5px #333333 !important;
     border-right: solid 0.5px #333333 !important;
+    scrollbar-width: 10px;
 }
 
 /* ツールボックスのスクロールバーのスタイル */
 .blocklyToolboxDiv::-webkit-scrollbar {
     background-color: #252525;
-    width: 12px !important;
+    width: 8px !important;
 }
 
 .blocklyToolboxDiv::-webkit-scrollbar-thumb {
-    background-color: #43A04780;
+    background-color: #333333;
     border-radius: 12px;
-    width: 12px !important;
 }
 
 /* 接続されてないブロックの色 */

@@ -2,10 +2,10 @@ import Blockly, { Block } from "blockly";
 import { BlockColors } from "../../../configurations/blockColors.ts";
 
 export function defineJavascriptBlocks() {
-    Blockly.Blocks['run_js'] = {
+    Blockly.Blocks['js'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("  javascriptを埋め込む</>")
+                .appendField("  javascriptを埋め込む")
             this.appendDummyInput()
                 .appendField(new Blockly.FieldMultilineInput("console.log('execute!')"), "CODE");
             this.setColour(BlockColors.Action);

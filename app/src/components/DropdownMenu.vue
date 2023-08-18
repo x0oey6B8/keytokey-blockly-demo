@@ -105,7 +105,7 @@ export interface IDropDownMenuItem {
   padding: 4px 0;
   left: 0;
   top: 100%;
-  z-index: 1;
+  z-index: 100;
   border-radius: 0 0 5px 5px;
   user-select: none;
 }

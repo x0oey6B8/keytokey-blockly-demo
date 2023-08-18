@@ -30,40 +30,28 @@ export function defineCodeGenerator(javascriptGenerator) {
         return code;
     };
 
-    javascriptGenerator.forBlock['run_js'] = function (block) {
-        const value_name = block.getFieldValue("CODE") + "\n";
-        return value_name;
+    /*
+        値
+    */
+
+    javascriptGenerator.forBlock['point'] = function (block) {
+        const value_x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC);
+        const value_y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC);
+        const code = `{ x: ${value_x}, y: ${value_y} }`;
+        return [code, javascriptGenerator.ORDER_ATOMIC];
     };
 
-    javascriptGenerator.forBlock['evaluate_js'] = function (block) {
-        const value_name = block.getFieldValue("CODE");
-        return [value_name, javascriptGenerator.ORDER_ATOMIC];
+    javascriptGenerator.forBlock['get_point'] = function (block) {
+        var value_point = javascriptGenerator.valueToCode(block, 'POINT', javascriptGenerator.ORDER_ATOMIC);
+        var property = block.getFieldValue('DROPDOWN');
+        var code = `${value_point}.${property}`;
+        return [code, javascriptGenerator.ORDER_NONE];
     };
 
-    javascriptGenerator.forBlock["entrypoint"] = function (block) {
-        var statements__entry = javascriptGenerator.statementToCode(block, " Entry");
-        var code = `[Action]\nvoid Main()\n{\n${statements__entry}}\n`;
-        return code;
-    };
 
-    javascriptGenerator.forBlock['key_event'] = function (block) {
-        var dropdown_behavior = block.getFieldValue('BEHAVIOR');
-        var variable_key = javascriptGenerator.nameDB_.getName(block.getFieldValue('KEY'), Blockly.Names.NameType.VARIABLE);
-        var statement = javascriptGenerator.statementToCode(block, 'STAMEMENT');
-        var code = `Events.subscribe("${dropdown_behavior}", e => {\n`;
-        code += `  ${variable_key} = e.Key;\n`;
-        code += statement;
-        code += "});\n";
-        return code;
-    };
-
-    javascriptGenerator.forBlock['trigger_is_pressed'] = function (block) {
-        return ["isTriggerPressed()", javascriptGenerator.ORDER_NONE];
-    };
-
-    javascriptGenerator.forBlock['trigger_is_not_pressed'] = function (block) {
-        return ["!isTriggerPressed()", javascriptGenerator.ORDER_NONE];
-    };
+    /*
+        条件
+    */
 
     javascriptGenerator.forBlock['logic_expression'] = function (block) {
         var left = javascriptGenerator.valueToCode(block, 'LEFT_VALUE', javascriptGenerator.ORDER_ATOMIC);
@@ -73,6 +61,48 @@ export function defineCodeGenerator(javascriptGenerator) {
         var code = `${left} === ${right}`;
         return [code, javascriptGenerator.ORDER_NONE];
     };
+
+
+    /*
+        javascript
+    */
+
+    javascriptGenerator.forBlock['js'] = function (block) {
+        const value_name = block.getFieldValue("CODE") + "\n";
+        return value_name;
+    };
+
+    javascriptGenerator.forBlock['evaluate_js'] = function (block) {
+        const value_name = block.getFieldValue("CODE");
+        return [value_name, javascriptGenerator.ORDER_ATOMIC];
+    };
+
+    /*
+        トリガー
+    */
+
+    javascriptGenerator.forBlock['trigger_is_pressed'] = function (block) {
+        return ["trigger.isPressed()", javascriptGenerator.ORDER_NONE];
+    };
+
+    javascriptGenerator.forBlock['trigger_is_not_pressed'] = function (block) {
+        return ["trigger.isNotPressed()", javascriptGenerator.ORDER_NONE];
+    };
+
+    /*
+        キーボード
+    */
+
+    // javascriptGenerator.forBlock['key_event'] = function (block) {
+    //     var dropdown_behavior = block.getFieldValue('BEHAVIOR');
+    //     var variable_key = javascriptGenerator.nameDB_.getName(block.getFieldValue('KEY'), Blockly.Names.NameType.VARIABLE);
+    //     var statement = javascriptGenerator.statementToCode(block, 'STAMEMENT');
+    //     var code = `Events.subscribe("${dropdown_behavior}", e => {\n`;
+    //     code += `  ${variable_key} = e.Key;\n`;
+    //     code += statement;
+    //     code += "});\n";
+    //     return code;
+    // };
 
     javascriptGenerator.forBlock['down_up'] = function (block) {
         var value_key = javascriptGenerator.valueToCode(block, 'KEY', javascriptGenerator.ORDER_NONE);
@@ -91,7 +121,7 @@ export function defineCodeGenerator(javascriptGenerator) {
 
     javascriptGenerator.forBlock['keys_value'] = function (block) {
         var dropdown_value = block.getFieldValue('VALUE');
-        return [`Keys.${dropdown_value}`, javascriptGenerator.ORDER_NONE];
+        return [`"${dropdown_value}"`, javascriptGenerator.ORDER_NONE];
     };
 
     javascriptGenerator.forBlock['up_all'] = function (block) {
@@ -100,19 +130,9 @@ export function defineCodeGenerator(javascriptGenerator) {
         return code;
     };
 
-    javascriptGenerator.forBlock['point'] = function (block) {
-        const value_x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC);
-        const value_y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC);
-        const code = `{ x: ${value_x}, y: ${value_y} }`;
-        return [code, javascriptGenerator.ORDER_ATOMIC];
-    };
-
-    javascriptGenerator.forBlock['get_point'] = function (block) {
-        var value_point = javascriptGenerator.valueToCode(block, 'POINT', javascriptGenerator.ORDER_ATOMIC);
-        var property = block.getFieldValue('DROPDOWN');
-        var code = `${value_point}.${property}`;
-        return [code, javascriptGenerator.ORDER_NONE];
-    };
+    /*
+        マウス
+    */
 
     javascriptGenerator.forBlock['random_point'] = function (block) {
         var value_x_from = javascriptGenerator.valueToCode(block, 'X_FROM', javascriptGenerator.ORDER_ATOMIC);
@@ -123,52 +143,57 @@ export function defineCodeGenerator(javascriptGenerator) {
         return [code, javascriptGenerator.ORDER_ATOMIC];
     };
 
-    javascriptGenerator.forBlock['set_random_offset_range'] = function (block) {
+    javascriptGenerator.forBlock['mouse_set_random_offset_range'] = function (block) {
         var value_x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC);
         var value_y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC);
-        var code = `setRandomOffsetRange(${value_x}, ${value_y})\n`;
+        var code = `mouse.setRandomOffsetRange(${value_x}, ${value_y})\n`;
         return code;
     };
 
-    javascriptGenerator.forBlock['get_cursor_point'] = function (block) {
-        var code = `mouse.getCursorPosition()`;
+    javascriptGenerator.forBlock['mouse_get_point'] = function (block) {
+        var code = `mouse.getPoint()`;
         return [code, javascriptGenerator.ORDER_NONE];
     };
 
-    javascriptGenerator.forBlock['origin_point'] = function (block) {
+    javascriptGenerator.forBlock['mouse_set_origin_point'] = function (block) {
         var origin = javascriptGenerator.valueToCode(block, 'ORIGIN', javascriptGenerator.ORDER_ATOMIC);
-        return `setMoveOrigin(${origin});\n`;
+        return `mouse.setOriginPoint(${origin});\n`;
     };
 
-    javascriptGenerator.forBlock['move_absolute'] = function (block) {
-        var value_point = javascriptGenerator.valueToCode(block, 'POINT', javascriptGenerator.ORDER_ATOMIC);
-        return `move(${value_point});\n`;
-    };
-
-    javascriptGenerator.forBlock['move_absolute_smoothly'] = function (block) {
+    javascriptGenerator.forBlock['mouse_move'] = function (block) {
         var point = javascriptGenerator.valueToCode(block, 'POINT', javascriptGenerator.ORDER_ATOMIC);
         var speed = block.getFieldValue('SPEED');
-        return `moveTo(${point}, "${speed}");\n`;
+        if (speed === "WARP") {
+            return `mouse.moveTo(${point});\n`;
+        } else {
+            return `mouse.moveTo(${point}, "${speed}");\n`;
+        }
     };
 
-    javascriptGenerator.forBlock['move_relative'] = function (block) {
-        var value_dx = javascriptGenerator.valueToCode(block, 'DX', javascriptGenerator.ORDER_ATOMIC);
-        var value_dy = javascriptGenerator.valueToCode(block, 'DY', javascriptGenerator.ORDER_ATOMIC);
-        return `moverel(${value_dx}, ${value_dy});\n`;
-    };
-
-    javascriptGenerator.forBlock['move_relative_smoothly'] = function (block) {
+    javascriptGenerator.forBlock['mouse_move_relative'] = function (block) {
         var x = javascriptGenerator.valueToCode(block, 'DX', javascriptGenerator.ORDER_ATOMIC);
         var y = javascriptGenerator.valueToCode(block, 'DY', javascriptGenerator.ORDER_ATOMIC);
         var speed = block.getFieldValue('SPEED');
-        return `moveRelTo({ x: ${x}, y: ${y} }, "${speed}");\n`;
+        if (speed === "WARP") {
+            return `mouse.moveRelTo({ x: ${x}, y: ${y} });\n`;
+        } else {
+            return `mouse.moveRelTo({ x: ${x}, y: ${y} }, "${speed}");\n`;
+        }
     };
 
-    javascriptGenerator.forBlock['get_global_variable'] = function (block) {
+    /*
+        グローバル変数
+    */
+
+    javascriptGenerator.forBlock['global_get_variable'] = function (block) {
         var text_global_variable_name = block.getFieldValue('GLOBAL_VARIABLE_NAME');
         var code = `global.variables.${text_global_variable_name}`
         return [code, javascriptGenerator.ORDER_NONE];
     };
+
+    /*
+        待機
+    */
 
     javascriptGenerator.forBlock['wait'] = function (block) {
         var value_wait_time = javascriptGenerator.valueToCode(block, 'WAIT_TIME', javascriptGenerator.ORDER_ATOMIC);
@@ -178,7 +203,7 @@ export function defineCodeGenerator(javascriptGenerator) {
 
     javascriptGenerator.forBlock['highprecision_wait'] = function (block) {
         var value_wait_time = javascriptGenerator.valueToCode(block, 'WAIT_TIME', javascriptGenerator.ORDER_ATOMIC);
-        var code = `highPrecisionWait(${value_wait_time})\n`;
+        var code = `wait(${value_wait_time}, "MILLISECONDS", "HIGH_PRECISION")\n`;
         return code;
     };
 }

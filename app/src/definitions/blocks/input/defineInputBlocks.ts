@@ -1,5 +1,4 @@
-import Blockly, { Block } from "blockly";
-import { keys } from "./keys.ts";
+import Blockly, { Block, BlockSvg } from "blockly";
 import { BlockColors } from "../../../configurations/blockColors.ts";
 
 export function defineInputBlocks() {
@@ -18,7 +17,7 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Event);
             this.setTooltip("");
             this.setHelpUrl("");
-        }
+        },
     } as Block;
 
     Blockly.Blocks["trigger_is_pressed"] = {
@@ -72,7 +71,7 @@ export function defineInputBlocks() {
                 .setCheck("Number");
             this.appendDummyInput()
                 .appendField("ミリ秒待つ")
-                .appendField("【キーの名前】を離して", "KEY2");
+                .appendField("キーの名前 を離して", "KEY2");
             this.appendValueInput("WAIT2")
                 .setCheck("Number");
             this.appendDummyInput()
@@ -83,16 +82,28 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
+            this.customContextMenu = (options) => {
+                options.push({
+                    text: "aaaaa",
+                    enabled: true,
+                    weight: 0,
+                    callback: (_) => {
+                        console.log(this.id);
+                    }
+                })
+            };
         },
         onchange: function (_) {
             const key = this.getInputTargetBlock("KEY1")?.toString();
             if (key !== undefined) {
-                this.getField("KEY2")?.setValue(`【${key}】を離して`);
+                this.getField("KEY2")?.setValue(`${key} を離して`);
             } else {
                 this.getField("KEY2")?.setValue(`【キーの名前】を離して`);
             }
-        }
-    } as Block;
+            this.workspace.getToolbox()?.handleToolboxItemResize();
+        },
+
+    } as BlockSvg;
 
     Blockly.Blocks['up_all'] = {
         init: function () {
@@ -102,18 +113,6 @@ export function defineInputBlocks() {
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(BlockColors.Action);
-            this.setTooltip("");
-            this.setHelpUrl("");
-        }
-    };
-
-    Blockly.Blocks['keys_value'] = {
-        init: function () {
-            this.appendDummyInput()
-                .appendField(new Blockly.FieldDropdown(keys), "VALUE");
-            this.setInputsInline(true);
-            this.setOutput(true, "Keys");
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
@@ -146,7 +145,7 @@ export function defineInputBlocks() {
         }
     } as Block;
 
-    Blockly.Blocks['set_random_offset_range'] = {
+    Blockly.Blocks['mouse_set_random_offset_range'] = {
         init: function () {
             this.appendDummyInput()
                 .appendField("マウス：（");
@@ -167,7 +166,7 @@ export function defineInputBlocks() {
         }
     } as Block;
 
-    Blockly.Blocks['get_cursor_point'] = {
+    Blockly.Blocks['mouse_get_point'] = {
         init: function () {
             this.appendDummyInput()
                 .appendField("マウスカーソルの座標");
@@ -179,7 +178,7 @@ export function defineInputBlocks() {
         }
     };
 
-    Blockly.Blocks['origin_point'] = {
+    Blockly.Blocks['mouse_set_origin_point'] = {
         init: function () {
             this.appendDummyInput()
                 .appendField("マウス：原点座標を");
@@ -196,33 +195,14 @@ export function defineInputBlocks() {
         }
     };
 
-    Blockly.Blocks['move_absolute'] = {
-        init: function () {
-            this.appendDummyInput()
-                .appendField("マウスを");
-            this.appendValueInput("POINT")
-                .setCheck("Point")
-                .setAlign(Blockly.ALIGN_RIGHT);
-            this.appendDummyInput()
-                .appendField("に移動");
-            this.setInputsInline(true);
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(BlockColors.Action);
-            this.setTooltip("");
-            this.setHelpUrl("");
-        }
-    };
-
-    Blockly.Blocks['move_absolute_smoothly'] = {
+    Blockly.Blocks['mouse_move'] = {
         init: function () {
             this.appendDummyInput()
                 .appendField("マウスを")
-                .appendField(new Blockly.FieldDropdown([["とても速い", "FASTEST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "SLOWEST"]]), "SPEED")
-                .appendField("速度で");
+                .appendField(new Blockly.FieldDropdown([["一瞬", "WARP"], ["とても速い", "FASTEST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "SLOWEST"]]), "SPEED")
+                .appendField("速度で", "TEXT1");
             this.appendValueInput("POINT")
-                .setCheck("Point")
-                .setAlign(Blockly.ALIGN_RIGHT);
+                .setCheck("Point");
             this.appendDummyInput()
                 .appendField("に移動");
             this.setInputsInline(true);
@@ -231,13 +211,24 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
+        },
+        onchange: function (_) {
+            const speed = this.getFieldValue("SPEED");
+            if (speed === "WARP") {
+                this.getField("TEXT1")?.setValue(`で`);
+            } else {
+                this.getField("TEXT1")?.setValue(`速度で`);
+            }
+            this.render();
         }
-    };
+    } as BlockSvg;
 
-    Blockly.Blocks['move_relative'] = {
+    Blockly.Blocks['mouse_move_relative'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("マウスを");
+                .appendField("マウスを")
+                .appendField(new Blockly.FieldDropdown([["一瞬", "WARP"], ["とても速い", "FASTEST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "SLOWEST"]]), "SPEED")
+                .appendField("で", "TEXT1");
             this.appendDummyInput()
                 .appendField("横に");
             this.appendValueInput("DX")
@@ -256,33 +247,16 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
+        },
+        onchange: function (_) {
+            if (this.getPreviousBlock()) {
+                const speed = this.getFieldValue("SPEED");
+                if (speed === "WARP") {
+                    this.getField("TEXT1")?.setValue(`で`);
+                } else {
+                    this.getField("TEXT1")?.setValue(`速度で`);
+                }
+            }
         }
-    };
-
-    Blockly.Blocks['move_relative_smoothly'] = {
-        init: function () {
-            this.appendDummyInput()
-                .appendField("マウスを")
-                .appendField(new Blockly.FieldDropdown([["とても速い", "FASTEST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "SLOWEST"]]), "SPEED")
-                .appendField("の速度で");
-            this.appendDummyInput()
-                .appendField("横に");
-            this.appendValueInput("DX")
-                .setCheck("Number")
-                .setAlign(Blockly.ALIGN_RIGHT);
-            this.appendDummyInput()
-                .appendField("縦に");
-            this.appendValueInput("DY")
-                .setCheck("Number")
-                .setAlign(Blockly.ALIGN_RIGHT);
-            this.appendDummyInput()
-                .appendField("移動");
-            this.setInputsInline(true);
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(BlockColors.Action);
-            this.setTooltip("");
-            this.setHelpUrl("");
-        }
-    };
+    } as Block;
 }

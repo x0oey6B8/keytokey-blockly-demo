@@ -42,7 +42,8 @@ export const useBlocklyStore = defineStore("blockly", () => {
         copyBlockAsXml,
         pasteBlock,
         clearWorkspace,
-        resizeWorkspaceSvg
+        resizeWorkspaceSvg,
+        switchToolboxPosition
     };
 
     function registerGlobalFunctions() {
@@ -58,7 +59,6 @@ export const useBlocklyStore = defineStore("blockly", () => {
         workspaceSvg = Blockly.inject(container, options);
         workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         workspaceSvg.registerButtonCallback("addKeyValue", addKeyValue);
-
         //window.addEventListener('resize', onresize, false);
         // onresize();
 
@@ -75,6 +75,20 @@ export const useBlocklyStore = defineStore("blockly", () => {
                 });
             }
         });
+    }
+
+    function switchToolboxPosition() {
+        if (workspaceSvg) {
+            //workspaceSvg.options.toolboxPosition = 
+            console.log("switch")
+            workspaceSvg.toolboxPosition = Blockly.utils.toolbox.Position.RIGHT;
+            const toolbox = workspaceSvg.getToolbox();
+            if (toolbox) {
+
+                //workspaceSvg.updateToolbox(toolbox);
+                toolbox.position();
+            }
+        }
     }
 
     function centerToEntryBlock() {

@@ -29,7 +29,7 @@ export function defineBlocks(): void {
         }
     } as Block;
 
-    Blockly.Blocks['get_global_variable'] = {
+    Blockly.Blocks['global_get_variable'] = {
         init: function () {
             this.appendDummyInput()
                 .appendField("グローバル変数：");

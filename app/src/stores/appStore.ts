@@ -104,6 +104,13 @@ export const useAppStore = defineStore("AppStore", () => {
     function createWorkspaceMenuItems() {
         const workspaceMenuItems: IDropDownMenuItem[] = [
             {
+                header: "ツールボックスの位置を切り替える",
+                enabled: true,
+                clicked: () => {
+                    blocklyStore.switchToolboxPosition();
+                }
+            },
+            {
                 header: "コピー（XML）",
                 enabled: true,
                 clicked: () => copyWorkspace()

@@ -65,7 +65,6 @@ watch(() => props.items, () => {
 })
 
 function focus() {
-    console.log(focus);
     if (input.value) {
         (input.value as HTMLElement)?.focus();
     }
@@ -207,6 +206,11 @@ function updateSelectedIndex() {
     for (const command of selectableCommands) {
         command.isSelected = false;
     }
+
+    if (selectableCommands.length <= 0) {
+        return;
+    }
+
     if (selectedIndex >= selectableCommands.length) {
         selectedIndex = 0;
     }

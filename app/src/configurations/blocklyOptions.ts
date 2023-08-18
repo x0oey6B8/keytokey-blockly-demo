@@ -11,7 +11,7 @@ export const options: BlocklyOptions = {
     maxBlocks: Infinity,
     trashcan: true,
     horizontalLayout: false,
-    toolboxPosition: "start",
+    toolboxPosition: "end",
     css: true,
     rtl: false,
     scrollbars: true,
@@ -20,7 +20,7 @@ export const options: BlocklyOptions = {
     grid: {
         spacing: 32,
         length: 3,
-        colour: "#bbbbbb40",
+        colour: "#bbbbbb45",
         snap: true,
     },
     zoom: {
@@ -42,18 +42,6 @@ export const options: BlocklyOptions = {
 function getToolBoxXml(): string {
     return `
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox">
-
-    <category name="変数" categorystyle="variable_category" custom="VARIABLE">
-    </category>
-
-
-    <category name="変数（マクロ用）" categorystyle="variable_category">
-    </category>
-
-
-    <category name="関数" categorystyle="procedure_category" custom="PROCEDURE"></category>
-
-
 
     <category name="値" colour="250">
         <label text="キーボード／マウス"></label>
@@ -85,6 +73,18 @@ function getToolBoxXml(): string {
         </block>
         <block type="get_point"></block>
     </category>
+
+
+
+    <category name="変数" categorystyle="variable_category" custom="VARIABLE">
+    </category>
+
+
+    <category name="変数（KeyToKey）" categorystyle="variable_category">
+    </category>
+
+
+    <category name="関数" categorystyle="procedure_category" custom="PROCEDURE"></category>
 
 
 
@@ -404,9 +404,14 @@ function getToolBoxXml(): string {
 
     <sep></sep>
 
+    <category name="トリガー">
+        <block type="trigger_is_pressed"></block>
+        <block type="trigger_is_not_pressed"></block>
+    </category>
+
 
     <category name="キーボード／マウス">
-        <label text="押す・離す"></label>
+        <label text="キーボード／マウスを押す・離す"></label>
         <block type="down_up">
             <field name="BEHAVIOR">Down</field>
             <value name="KEY">
@@ -482,24 +487,8 @@ function getToolBoxXml(): string {
 
         <label text=""></label>
         <label text="マウスの移動（絶対座標）"></label>
-        <block type="move_absolute">
-            <value name="POINT">
-                <block type="point">
-                    <value name="X">
-                        <block type="math_number">
-                        <field name="NUM">0</field>
-                        </block>
-                    </value>
-                    <value name="Y">
-                        <block type="math_number">
-                        <field name="NUM">0</field>
-                        </block>
-                    </value>
-                </block>
-            </value>
-        </block>
-        <block type="move_absolute_smoothly">
-            <field name="SPEED">NORMAL</field>
+        <block type="mouse_move">
+            <field name="SPEED">WARP</field>
             <value name="POINT">
                 <block type="point">
                     <value name="X">
@@ -515,7 +504,7 @@ function getToolBoxXml(): string {
                 </block>
             </value>
         </block>
-        <block type="origin_point">
+        <block type="mouse_set_origin_point">
             <value name="ORIGIN">
                 <block type="point">
                     <value name="X">
@@ -531,7 +520,7 @@ function getToolBoxXml(): string {
                 </block>
             </value>
         </block>
-        <block type="set_random_offset_range">
+        <block type="mouse_set_random_offset_range">
             <value name="X">
                 <block type="math_number">
                     <field name="NUM">0</field>
@@ -568,20 +557,8 @@ function getToolBoxXml(): string {
 
         <label text=""></label>
         <label text="マウスの移動（相対座標）"></label>
-        <block type="move_relative">
-            <value name="DX">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-            <value name="DY">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
-        </block>
-        <block type="move_relative_smoothly">
-            <field name="SPEED">NORMAL</field>
+        <block type="mouse_move_relative">
+            <field name="SPEED">WARP</field>
             <value name="DX">
             <block type="math_number">
                 <field name="NUM">0</field>
@@ -596,17 +573,17 @@ function getToolBoxXml(): string {
 
         <label text=""></label>
         <label text="マウスカーソルの座標"></label>
-        <block type="get_cursor_point"></block>
+        <block type="mouse_get_point"></block>
         <block type="get_point">
             <field name="DROPDOWN">X</field>
             <value name="POINT">
-                <block type="get_cursor_point"></block>
+                <block type="mouse_get_point"></block>
             </value>
         </block>
         <block type="get_point">
             <field name="DROPDOWN">Y</field>
             <value name="POINT">
-                <block type="get_cursor_point"></block>
+                <block type="mouse_get_point"></block>
             </value>
         </block>
 
@@ -779,7 +756,7 @@ function getToolBoxXml(): string {
 
 
     <category name="javascript">
-        <block type="run_js"></block>
+        <block type="js"></block>
         <block type="evaluate_js"></block>
     </category>
 
@@ -810,6 +787,9 @@ function getToolBoxXml(): string {
     </category>
 
     <category name="IME">
+    </category>
+
+    <category name="モニター">
     </category>
 
 <!--
@@ -855,7 +835,7 @@ function getToolBoxXml(): string {
 
     <category name="その他">
         <block type="comment"></block>
-        <block type="get_global_variable"></block>
+        <block type="global_get_variable"></block>
     </category>
 
     <category name="テンプレート">
