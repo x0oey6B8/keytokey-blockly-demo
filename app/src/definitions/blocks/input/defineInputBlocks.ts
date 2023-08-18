@@ -100,7 +100,6 @@ export function defineInputBlocks() {
             } else {
                 this.getField("KEY2")?.setValue(`【キーの名前】を離して`);
             }
-            this.workspace.getToolbox()?.handleToolboxItemResize();
         },
 
     } as BlockSvg;
@@ -219,7 +218,6 @@ export function defineInputBlocks() {
             } else {
                 this.getField("TEXT1")?.setValue(`速度で`);
             }
-            this.render();
         }
     } as BlockSvg;
 
