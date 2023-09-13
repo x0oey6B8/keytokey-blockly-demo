@@ -15,51 +15,57 @@ export function defineContextMenu() {
 
     Blockly.ContextMenuRegistry.registry.register({
         displayText: "ブロックの接続を解除",
-        id: "disconnect selected block",
+        id: "ブロックの接続を解除",
         scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
         weight: 5,
         callback: () => {
-            blocklyStore.disconnectSelectedBlock();
+            blocklyStore.getCurrentWorkspaceSession()?.disconnectSelectedBlock();
         },
         preconditionFn: () => {
-            const canDisconnect = blocklyStore.canDisconnectSelectedBlock();
-            return getEnabledOrDisabled(canDisconnect);
+            const canDisconnect = blocklyStore.getCurrentWorkspaceSession()?.canDisconnectSelectedBlock();
+            return !canDisconnect ? "disabled" : getEnabledOrDisabled(canDisconnect);
         },
     });
 
     Blockly.ContextMenuRegistry.registry.register({
         displayText: "テキストとしてコピー（子ブロックなし）",
-        id: "copy without children as xml",
+        id: "テキストとしてコピー（子ブロックなし）",
         scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
         weight: 100,
         callback: () => {
-            const xml = blocklyStore.copyBlockAsXml(false);
-            if (xml) {
-                editorStore.setCode(xml, "xml", true);
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(xml);
-                    notification.toastMessage("コピーしました。");
+            const workspaceSession = blocklyStore.getCurrentWorkspaceSession();
+            if (workspaceSession) {
+                const xml = workspaceSession.copyBlockAsXml(false);
+                if (xml) {
+                    editorStore.setCode(xml, "xml", true);
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(xml);
+                        notification.toastMessage("コピーしました。");
+                    }
                 }
             }
         },
         preconditionFn: () => {
-            const isSelectedBlockFunction = blocklyStore.isSelectedBlockFunction();
-            return getEnabledOrDisabled(!isSelectedBlockFunction);
+            const isSelectedBlockFunction = blocklyStore.getCurrentWorkspaceSession()?.isSelectedBlockFunction();
+            return !isSelectedBlockFunction ? "enabled" : getEnabledOrDisabled(!isSelectedBlockFunction);
         },
     });
 
     Blockly.ContextMenuRegistry.registry.register({
         displayText: "テキストとしてコピー（子ブロックあり）",
-        id: "copy as xml",
+        id: "テキストとしてコピー（子ブロックあり）",
         scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
         weight: 100,
         callback: () => {
-            const xml = blocklyStore.copyBlockAsXml(true);
-            if (xml) {
-                editorStore.setCode(xml, "xml", true);
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(xml);
-                    notification.toastMessage("コピーしました。");
+            const workspaceSession = blocklyStore.getCurrentWorkspaceSession()
+            if (workspaceSession) {
+                const xml = workspaceSession.copyBlockAsXml(true);
+                if (xml) {
+                    editorStore.setCode(xml, "xml", true);
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(xml);
+                        notification.toastMessage("コピーしました。");
+                    }
                 }
             }
         },
@@ -70,14 +76,29 @@ export function defineContextMenu() {
 
     Blockly.ContextMenuRegistry.registry.register({
         displayText: "テキストからブロックを貼り付け",
-        id: "paste block from xml",
+        id: "テキストからブロックを貼り付け",
         scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
         weight: 100,
         callback: () => {
             navigator.clipboard.readText()
                 .then(text => {
-                    blocklyStore.pasteBlock(text);
+                    blocklyStore.getCurrentWorkspaceSession()?.pasteBlock(text);
                 });
+        },
+        preconditionFn: () => {
+            return getEnabledOrDisabled(true);
+        },
+    });
+
+    Blockly.ContextMenuRegistry.registry.register({
+        displayText: "ブロックのIDをコピー",
+        id: "ブロックのIDをコピー",
+        scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
+        weight: 100,
+        callback: (scope) => {
+            if (navigator?.clipboard && scope.block) {
+                navigator.clipboard.writeText(scope.block.id);
+            }
         },
         preconditionFn: () => {
             return getEnabledOrDisabled(true);

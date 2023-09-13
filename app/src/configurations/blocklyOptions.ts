@@ -11,7 +11,7 @@ export const options: BlocklyOptions = {
     maxBlocks: Infinity,
     trashcan: true,
     horizontalLayout: false,
-    toolboxPosition: "end",
+    toolboxPosition: getToolBoxPosition(),
     css: true,
     rtl: false,
     scrollbars: true,
@@ -39,25 +39,44 @@ export const options: BlocklyOptions = {
     }
 };
 
+function getToolBoxPosition() {
+    const position = localStorage.getItem("toolbox_position");
+    return position ? position : "end";
+}
+
+export function switchToolBoxPosition() {
+    const position = getToolBoxPosition();
+    const newPosition = position === "end" ? "start" : "end";
+    localStorage.setItem("toolbox_position", newPosition);
+    location.reload();
+}
+
 function getToolBoxXml(): string {
     return `
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox">
 
     <category name="値" colour="250">
+
         <label text="キーボード／マウス"></label>
         <button text="値を検索して追加" callbackKey="addKeyValue"></button>
         <button text="値をキー／マウス入力で追加" callbackKey="addKeyValue"></button>
         <block type="keys_value">
             <field name="VALUE">A</field>
         </block>
+
         <label text="数値"></label>
         <block type="math_number" gap="32">
             <field name="NUM">123</field>
         </block>
+
+        <label text="真理値"></label>
+        <block type="logic_boolean"></block>
+
         <label text="文字列"></label>
         <block type="text" gap="32">
             <field name="TEXT">文字列!</field>
         </block>
+
         <label text="座標"></label>
         <block type="point">
             <value name="X">
@@ -405,8 +424,9 @@ function getToolBoxXml(): string {
     <sep></sep>
 
     <category name="トリガー">
+        <label text=""></label>
+        <label text="マクロの実行トリガー"></label>
         <block type="trigger_is_pressed"></block>
-        <block type="trigger_is_not_pressed"></block>
     </category>
 
 
@@ -589,14 +609,43 @@ function getToolBoxXml(): string {
 
         <label text=""></label>
         <label text="キー／マウスの状態"></label>
-        <block type="trigger_is_pressed"></block>
-        <block type="trigger_is_not_pressed"></block>
-
-        <!--
+        <block type="key_is_pressed">
+            <value name="KEY">
+                <block type="keys_value">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+        </block>
+        <block type="phisical_key_is_pressed">
+            <value name="KEY">
+                <block type="keys_value">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+        </block>
+        <block type="keys_are_pressed">
+            <field name="DROPDOWN">SOME_PRESSED</field>
+            <value name="KEY_ARRAY">
+                <block type="lists_create_with" inline="true">
+                    <mutation items="2"></mutation>
+                    <value name="ADD0">
+                        <block type="keys_value">
+                            <field name="VALUE">A</field>
+                        </block>
+                    </value>
+                    <value name="ADD1">
+                        <block type="keys_value">
+                            <field name="VALUE">B</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+        
         <label text=""></label>
         <label text="イベント"></label>
         <block type="key_event"></block>
-        -->
+        
 
         <label text=""></label>
         <label text="テンプレート"></label>

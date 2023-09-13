@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import ModalEditor from "./components/ModalEditor.vue";
-import ModalCommand from "./components/ModalCommand.vue";
+import ModalCommandPalette from "./components/ModalCommandPalette.vue";
 import DropdownMenu from "./components/DropdownMenu.vue";
 import Setting from "./components/icons/Setting.vue"
 import Plus from "./components/icons/Plus.vue"
@@ -9,67 +9,41 @@ import Menu from "./components/icons/Menu.vue"
 import { useAppStore } from "./stores/appStore";
 import { useBlocklyStore } from "./stores/blocklyStore";
 import { useEditorStore } from "./stores/editorStore";
-import { useCommandStore } from "./stores/commandStore";
+import { ITab } from "./models/tab";
+import { useCommandPaletteStore } from "./stores/commandPaletteStore";
 
 const appStore = useAppStore();
-const blocklyStore = useBlocklyStore();
-const editorStore = useEditorStore();
-const commandStore = useCommandStore();
-
-const tabs = ref<ITab[]>([
-    {
-        id: crypto.randomUUID(),
-        name: "マクロの名前マクロの名前マクロの名前マクロの名前マクロの名前マクロの名前",
-        isActive: true
-    },
-    {
-        id: crypto.randomUUID(),
-        name: "マクロ終了時",
-        isActive: false
-    },
-    {
-        id: crypto.randomUUID(),
-        name: "イベント2",
-        isActive: false
-    },
-])
-
-interface ITab {
-    id: string,
-    name: string,
-    isActive: boolean
-}
+const blockly = useBlocklyStore();
+const editor = useEditorStore();
+const commandPalette = useCommandPaletteStore();
+// const overflow = ref(false);
 
 onMounted(() => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
-    blocklyStore.injectBlockly(container);
+    blockly.registerNewWorkspaceSession(container);
 
-    window.addEventListener("resize", () => {
-        resize();
-        
-    })
+    window.addEventListener("resize", resize);
 
     resize();
 });
 
 function resize() {
-    const firstRow = document.querySelector(".button-container") as HTMLElement;
+    const firstRow = document.querySelector(".first-row-container") as HTMLElement;
     const height = firstRow.clientHeight;
     const blocklyDiv = document.getElementById('blocklyDiv') as HTMLElement;
     blocklyDiv.style.height = (window.innerHeight - height - 1) + 'px';
-    blocklyStore.resizeWorkspaceSvg();
+    blockly.getCurrentWorkspaceSession()?.resizeWorkspaceSvg();
 
-    // const toolbox = document.querySelector(".blocklyToolboxDiv") as HTMLElement;
-    // const width = toolbox.clientWidth;
-    // const button = document.getElementById("button") as HTMLButtonElement;
-    // button.style.width = width + "px";
+    // const overlay = document.getElementById("overlay") as HTMLElement;
+    // overlay.style.width = blocklyDiv.clientWidth + "px";
+    // overlay.style.height = blocklyDiv.clientHeight + "px";
+    // overflow.value = window.innerWidth < firstRow.clientWidth;
 }
 
 function activeTab(tabToActive: ITab) {
-    for (const tab of tabs.value) {
+    for (const tab of appStore.tabs) {
         tab.isActive = false;
     }
-
     tabToActive.isActive = true;
 }
 
@@ -78,64 +52,101 @@ function activeTab(tabToActive: ITab) {
 <template>
     <div class="grid-container">
         <div class="first-row-container">
-            <div class="button-container">
-                <div class="tab-container">
-                    <div class="tab"
-                        :class="{ 'tab-active': tab.isActive }"
-                        @click="activeTab(tab)"
-                        v-for="tab in tabs">
-                        <span class="tab-text">{{ tab.name }}</span>
-                    </div>
+            <div class="tab-container">
+                <div class="tab"
+                    :class="{ 'tab-active': tab.isActive }"
+                    @click="activeTab(tab)"
+                    v-for="tab in appStore.tabs">
+                    <span class="tab-text">{{ tab.name }}</span>
                 </div>
                 <div class="icon-container">
-                    <Plus class="icon"></Plus>
+                    <Plus class="icon" :disabled="true"></Plus>
                     <span class="separator">|</span>
-                    <Setting class="icon"></Setting>
+                    <Setting class="icon" :disabled="true"></Setting>
                 </div>
             </div>
-            <!-- <div class="text-container">
-                <div class="text">マクロの名前</div>
-            </div> -->
             <div class="button-container">
-                <button id="button" @click="appStore.showMacroMenuCommand()">
+                <button id="button" @click="appStore.openMacroMenu()">
                     <Menu class="icon" style="margin: 0"></Menu>
                     <span style="margin-bottom: 3px;">マクロ一覧</span>
                 </button>
-                <DropdownMenu :items="appStore.findMenuItems">
-                    <template #button>
-                        <div>探す</div>
-                    </template>
-                </DropdownMenu>
-                <DropdownMenu :items="appStore.workspaceMenuItems">
-                    <template #button>
-                        <div>ワークスペース</div>
-                    </template>
-                </DropdownMenu>
-                <DropdownMenu ref="generatingMenu" :items="appStore.codeGenerationMenuItems">
-                    <template #button>
-                        <div>
-                            コード生成
-                        </div>
-                    </template>
-                </DropdownMenu>
+                <button class="dropdown-menus-button" @click="appStore.openDropdownMenus()">
+                    <Menu class="icon" style="margin: 0"></Menu>
+                    <span style="margin-bottom: 3px;">メニュー</span>
+                </button>
+                <!-- ドロップダウンメニュー -->
+                <!-- :class="{'hidden-overflow': overflow}" -->
+                <div class="dropdown-menus">
+                    <div class="menu" v-for="menu in appStore.appDropDownMenus" :key="menu.header">
+                        <DropdownMenu :items="menu.menuItems">
+                            <template #button>
+                                <div class="dropdown-header">{{ menu.header }}</div>
+                            </template>
+                        </DropdownMenu>
+                    </div>
+                </div>
             </div>
         </div>
-        <div>
+        <div style="position: relative; background-color: transparent;">
+            <!-- <div id="overlay" style="background-color: transparent; z-index: 3; position: absolute; pointer-events: none;">
+                <div style="display: flex; justify-content: end;" background-color="transparent">
+                    <div class="side-menu-container">
+                        <Menu class="icon side-menu-toggle" style="margin: 0"></Menu>
+                        <div class="side-menu">
+                            <button id="button" style="height: 35px;" @click="appStore.openMacroMenu()">
+                                <Menu class="icon" style="margin: 0"></Menu>
+                                <span style="margin-bottom: 3px;">マクロ一覧</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
             <div id="blocklyArea"></div>
             <div id="blocklyDiv" style="position: absolute;"></div>
         </div>
     </div>
     <Teleport to="body">
-        <ModalEditor :modal-state="editorStore.modalState"></ModalEditor>
-        <ModalCommand 
-            :modal-state="commandStore.modalState"
-            :items="commandStore.commandItems"
-            :hint="commandStore.hint">
-        </ModalCommand>
+        <ModalEditor :modal-state="editor.modalState"></ModalEditor>
+        <ModalCommandPalette 
+            :modal-state="commandPalette.modalState"
+            :items="commandPalette.commandItems"
+            :hint="commandPalette.hint"
+            :text="commandPalette.text"
+            :filtering="commandPalette.filtering"
+            :text-validator="commandPalette.textValidator"
+            :close-auto="commandPalette.closeAuto">
+        </ModalCommandPalette>
     </Teleport>
 </template>
 
 <style>
+
+
+/* .side-menu-container {
+    margin-right: 175px;
+    margin-top: 5px;
+    pointer-events: auto;
+    position: relative;
+}
+
+.side-menu {
+    height: 35px; 
+    padding: 7px;
+    border-radius: 8px;
+    background-color: #2A2A2A;
+    position: absolute;
+    left: -130px;
+    top: 5px;
+}
+
+.side-menu-toggle {
+    position: absolute;
+    left: -155px;
+    top: 280px;
+    padding: 5px;
+    background-color: #2A2A2A;
+    border-radius: 5px 0 0 5px;
+} */
 
 .icon-container {
     display: flex;
@@ -148,17 +159,25 @@ function activeTab(tabToActive: ITab) {
     height: 20px;
     margin: 0 8px;
     fill: #E7E7E7;
+    /* fill: #424242; */
     user-select: none;
 }
 
-.icon:hover {
+.icon:hover:not([disabled]) {
     opacity: 0.7;
     cursor: pointer;
 }
 
+.icon[disabled] {
+    cursor: default;
+    fill: #424242;
+}
+
 .separator {
     color: #9C9C9C;
+    /* color: #424242; */
     margin: 0 3px;
+    user-select: none;
 }
 
 #blocklyDiv {
@@ -176,6 +195,7 @@ function activeTab(tabToActive: ITab) {
     display: flex;
     justify-content: space-between;
     /* align-items: center; */
+    height: 35px;
 }
 
 .text-container {
@@ -223,6 +243,7 @@ button:hover {
     background-color: green;
     user-select: none;
     padding: 0 12px;
+    box-shadow: #9C9C9C;
 }
 
 #button:hover {
@@ -233,6 +254,31 @@ button:hover {
     pointer-events: none;
     opacity: 0.5;
     cursor: not-allowed;
+}
+.dropdown-menus {
+    /* overflow-x: hidden; */
+    display: flex;
+}
+
+.dropdown-menus-button {
+    display: none;
+}
+
+@media (width <= 1200px) {
+    .dropdown-menus {
+        display: none;
+    }
+
+    .dropdown-menus-button {
+        display: flex;
+    }
+}
+
+.hidden-overflow {
+    display: none;
+}
+.dropdown-header {
+    user-select: none;
 }
 
 .tab-container {

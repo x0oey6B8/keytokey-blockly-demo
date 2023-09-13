@@ -7,136 +7,139 @@ import { StatementPrefix, defineCodeGenerator, setStatementPrefix } from "../def
 import { defineBlocks } from "../definitions/blocks/defineBlocks";
 import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
-import { ref } from "vue";
+import { overwriteMessages } from "../definitions/message/overwrite"
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
     const generator = javascriptGenerator;
 
-    let workspaceSvg: WorkspaceSvg | null = null;
-    const isScriptRunning = ref(false);
+    //Blockly.FieldDropdown.MAX_MENU_HEIGHT_VH = 0.65
+    let workspaceSession: WorkspaceSession | undefined = undefined;
+
     setLocaleToJa();
     defineTheme();
     defineBlocks();
     defineCodeGenerator(generator);
     defineContextMenu();
+    overwriteMessages();
     registerGlobalFunctions();
 
     return {
-        generator,
-        isScriptRunning,
-        injectBlockly,
-        isSelectedBlockFunction,
-        disconnectSelectedBlock,
-        canDisconnectSelectedBlock,
-        backupState,
-        setState,
-        getAllBlocks,
-        getState,
-        getSelectedBlock,
-        centerToEntryBlock,
-        centerTo,
-        createCode,
-        createDecodedCode,
-        createXml,
-        copyBlockAsXml,
-        pasteBlock,
-        clearWorkspace,
-        resizeWorkspaceSvg,
-        switchToolboxPosition
+        registerNewWorkspaceSession,
+        getCurrentWorkspaceSession
     };
 
+    function registerNewWorkspaceSession(container: HTMLElement) {
+        workspaceSession = new WorkspaceSession(container, true, generator);
+    }
+
+    function getCurrentWorkspaceSession() {
+        return workspaceSession;
+    }
+
     function registerGlobalFunctions() {
-        //const w = (window as any);
+
     }
+});
 
-    function addKeyValue() {
-        console.log("addKeyValue");
-        alert("未実装");
-    }
+class WorkspaceSession {
 
-    function injectBlockly(container: HTMLElement) {
-        workspaceSvg = Blockly.inject(container, options);
-        workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
-        workspaceSvg.registerButtonCallback("addKeyValue", addKeyValue);
-        //window.addEventListener('resize', onresize, false);
-        // onresize();
+    workspaceSvg: WorkspaceSvg
+    isMainWorkspace: boolean;
+    javascriptGenerator: any;
 
-        restoreState();
-        addEntryProcedureBlock(workspaceSvg);
-        Blockly.common.getMainWorkspace().addChangeListener(() => {
-            backupState();
-            if (workspaceSvg) {
-                workspaceSvg.getAllBlocks(true).forEach(b => {
-                    const comment = b.getIcon(Blockly.icons.IconType.COMMENT);
-                    if (comment) {
-                        comment.setBubbleSize({ width: 500, height: 500 });
-                    }
-                });
-            }
+    constructor(container: HTMLElement, isMainWorkspace: boolean, javascriptGenerator: any) {
+        this.javascriptGenerator = javascriptGenerator;
+        this.isMainWorkspace = isMainWorkspace;
+        this.workspaceSvg = Blockly.inject(container, options);
+        this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
+        this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
+
+        this.restoreState();
+        this.addEntryProcedureBlock();
+        this.workspaceSvg.addChangeListener((e) => {
+            this.backupState();
+            console.log(e);
         });
     }
 
-    function switchToolboxPosition() {
-        if (workspaceSvg) {
-            //workspaceSvg.options.toolboxPosition = 
-            console.log("switch")
-            workspaceSvg.toolboxPosition = Blockly.utils.toolbox.Position.RIGHT;
-            const toolbox = workspaceSvg.getToolbox();
-            if (toolbox) {
+    addKeyValue() {
+        // notificationStore.toastMessage("未実装ダヨ", {
+        //     position: "top-center",
+        //     autoClose: 3000,
+        //     type: "info",
+        //     onClose: () => console.log("end")
+        // })
+    }
 
-                //workspaceSvg.updateToolbox(toolbox);
-                toolbox.position();
+    makeWorkspaceReadOnly() {
+        this.workspaceSvg.options.readOnly = true;
+    }
+
+    makeWorkspaceEditable() {
+        this.workspaceSvg.options.readOnly = false;
+    }
+
+    centerToEntryBlock() {
+        const entryBlock = this.getEntryProcedureBlock();
+        if (entryBlock) {
+            this.centerTo(entryBlock);
+        }
+    }
+
+    zoomToFit() {
+        this.workspaceSvg.zoomToFit();
+    }
+
+    centerTo(block: BlockSvg) {
+        this.workspaceSvg.centerOnBlock(block.id);
+        block.select();
+    }
+
+    centerToProcedureDefinition() {
+        const block = this.getSelectedBlock();
+        if (block) {
+            const name = block.getFieldValue("NAME");
+            const procedureBlock = Blockly.Procedures.getDefinition(name, this.workspaceSvg) as BlockSvg;
+            if (procedureBlock) {
+                this.centerTo(procedureBlock);
             }
         }
     }
 
-    function centerToEntryBlock() {
-        if (workspaceSvg) {
-            const blocks = workspaceSvg.getAllBlocks(true);
-            const anyEntryBlocks = blocks.filter(block => block.type == "procedures_defnoreturn" && block.getFieldValue("NAME") === "ここから実行");
-            if (anyEntryBlocks.length > 0) {
-                const block = anyEntryBlocks[0];
-                workspaceSvg.centerOnBlock(block.id);
-                block.select();
-            }
+    getProcedureBlocksByName() {
+        const procedureBlocks = this.workspaceSvg.getAllBlocks(true).filter(block => this.isProcedureBlock(block));
+        return procedureBlocks.map(block => {
+            const name = block.getFieldValue("NAME");
+            return { block, name }
+        })
+    }
+
+    isProcedureBlock(block: BlockSvg) {
+        return block.type === "procedures_defnoreturn"
+            || block.type === "procedures_defreturn";
+    }
+
+    public resizeWorkspaceSvg() {
+        Blockly.svgResize(this.workspaceSvg as Blockly.WorkspaceSvg);
+    }
+
+    clearWorkspace() {
+        const result = confirm("ワークスペースの内容をリセットします。\nよろしいですか？");
+        if (result) {
+            this.workspaceSvg.clear();
+            this.addEntryProcedureBlock();
         }
     }
 
-    function centerTo(block: BlockSvg) {
-        if (workspaceSvg) {
-            workspaceSvg.centerOnBlock(block.id);
-            block.select();
-        }
+    getAllBlocks(): Blockly.BlockSvg[] {
+        return this.workspaceSvg.getAllBlocks(true);
     }
 
-    function resizeWorkspaceSvg() {
-        Blockly.svgResize(workspaceSvg as Blockly.WorkspaceSvg);
-    }
-
-    function clearWorkspace() {
-        if (workspaceSvg) {
-            const result = confirm("ワークスペースの内容をリセットします。\nよろしいですか？");
-            if (result) {
-                workspaceSvg.clear();
-                addEntryProcedureBlock(workspaceSvg);
-            }
-        }
-    }
-
-    function getAllBlocks(): Blockly.BlockSvg[] {
-        if (workspaceSvg) {
-            return workspaceSvg.getAllBlocks(true);
-        } else {
-            return []
-        }
-    }
-
-    function getSelectedBlock(): Blockly.Block | null {
-        const workspace = Blockly.common.getMainWorkspace();
+    getSelectedBlock(): Blockly.BlockSvg | null {
         const selected = Blockly.getSelected();
         if (selected) {
-            const selectedBlock = workspace.getBlockById(selected.id);
+            const selectedBlock = this.workspaceSvg.getBlockById(selected.id);
             if (selectedBlock) {
                 return selectedBlock;
             }
@@ -144,8 +147,8 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return null;
     }
 
-    function isSelectedBlockFunction(): boolean {
-        const selectedBlock = getSelectedBlock();
+    isSelectedBlockFunction(): boolean {
+        const selectedBlock = this.getSelectedBlock();
         if (selectedBlock) {
             if (selectedBlock.type === "procedures_defnoreturn"
                 || selectedBlock.type === "procedures_defreturn") {
@@ -155,8 +158,8 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return false;
     }
 
-    function canDisconnectSelectedBlock(): boolean {
-        const selectedBlock = getSelectedBlock();
+    canDisconnectSelectedBlock(): boolean {
+        const selectedBlock = this.getSelectedBlock();
         if (selectedBlock) {
             const previous = selectedBlock.getPreviousBlock();
             const next = selectedBlock.getPreviousBlock();
@@ -167,49 +170,43 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return false;
     }
 
-    function disconnectSelectedBlock() {
-        const selectedBlock = getSelectedBlock();
+    disconnectSelectedBlock() {
+        const selectedBlock = this.getSelectedBlock();
         if (selectedBlock) {
             selectedBlock.unplug(true);
         }
     }
 
-    function copyBlockAsXml(copyChildren: boolean | undefined) {
-        const selectedBlock = getSelectedBlock();
+    copyBlockAsXml(copyChildren: boolean) {
+        const selectedBlock = this.getSelectedBlock();
         if (selectedBlock) {
             const dom = Blockly.Xml.blockToDom(selectedBlock, true);
             if (!copyChildren) {
                 Blockly.Xml.deleteNext(dom);
             }
             let xml = `<xml>${Blockly.Xml.domToText(dom)}</xml>`
-            // xml = formatXml(xml, {
-            //     indentation: '  ',
-            //     ignoredPaths: ["field", "comment"]
-            // });
             return xml;
         }
         return "";
     }
 
-    function pasteBlock(xml: string): string[] {
-        const workspace = Blockly.common.getMainWorkspace();
+    pasteBlock(xml: string): string[] {
         const dom = Blockly.utils.xml.textToDom(xml);
-        const addedBlockIds = Blockly.Xml.domToWorkspace(dom, workspace);
+        const addedBlockIds = Blockly.Xml.domToWorkspace(dom, this.workspaceSvg);
         return addedBlockIds;
     }
 
-    function createXml() {
-        const workspace = Blockly.common.getMainWorkspace();
-        const xmlDom = Blockly.Xml.workspaceToDom(workspace, true);
+    createXml() {
+        const xmlDom = Blockly.Xml.workspaceToDom(this.workspaceSvg, true);
         const xml = Blockly.Xml.domToText(xmlDom);
         return xml;
     }
 
-    function createCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
-        setStatementPrefix(generator, prefix);
-        const workspace = Blockly.common.getMainWorkspace();
-        const generatedCode = generator.workspaceToCode(workspace);
-        const indentedCode = insertIndentation(generatedCode);
+    createCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
+        const s = performance.now();
+        setStatementPrefix(this.javascriptGenerator, prefix);
+        const generatedCode = this.javascriptGenerator.workspaceToCode(this.workspaceSvg);
+        const indentedCode = this.insertIndentation(generatedCode);
         //ここから実行：_E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C()
         const entryFunction = "    _E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C();"
         const codes = [
@@ -220,16 +217,17 @@ export const useBlocklyStore = defineStore("blockly", () => {
             "})();"
         ]
         const code = codes.join("\n");
+        console.log(performance.now() - s);
         return code;
     }
 
-    function createDecodedCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
-        const code = createCode(prefix);
-        const decodedCode = decode(code);
+    createDecodedCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
+        const code = this.createCode(prefix);
+        const decodedCode = this.decode(code);
         return decodedCode;
     }
 
-    function decode(text: string) {
+    private decode(text: string) {
         const regex = /(_[A-Z0-9]{2})+/g;
         const decodedStr = text.replace(regex, match => {
             try {
@@ -242,7 +240,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return decodedStr;
     }
 
-    function insertIndentation(text: string) {
+    private insertIndentation(text: string) {
         // 改行文字で文字列を分割し、配列に格納する
         var lines = text.split('\n');
 
@@ -257,44 +255,54 @@ export const useBlocklyStore = defineStore("blockly", () => {
         return indentedText;
     }
 
-    function backupState() {
-        const currentState = getState();
+    backupState() {
+        const currentState = this.getState();
         localStorage.setItem("state", currentState);
     }
 
-    function restoreState() {
+    restoreState() {
         try {
             const previousState = localStorage.getItem("state");
             if (previousState) {
-                setState(previousState);
+                this.setState(previousState);
             }
         } catch (error) {
         }
     }
 
-    function addEntryProcedureBlock(workspaceSvg: WorkspaceSvg) {
-        const procedureBlocks = workspaceSvg.getBlocksByType("procedures_defnoreturn", true);
-        const anyEntryBlocks = procedureBlocks.filter(block => block.getFieldValue("NAME") === "ここから実行");
-        if (anyEntryBlocks.length < 1) {
-            const entryBlockXml = `<xml>
-    <block type="procedures_defnoreturn" x="50" y="50">
-        <field name="NAME" >ここから実行</field>
-    </block>
-</xml>`
-            pasteBlock(entryBlockXml);
+    getEntryProcedureBlock() {
+        const anyEntryBlocks = this.workspaceSvg.getAllBlocks(true).filter(block => block.type === "procedures_defnoreturn" && block.getFieldValue("NAME") === "ここから実行");
+        return anyEntryBlocks.length > 0 ? anyEntryBlocks[0] : null;
+    }
+
+    addEntryProcedureBlock() {
+        const entryBlock = this.getEntryProcedureBlock();
+        if (!entryBlock) {
+            const entryBlockXml = `
+            <xml>
+                <block type="procedures_defnoreturn" x="50" y="50">
+                    <field name="NAME" >ここから実行</field>
+                </block>
+            </xml>
+            `
+            this.pasteBlock(entryBlockXml);
         }
     }
 
-    function getState() {
-        const workspace = Blockly.common.getMainWorkspace();
+    getState() {
+        const workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
+        if (!workspace) {
+            return "";
+        }
         const json = JSON.stringify(Blockly.serialization.workspaces.save(workspace));
         return json;
     }
 
-    function setState(json: string) {
-        const workspace = Blockly.common.getMainWorkspace();
-        const state = JSON.parse(json);
-        Blockly.serialization.workspaces.load(state, workspace);
+    setState(json: string) {
+        const workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
+        if (workspace) {
+            const state = JSON.parse(json);
+            Blockly.serialization.workspaces.load(state, workspace);
+        }
     }
-});
-
+}

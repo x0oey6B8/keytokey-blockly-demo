@@ -10,9 +10,10 @@ export function defineTheme() {
             'weight': '600',
             'size': 12,
         },
+        startHats: true,
         componentStyles: {
-            workspaceBackgroundColour: "#141414",
-            toolboxBackgroundColour: "#141414",
+            workspaceBackgroundColour: "#181818",
+            toolboxBackgroundColour: "#181818",
             toolboxForegroundColour: "#C7C7C7",
             flyoutBackgroundColour: "#2d2e30",
             flyoutForegroundColour: "#ccc",
@@ -22,6 +23,8 @@ export function defineTheme() {
             insertionMarkerOpacity: 0.6,
             scrollbarOpacity: 0.6,
             cursorColour: "#d0d0d0",
+            selectedGlowColour: "#fffe00",
+            selectedGlowOpacity: 1.0
         },
         categoryStyles: {
             'logic_category': {
@@ -36,6 +39,9 @@ export function defineTheme() {
             'math_category': {
                 colour: BlockColors.Math,
             },
+            'list_category': {
+                colour: BlockColors.List,
+            }
             // 'variable_category': {
             //     colour: BlockColors.Action
             // }
@@ -56,6 +62,10 @@ export function defineTheme() {
             'math_blocks': {
                 'colourPrimary': BlockColors.Math,
                 'colourSecondary': BlockColors.Math,
+            },
+            'list_blocks': {
+                'colourPrimary': BlockColors.List,
+                'colourSecondary': BlockColors.List,
             },
             // 'variable_blocks': {
             //     'colourPrimary': BlockColors.Action,
