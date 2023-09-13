@@ -33,7 +33,6 @@ export function defineCodeGenerator(javascriptGenerator) {
     /*
         値
     */
-
     javascriptGenerator.forBlock['point'] = function (block) {
         const value_x = javascriptGenerator.valueToCode(block, 'X', javascriptGenerator.ORDER_ATOMIC);
         const value_y = javascriptGenerator.valueToCode(block, 'Y', javascriptGenerator.ORDER_ATOMIC);
@@ -82,11 +81,47 @@ export function defineCodeGenerator(javascriptGenerator) {
     */
 
     javascriptGenerator.forBlock['trigger_is_pressed'] = function (block) {
-        return ["trigger.isPressed()", javascriptGenerator.ORDER_NONE];
+        var dropdown_value = this.getFieldValue("DROPDOWN");
+        var code = "trigger.isPressed()";
+        if (dropdown_value === "RELEASED") {
+            code = "!" + code;
+        }
+        return [code, javascriptGenerator.ORDER_NONE];
     };
 
-    javascriptGenerator.forBlock['trigger_is_not_pressed'] = function (block) {
-        return ["trigger.isNotPressed()", javascriptGenerator.ORDER_NONE];
+    /*
+        入力状態取得
+    */
+
+    javascriptGenerator.forBlock['key_is_pressed'] = function (block) {
+        var dropdown_value = block.getFieldValue('DROPDOWN');
+        var key = javascriptGenerator.valueToCode(block, 'KEY', javascriptGenerator.ORDER_NONE);
+        var code = `isKeyPressed(${key})`;
+        if (dropdown_value === "RELEASED") {
+            code = "!" + code;
+        }
+        return [code, javascriptGenerator.ORDER_NONE];
+    };
+
+    javascriptGenerator.forBlock['phisical_key_is_pressed'] = function (block) {
+        var dropdown_value = block.getFieldValue('DROPDOWN');
+        var key = javascriptGenerator.valueToCode(block, 'KEY', javascriptGenerator.ORDER_NONE);
+        var code = `isPhisicalKeyPressed(${key})`;
+        if (dropdown_value === "RELEASED") {
+            code = "!" + code;
+        }
+        return [code, javascriptGenerator.ORDER_NONE];
+    };
+
+    javascriptGenerator.forBlock['keys_are_pressed'] = function (block) {
+        var value_key_array = javascriptGenerator.valueToCode(block, 'KEY_ARRAY', javascriptGenerator.ORDER_ATOMIC);
+        var dropdown_value = block.getFieldValue('DROPDOWN');
+        if (dropdown_value === "ALL_PRESSED") {
+            return [`${value_key_array}.every(key => isKeyPressed(key))`, javascriptGenerator.ORDER_NONE];
+        } else if (dropdown_value === "ALL_RELEASED") {
+            return [`${value_key_array}.every(key => !isKeyPressed(key))`, javascriptGenerator.ORDER_NONE];
+        }
+        return [`${value_key_array}.some(key => isKeyPressed(key))`, javascriptGenerator.ORDER_NONE];
     };
 
     /*

@@ -1,5 +1,5 @@
 import Blockly, { Block } from "blockly";
-import { BlockColors } from "../../../configurations/blockColors.ts";
+import { BlockColors } from "../../configurations/blockColors.ts";
 
 export function defineJavascriptBlocks() {
     Blockly.Blocks['js'] = {

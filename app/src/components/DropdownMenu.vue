@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { nextTick, onMounted, ref } from 'vue';
 import ChevronDown from "./icons/ChevronDown.vue"
+import { IDropDownMenuItem } from '../models/dropdown';
 
 defineProps<Props>();
 
@@ -60,11 +61,7 @@ export interface Props {
     items: IDropDownMenuItem[]
 }
 
-export interface IDropDownMenuItem {
-    header: string,
-    enabled: boolean,
-    clicked: () => void
-}
+
 </script>
 
 <template>
@@ -77,7 +74,7 @@ export interface IDropDownMenuItem {
             <a 
             v-for="item in items"
             @click="clicked(item)" 
-            :class="{ 'disabled-link': !item.enabled }">
+            :class="{ 'disabled-link': !item.condition() }">
                 {{ item.header }}
             </a>
         </div>

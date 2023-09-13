@@ -1,7 +1,8 @@
 import Blockly, { Block, BlockSvg } from "blockly";
-import { BlockColors } from "../../../configurations/blockColors.ts";
+import { BlockColors } from "../../configurations/blockColors.ts";
 
 export function defineInputBlocks() {
+
     Blockly.Blocks['key_event'] = {
         init: function () {
             this.appendDummyInput()
@@ -20,9 +21,63 @@ export function defineInputBlocks() {
         },
     } as Block;
 
+    Blockly.Blocks['key_is_pressed'] = {
+        init: function () {
+            this.appendValueInput("KEY")
+                .setCheck("Keys");
+            this.appendDummyInput()
+                .appendField("が押されて")
+                .appendField(new Blockly.FieldDropdown([["いる", "PRESSED"], ["いない", "RELEASED"]]), "DROPDOWN")
+            this.setInputsInline(true);
+            this.setOutput(true, "Boolean");
+            this.setColour(BlockColors.Logic);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    };
+
+    Blockly.Blocks['phisical_key_is_pressed'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("物理デバイスの");
+            this.appendValueInput("KEY")
+                .setCheck("Keys");
+            this.appendDummyInput()
+                .appendField("が押されて")
+                .appendField(new Blockly.FieldDropdown([["いる", "PRESSED"], ["いない", "RELEASED"]]), "DROPDOWN")
+            this.setInputsInline(true);
+            this.setOutput(true, "Boolean");
+            this.setColour(BlockColors.Logic);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    };
+
+    Blockly.Blocks['keys_are_pressed'] = {
+        init: function () {
+            this.appendValueInput("KEY_ARRAY")
+                .setCheck("Array")
+                .appendField("キーのリスト");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown([
+                    ["のうちどれかが押されている", "SOME_PRESSED"],
+                    ["がすべて押されている", "ALL_PRESSED"],
+                    ["がすべて離されている", "ALL_RELEASED"],
+                ]), "DROPDOWN");
+            this.setInputsInline(true);
+            this.setOutput(true, "Boolean");
+            this.setColour(BlockColors.Logic);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    };
+
+
+
     Blockly.Blocks["trigger_is_pressed"] = {
         init: function () {
-            this.appendDummyInput().appendField("トリガーが押されている");
+            this.appendDummyInput().appendField("トリガーが押されて")
+                .appendField(new Blockly.FieldDropdown([["いる", "PRESSED"], ["いない", "RELEASED"]]), "DROPDOWN")
             this.setOutput(true, "Boolean");
             this.setColour(BlockColors.Logic);
             this.setTooltip("");
@@ -30,15 +85,6 @@ export function defineInputBlocks() {
         },
     };
 
-    Blockly.Blocks["trigger_is_not_pressed"] = {
-        init: function () {
-            this.appendDummyInput().appendField("トリガーが押されていない");
-            this.setOutput(true, "Boolean");
-            this.setColour(BlockColors.Logic);
-            this.setTooltip("");
-            this.setHelpUrl("");
-        },
-    };
 
     Blockly.Blocks['down_up'] = {
         init: function () {
@@ -70,8 +116,7 @@ export function defineInputBlocks() {
             this.appendValueInput("WAIT1")
                 .setCheck("Number");
             this.appendDummyInput()
-                .appendField("ミリ秒待つ")
-                .appendField("キーの名前 を離して", "KEY2");
+                .appendField("ミリ秒待つ、離して")
             this.appendValueInput("WAIT2")
                 .setCheck("Number");
             this.appendDummyInput()
@@ -92,15 +137,7 @@ export function defineInputBlocks() {
                     }
                 })
             };
-        },
-        onchange: function (_) {
-            const key = this.getInputTargetBlock("KEY1")?.toString();
-            if (key !== undefined) {
-                this.getField("KEY2")?.setValue(`${key} を離して`);
-            } else {
-                this.getField("KEY2")?.setValue(`【キーの名前】を離して`);
-            }
-        },
+        }
 
     } as BlockSvg;
 
@@ -194,12 +231,21 @@ export function defineInputBlocks() {
         }
     };
 
+    const speedArray: Blockly.MenuOption[] = [
+        ["一瞬", "WARP"],
+        ["とても速い速度", "FASTEST"],
+        ["速い速度", "FAST"],
+        ["普通速度", "NORMAL"],
+        ["遅い速度", "SLOW"],
+        ["とても遅い速度", "SLOWEST"]
+    ];
+
     Blockly.Blocks['mouse_move'] = {
         init: function () {
             this.appendDummyInput()
                 .appendField("マウスを")
-                .appendField(new Blockly.FieldDropdown([["一瞬", "WARP"], ["とても速い", "FASTEST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "SLOWEST"]]), "SPEED")
-                .appendField("速度で", "TEXT1");
+                .appendField(new Blockly.FieldDropdown(speedArray), "SPEED")
+                .appendField("で");
             this.appendValueInput("POINT")
                 .setCheck("Point");
             this.appendDummyInput()
@@ -210,14 +256,6 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-        },
-        onchange: function (_) {
-            const speed = this.getFieldValue("SPEED");
-            if (speed === "WARP") {
-                this.getField("TEXT1")?.setValue(`で`);
-            } else {
-                this.getField("TEXT1")?.setValue(`速度で`);
-            }
         }
     } as BlockSvg;
 
@@ -225,7 +263,7 @@ export function defineInputBlocks() {
         init: function () {
             this.appendDummyInput()
                 .appendField("マウスを")
-                .appendField(new Blockly.FieldDropdown([["一瞬", "WARP"], ["とても速い", "FASTEST"], ["速い", "FAST"], ["普通", "NORMAL"], ["遅い", "SLOW"], ["とても遅い", "SLOWEST"]]), "SPEED")
+                .appendField(new Blockly.FieldDropdown(speedArray), "SPEED")
                 .appendField("で", "TEXT1");
             this.appendDummyInput()
                 .appendField("横に");
@@ -245,16 +283,6 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-        },
-        onchange: function (_) {
-            if (this.getPreviousBlock()) {
-                const speed = this.getFieldValue("SPEED");
-                if (speed === "WARP") {
-                    this.getField("TEXT1")?.setValue(`で`);
-                } else {
-                    this.getField("TEXT1")?.setValue(`速度で`);
-                }
-            }
         }
     } as Block;
 }

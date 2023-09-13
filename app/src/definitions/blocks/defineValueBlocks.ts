@@ -1,20 +1,21 @@
-import Blockly, { Block } from "blockly";
+import Blockly, { BlockSvg } from "blockly";
 import { keys } from "./keys.ts";
-import { BlockColors } from "../../../configurations/blockColors.ts";
+import { BlockColors } from "../../configurations/blockColors.ts";
 
 export function defineValueBlocks() {
 
     Blockly.Blocks['keys_value'] = {
         init: function () {
+            const dropdown = new Blockly.FieldDropdown(keys);
             this.appendDummyInput()
-                .appendField(new Blockly.FieldDropdown(keys), "VALUE");
+                .appendField(dropdown, "VALUE");
             this.setInputsInline(true);
             this.setOutput(true, "Keys");
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
         }
-    } as Block;
+    } as BlockSvg;
 
     Blockly.Blocks['point'] = {
         init: function () {
@@ -30,7 +31,7 @@ export function defineValueBlocks() {
             this.setTooltip("");
             this.setHelpUrl("");
         }
-    } as Block;
+    } as BlockSvg;
 
     Blockly.Blocks['get_point'] = {
         init: function () {
@@ -45,5 +46,5 @@ export function defineValueBlocks() {
             this.setTooltip("");
             this.setHelpUrl("");
         }
-    } as Block;
+    } as BlockSvg;
 }

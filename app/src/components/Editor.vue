@@ -41,11 +41,11 @@ onMounted(async () => {
     await new Promise((resolve) => lang.loader().then((module: any) => {
         // console.log(module.conf);
         // console.log(module.language);
+        //console.log((monaco as any)._themeService);
         const def: monaco.languages.IMonarchLanguage = module.language;
         def.tokenizer.root.unshift([/[_\w$]*\(/, 'function.name']);
         def.tokenizer.root.unshift([/(if|for|else)/, 'keyword.custom']);
         monaco.languages.setMonarchTokensProvider('javascript', def);
-        console.log((monaco as any)._themeService);
         monaco.editor.defineTheme('custom-theme', {
             base: 'vs-dark',
             inherit: true,

@@ -1,141 +1,145 @@
 import { defineStore } from "pinia";
-import { IDropDownMenuItem } from "../components/DropdownMenu.vue";
-import { StatementPrefix } from "../definitions/generators/defineGenerator";
-import { useNotificationStore } from "./notificationStore";
-import { useEditorStore } from "./editorStore";
-import { useBlocklyStore } from "./blocklyStore";
-import { useCommandStore } from "./commandStore";
-import { ICommandItem } from "../components/Command.vue";
-import { BlockSvg } from "blockly";
+import { IMacroSetting, host } from "../hosts/host";
+import * as MacroMenus from "../menus/commands/macro"
+import * as FindMenus from "../menus/dropdown/find"
+import * as WorkspaceMenus from "../menus/dropdown/workspace"
+import * as CodeGenerationMenus from "../menus/dropdown/codeGenration"
+import { ICommandItem, Label, Separator } from "../models/commandPalette";
+import { ITab } from "../models/tab";
+import { DropDownCommandPaletteOptions, DropDownMenuToCommandItems, IAppDropDownMenu } from "../models/dropdown";
+import { useCommandPaletteStore } from "./commandPaletteStore";
 
 export const useAppStore = defineStore("AppStore", () => {
 
-    const editorStore = useEditorStore();
-    const blocklyStore = useBlocklyStore();
-    const notification = useNotificationStore();
-    const commandStore = useCommandStore();
-    const codeGenerationMenuItems = createCodeGenerationMenuItems();
-    const workspaceMenuItems = createWorkspaceMenuItems();
-    const findMenuItems = createFindMenuItems();
+    const commandStore = useCommandPaletteStore();
+    const appDropDownMenus: IAppDropDownMenu[] = [
+        {
+            header: "探す",
+            menuItems: [
+                new FindMenus.FindEntryProcedureBlockMenuItem(),
+                new FindMenus.FindBlockByIdMenuItem(),
+                new FindMenus.FindProcedureBlockFromListMenuItem(),
+                new FindMenus.ReplayMenuItem(),
+            ]
+        },
+        {
+            header: "ワークスペース",
+            menuItems: [
+                new WorkspaceMenus.SwitchToolboxPositionMenuItem(),
+                new WorkspaceMenus.MakeWorkspaceReadOnlyMenuItem(),
+                new WorkspaceMenus.MakeWorkspaceEditableMenuItem(),
+                new WorkspaceMenus.CopyWorkspaceAsXmlMenuItem(),
+                new WorkspaceMenus.ClearWorkspaceMenuItem(),
+            ]
+        },
+        {
+            header: "コード生成",
+            menuItems: [
+                new CodeGenerationMenus.CreateCodeMenuItem(),
+                new CodeGenerationMenus.CreateCodeNoCheckPointsMenuItem(),
+                new CodeGenerationMenus.CreateDecodedCodeMenuItem(),
+                new CodeGenerationMenus.CreateDecodedCodeNoCheckPointsMenuItem(),
+            ]
+        },
+        {
+            header: "デバッグ",
+            menuItems: [
+                {
+                    header: "デバッグを開始",
+                    condition: () => true,
+                    clicked: () => {
+                        openDropdownMenus()
+                    }
+                }
+            ]
+        },
+        {
+            header: "ヘルプ",
+            menuItems: [
+                {
+                    header: "使用方法",
+                    condition: () => true,
+                    clicked: () => {
+                        openDropdownMenus()
+                    }
+                }
+            ]
+        },
+    ];
+
+    if (import.meta.env.DEV) {
+        appDropDownMenus.push({
+            header: "開発用",
+            menuItems: [
+                {
+                    header: "テスト",
+                    condition: () => true,
+                    clicked: () => { },
+                }
+            ]
+        })
+    }
+
+    const tabs: ITab[] = [
+        {
+            id: crypto.randomUUID(),
+            name: "マクロの名前マクロの名前マクロの名前マクロの名前マクロの名前マクロの名前",
+            isActive: true
+        },
+        {
+            id: crypto.randomUUID(),
+            name: "マクロ終了時",
+            isActive: false
+        },
+        {
+            id: crypto.randomUUID(),
+            name: "設定",
+            isActive: false
+        },
+    ];
 
     return {
-        codeGenerationMenuItems,
-        workspaceMenuItems,
-        findMenuItems,
-        createCode,
-        createDecodedCode,
-        copyWorkspace,
-        showMacroMenuCommand,
+        appDropDownMenus,
+        tabs,
+        openMacroMenu,
+        openDropdownMenus,
+        setNewMacroSetting,
     };
 
-    function createCode(prefix: StatementPrefix = StatementPrefix.NONE) {
-        const code = blocklyStore.createCode(prefix);
-        editorStore.setCode(code, "javascript", true);
+    function openDropdownMenus() {
+        const commandPaletteOptions = new DropDownCommandPaletteOptions(appDropDownMenus, new DropDownMenuToCommandItems());
+        commandStore.open(commandPaletteOptions);
     }
 
-    function createDecodedCode(prefix: StatementPrefix = StatementPrefix.NONE) {
-        const code = blocklyStore.createDecodedCode(prefix);
-        editorStore.setCode(code, "javascript", true);
+    function setNewMacroSetting(setting: IMacroSetting) {
+        tabs[0].name = setting.name;
     }
 
-    function copyWorkspace() {
-        const xml = blocklyStore.createXml();
-        editorStore.setCode(xml, "xml", true);
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(xml);
-            notification.toastMessage("コピーしました。");
+    async function openMacroMenu() {
+        // マクロの設定取得
+        let settings: IMacroSetting[] = await host.macroManager.list();
+        if (!settings) {
+            settings = []
         }
-    }
 
-    function showFindBlockCommand() {
-        const blocks = blocklyStore.getAllBlocks();
-        if (blocks) {
-            const commandItems = blocks.map(block => blockToCommandItem(block));
-            commandStore.hint = "ブロックIDを入力してください";
-            commandStore.setCommandItems(commandItems);
-            commandStore.modalState.isShowing = true;
-        }
-    }
+        // メニューのリスト作成
+        const updateCanShow = () => settings.length > 0;
+        const commandItems: ICommandItem[] = [
+            new MacroMenus.CreateNewMacroCommandItem(new MacroMenus.CreateNewMacroCommandOptions(settings)),
+            new MacroMenus.CloneMacroCommandItem(settings),
+            new MacroMenus.DeleteMacroCommandItem(settings),
+            new MacroMenus.RenameMacroCommandItem(settings),
+            new MacroMenus.TestCommandItem(),
+            new Label({ header: "マクロの切り替え", groupTag: "ChangeMacro", updateCanShow }),
+            new Separator({ groupTag: "ChangeMacro", updateCanShow }),
+        ];
 
-    function blockToCommandItem(block: BlockSvg): ICommandItem {
-        return {
-            header: block.id,
-            subHeader: block.type,
-            elementType: "COMMAND",
-            callback: () => {
-                blocklyStore.centerTo(block);
-                block.select();
-            }
-        }
-    }
-
-    function showMacroMenuCommand() {
-        commandStore.hint = "";
-        commandStore.setCommandItems(commandStore.createMacroMenuCommandItems());
-        commandStore.modalState.isShowing = true;
-    }
-
-    function createCodeGenerationMenuItems() {
-        const codeGenerationMenuItems: IDropDownMenuItem[] = [
-            {
-                header: "デコードなし",
-                enabled: true,
-                clicked: () => createCode(),
-            },
-            {
-                header: "デコードなし（チェックポイント）",
-                enabled: true,
-                clicked: () => createCode(StatementPrefix.CHECK_POINT)
-            },
-            {
-                header: "デコードあり",
-                enabled: true,
-                clicked: () => createDecodedCode()
-            },
-            {
-                header: "デコードあり（チェックポイント）",
-                enabled: true,
-                clicked: () => createDecodedCode(StatementPrefix.CHECK_POINT)
-            },
-        ]
-        return codeGenerationMenuItems;
-    }
-
-    function createWorkspaceMenuItems() {
-        const workspaceMenuItems: IDropDownMenuItem[] = [
-            {
-                header: "ツールボックスの位置を切り替える",
-                enabled: true,
-                clicked: () => {
-                    blocklyStore.switchToolboxPosition();
-                }
-            },
-            {
-                header: "コピー（XML）",
-                enabled: true,
-                clicked: () => copyWorkspace()
-            },
-            {
-                header: "クリア",
-                enabled: true,
-                clicked: () => blocklyStore.clearWorkspace()
-            }
-        ]
-        return workspaceMenuItems;
-    }
-
-    function createFindMenuItems() {
-        return [
-            {
-                header: "「ここから実行」ブロックを探す",
-                enabled: true,
-                clicked: () => blocklyStore.centerToEntryBlock()
-            },
-            {
-                header: "IDからブロックを探す",
-                enabled: true,
-                clicked: () => showFindBlockCommand()
-            }
-        ] as IDropDownMenuItem[]
+        // マクロのメニュー作成
+        const macros = settings.map(setting => new MacroMenus.ChangeCurrentMacroCommandItem(setting));
+        commandItems.push(...macros);
+        // コマンド表示
+        const macroMenuCommandOptions = new MacroMenus.MacroMenuCommandOptions(settings);
+        macroMenuCommandOptions.commandItems = commandItems;
+        commandStore.open(macroMenuCommandOptions);
     }
 })

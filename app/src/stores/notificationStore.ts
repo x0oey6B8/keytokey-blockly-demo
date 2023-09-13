@@ -4,15 +4,20 @@ import 'vue3-toastify/dist/index.css';
 
 export const useNotificationStore = defineStore("notification", () => {
     return {
-        toastMessage
+        toastMessage,
+        remove
     }
 
     function toastMessage(message: string, options: ToastOptions = {
         autoClose: 3000,
         theme: "colored",
-        type: "info"
+        type: "info",
     }) {
-        toast(message, options);
+        return toast(message, options);
+    }
+
+    function remove(toastId: number) {
+        toast.remove(toastId);
     }
 
 });

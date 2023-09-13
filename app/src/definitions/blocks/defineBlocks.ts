@@ -1,11 +1,11 @@
 import Blockly, { Block } from "blockly";
 import { BlockColors } from "../../configurations/blockColors.ts";
-import { defineInputBlocks } from "./input/defineInputBlocks.ts";
-import { defineWaitBlocks } from "./wait/defineWaitBlocks.ts";
-import { defineLogicBlocks } from "./logic/defineLogicBlocks.ts";
-import { defineJavascriptBlocks } from "./javascript/defineJavascriptBlocks.ts";
-import { defineValueBlocks } from "./value/defineValueBlocks.ts";
-import { defineUtilityBlocks } from "./utility/defineUtilityBlocks.ts";
+import { defineInputBlocks } from "./defineInputBlocks.ts";
+import { defineWaitBlocks } from "./defineWaitBlocks.ts";
+import { defineLogicBlocks } from "./defineLogicBlocks.ts";
+import { defineJavascriptBlocks } from "./defineJavascriptBlocks.ts";
+import { defineValueBlocks } from "./defineValueBlocks.ts";
+import { defineUtilityBlocks } from "./defineUtilityBlocks.ts";
 
 export function defineBlocks(): void {
 
