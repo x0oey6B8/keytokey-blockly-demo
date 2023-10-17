@@ -1,5 +1,6 @@
 export interface ITab {
     id: string,
     name: string,
-    isActive: boolean
+    isActive: boolean,
+    isEnabled: boolean,
 }

@@ -1,6 +1,9 @@
+import { BlockSvg } from "blockly";
 import { switchToolBoxPosition } from "../../configurations/blocklyOptions";
+import { CommandItem, CommandPaletteOptions } from "../../models/commandPalette";
 import { IDropDownMenuItem } from "../../models/dropdown";
 import { useBlocklyStore } from "../../stores/blocklyStore";
+import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { useEditorStore } from "../../stores/editorStore";
 import { useNotificationStore } from "../../stores/notificationStore";
 
@@ -13,7 +16,7 @@ export class SwitchToolboxPositionMenuItem implements IDropDownMenuItem {
 }
 
 export class MakeWorkspaceReadOnlyMenuItem implements IDropDownMenuItem {
-    header = "Make workspace readonly";
+    header = "Make Workspace Readonly";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -22,7 +25,7 @@ export class MakeWorkspaceReadOnlyMenuItem implements IDropDownMenuItem {
 }
 
 export class MakeWorkspaceEditableMenuItem implements IDropDownMenuItem {
-    header = "Make workspace editable";
+    header = "Make Workspace Editable";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -49,11 +52,57 @@ export class CopyWorkspaceAsXmlMenuItem implements IDropDownMenuItem {
     };
 }
 
+export class CopyWorkspaceAsJsonMenuItem implements IDropDownMenuItem {
+    header = "テキストとしてコピー（JSON)";
+    condition = () => true;
+    clicked = () => {
+        const blocklyStore = useBlocklyStore();
+        const workspaceSession = blocklyStore.getCurrentWorkspaceSession()
+        if (workspaceSession) {
+            const json = workspaceSession.getState();
+            const editorStore = useEditorStore();
+            const notification = useNotificationStore();
+            editorStore.setCode(json, "json", true);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(json);
+                notification.toastMessage("コピーしました。");
+            }
+        }
+    };
+}
+
 export class ClearWorkspaceMenuItem implements IDropDownMenuItem {
     header = "内容をクリア";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
-        blocklyStore.getCurrentWorkspaceSession()?.clearWorkspace()
+        blocklyStore.getCurrentWorkspaceSession()?.clearWorkspace();
     };
+}
+
+export class ClearSpecificBlockByIdMenuItem implements IDropDownMenuItem {
+    header = "特定のブロックを強制削除";
+    condition = () => true;
+    clicked = () => {
+        const blocklyStore = useBlocklyStore();
+        const session = blocklyStore.getCurrentWorkspaceSession();
+        if (!session) {
+            return;
+        }
+        const blockToCommandItem = (block: BlockSvg) => {
+            return new CommandItem({
+                header: block.id,
+                subHeader: block.type,
+                callback() {
+                    block.dispose();
+                },
+            });
+        };
+        const commandPalette = useCommandPaletteStore();
+        commandPalette.open(new CommandPaletteOptions({
+            hint: "削除するブロックのIDを入力してください",
+            commandItems: session.getAllBlocks().map(block => blockToCommandItem(block)),
+        }));
+    };
+
 }

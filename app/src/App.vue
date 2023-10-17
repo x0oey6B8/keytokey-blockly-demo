@@ -3,13 +3,13 @@ import { onMounted } from "vue";
 import ModalEditor from "./components/ModalEditor.vue";
 import ModalCommandPalette from "./components/ModalCommandPalette.vue";
 import DropdownMenu from "./components/DropdownMenu.vue";
+import Tab from "./components/Tab.vue";
 import Setting from "./components/icons/Setting.vue"
 import Plus from "./components/icons/Plus.vue"
 import Menu from "./components/icons/Menu.vue"
 import { useAppStore } from "./stores/appStore";
 import { useBlocklyStore } from "./stores/blocklyStore";
 import { useEditorStore } from "./stores/editorStore";
-import { ITab } from "./models/tab";
 import { useCommandPaletteStore } from "./stores/commandPaletteStore";
 
 const appStore = useAppStore();
@@ -21,10 +21,10 @@ const commandPalette = useCommandPaletteStore();
 onMounted(() => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
     blockly.registerNewWorkspaceSession(container);
-
     window.addEventListener("resize", resize);
-
     resize();
+    appStore.openMacroMenu();
+    blockly.getCurrentWorkspaceSession()?.setInitialScrollPosition();
 });
 
 function resize() {
@@ -39,26 +39,17 @@ function resize() {
     // overlay.style.height = blocklyDiv.clientHeight + "px";
     // overflow.value = window.innerWidth < firstRow.clientWidth;
 }
-
-function activeTab(tabToActive: ITab) {
-    for (const tab of appStore.tabs) {
-        tab.isActive = false;
-    }
-    tabToActive.isActive = true;
-}
-
 </script>
 
 <template>
     <div class="grid-container">
         <div class="first-row-container">
             <div class="tab-container">
-                <div class="tab"
-                    :class="{ 'tab-active': tab.isActive }"
-                    @click="activeTab(tab)"
-                    v-for="tab in appStore.tabs">
-                    <span class="tab-text">{{ tab.name }}</span>
-                </div>
+                <span v-if="appStore.currentMacro == undefined"
+                    style="margin: 0px 0px 6px 12px; font-size: 14px; color: #777;">
+                    マクロが選択されていません
+                </span>
+                <Tab :tabs="appStore.tabs"></Tab>
                 <div class="icon-container">
                     <Plus class="icon" :disabled="true"></Plus>
                     <span class="separator">|</span>
@@ -240,7 +231,7 @@ button:hover {
 }
 
 #button {
-    background-color: green;
+    background-color: #43A047;
     user-select: none;
     padding: 0 12px;
     box-shadow: #9C9C9C;
@@ -284,52 +275,6 @@ button:hover {
 .tab-container {
     display: flex;
     align-items: end;
-}
-
-.tab {
-    display: flex;
-    align-items: center;
-    user-select: none;
-    font-size: 12px;
-    color: #E7E7E7;
-    /* background-color: #1B5E20; */
-    padding-left: 15px;
-    padding-right: 15px;
-    border-left: solid 1px #424242;
-    border-top: solid 1px #424242;
-    border-right: solid 1px #424242;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 1px;
-    min-width: 60px;
-    max-width: 200px;
-    height: 24px;
-    margin-left: 1px;
-    margin-right: 1px;
-    overflow: hidden;
-}
-
-.tab-text {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    flex: 1;
-    text-align: center;
-}
-
-.tab:hover {
-    color: #C7C7C7;
-    background-color: #424242;
-    cursor: pointer;
-}
-
-.tab-active {
-    background-color: #2E7D32;
-}
-
-.tab-active:hover {
-    background-color: #2E7D32;
-    color: #E7E7E7;
 }
 
 </style>

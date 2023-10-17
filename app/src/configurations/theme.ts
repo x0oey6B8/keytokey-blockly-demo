@@ -12,10 +12,11 @@ export function defineTheme() {
         },
         startHats: true,
         componentStyles: {
-            workspaceBackgroundColour: "#181818",
+            // workspaceBackgroundColour: "#181818",
+            workspaceBackgroundColour: "#242424",
             toolboxBackgroundColour: "#181818",
             toolboxForegroundColour: "#C7C7C7",
-            flyoutBackgroundColour: "#2d2e30",
+            flyoutBackgroundColour: "#333",
             flyoutForegroundColour: "#ccc",
             flyoutOpacity: 1,
             scrollbarColour: "#43A047",

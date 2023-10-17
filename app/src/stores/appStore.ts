@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { IMacroSetting, host } from "../hosts/host";
+import { Macro, MacroFile, host } from "../hosts/host";
 import * as MacroMenus from "../menus/commands/macro"
 import * as FindMenus from "../menus/dropdown/find"
 import * as WorkspaceMenus from "../menus/dropdown/workspace"
@@ -8,9 +8,17 @@ import { ICommandItem, Label, Separator } from "../models/commandPalette";
 import { ITab } from "../models/tab";
 import { DropDownCommandPaletteOptions, DropDownMenuToCommandItems, IAppDropDownMenu } from "../models/dropdown";
 import { useCommandPaletteStore } from "./commandPaletteStore";
+import { ref } from "vue";
+import { useBlocklyStore } from "./blocklyStore";
+import { useEditorStore } from "./editorStore";
 
 export const useAppStore = defineStore("AppStore", () => {
 
+    const currentMacro = ref<Macro>();
+    const currentMacroFile = ref<MacroFile>();
+    const tabs = ref<ITab[]>([]);
+
+    const blocklyStore = useBlocklyStore();
     const commandStore = useCommandPaletteStore();
     const appDropDownMenus: IAppDropDownMenu[] = [
         {
@@ -29,11 +37,13 @@ export const useAppStore = defineStore("AppStore", () => {
                 new WorkspaceMenus.MakeWorkspaceReadOnlyMenuItem(),
                 new WorkspaceMenus.MakeWorkspaceEditableMenuItem(),
                 new WorkspaceMenus.CopyWorkspaceAsXmlMenuItem(),
+                new WorkspaceMenus.CopyWorkspaceAsJsonMenuItem(),
                 new WorkspaceMenus.ClearWorkspaceMenuItem(),
+                new WorkspaceMenus.ClearSpecificBlockByIdMenuItem()
             ]
         },
         {
-            header: "コード生成",
+            header: "コードの確認",
             menuItems: [
                 new CodeGenerationMenus.CreateCodeMenuItem(),
                 new CodeGenerationMenus.CreateCodeNoCheckPointsMenuItem(),
@@ -80,30 +90,16 @@ export const useAppStore = defineStore("AppStore", () => {
         })
     }
 
-    const tabs: ITab[] = [
-        {
-            id: crypto.randomUUID(),
-            name: "マクロの名前マクロの名前マクロの名前マクロの名前マクロの名前マクロの名前",
-            isActive: true
-        },
-        {
-            id: crypto.randomUUID(),
-            name: "マクロ終了時",
-            isActive: false
-        },
-        {
-            id: crypto.randomUUID(),
-            name: "設定",
-            isActive: false
-        },
-    ];
-
     return {
         appDropDownMenus,
+        currentMacro,
+        currentMacroFile,
         tabs,
         openMacroMenu,
         openDropdownMenus,
-        setNewMacroSetting,
+        setNewMacro,
+        clearCurrentMacroIfItsSameWith,
+        clear
     };
 
     function openDropdownMenus() {
@@ -111,35 +107,90 @@ export const useAppStore = defineStore("AppStore", () => {
         commandStore.open(commandPaletteOptions);
     }
 
-    function setNewMacroSetting(setting: IMacroSetting) {
-        tabs[0].name = setting.name;
+    function clearCurrentMacroIfItsSameWith(macro: Macro): boolean {
+        if (currentMacro.value?.name === macro.name) {
+            clearCurrentMacro()
+            return true;
+        }
+        return false;
+    }
+
+    function clearCurrentMacro() {
+        currentMacro.value = undefined;
+        currentMacroFile.value = undefined;
+        tabs.value.length = 0;
+    }
+
+    async function setNewMacro(macro: Macro) {
+        currentMacro.value = undefined;
+        currentMacroFile.value = undefined;
+
+        try {
+            currentMacro.value = macro;
+            tabs.value.length = 0;
+            tabs.value.push(...[
+                {
+                    id: crypto.randomUUID(),
+                    name: macro.setting.name,
+                    isActive: true,
+                    isEnabled: true
+                },
+                // {
+                //     id: crypto.randomUUID(),
+                //     name: "設定",
+                //     isActive: false,
+                //     isEnabled: false
+                // }
+            ]);
+            const session = blocklyStore.getCurrentWorkspaceSession();
+            if (session) {
+                session.canWriteToFile = false;
+                currentMacroFile.value = macro.listFiles()[0];
+                const content = await currentMacroFile.value.read();
+                session.setState(content.json);
+                session.canWriteToFile = true;
+            }
+        } catch (error) {
+            alert(error);
+        }
     }
 
     async function openMacroMenu() {
         // マクロの設定取得
-        let settings: IMacroSetting[] = await host.macroManager.list();
-        if (!settings) {
-            settings = []
+        let macros = await host.macroManager.list();
+        if (!macros) {
+            macros = []
         }
 
         // メニューのリスト作成
-        const updateCanShow = () => settings.length > 0;
+        const updateCanShow = () => macros.length > 0;
         const commandItems: ICommandItem[] = [
-            new MacroMenus.CreateNewMacroCommandItem(new MacroMenus.CreateNewMacroCommandOptions(settings)),
-            new MacroMenus.CloneMacroCommandItem(settings),
-            new MacroMenus.DeleteMacroCommandItem(settings),
-            new MacroMenus.RenameMacroCommandItem(settings),
+            new Label({ header: "マクロの操作", groupTag: "Macro" }),
+            new Separator({ groupTag: "Macro", canShow: true }),
+            new MacroMenus.CreateNewMacroCommandItem(new MacroMenus.CreateNewMacroCommandOptions(macros)),
+            new MacroMenus.CategorizeMacroCommandItem(macros),
+            new MacroMenus.CloneMacroCommandItem(macros),
+            new MacroMenus.DeleteMacroCommandItem(macros),
+            new MacroMenus.RenameMacroCommandItem(macros),
             new MacroMenus.TestCommandItem(),
             new Label({ header: "マクロの切り替え", groupTag: "ChangeMacro", updateCanShow }),
             new Separator({ groupTag: "ChangeMacro", updateCanShow }),
         ];
 
         // マクロのメニュー作成
-        const macros = settings.map(setting => new MacroMenus.ChangeCurrentMacroCommandItem(setting));
-        commandItems.push(...macros);
+        const macroCommandItems = macros.map(setting => new MacroMenus.ChangeCurrentMacroCommandItem(setting));
+        commandItems.push(...macroCommandItems);
+
         // コマンド表示
-        const macroMenuCommandOptions = new MacroMenus.MacroMenuCommandOptions(settings);
+        const macroMenuCommandOptions = new MacroMenus.MacroMenuCommandPaletteOptions(macros);
         macroMenuCommandOptions.commandItems = commandItems;
         commandStore.open(macroMenuCommandOptions);
+    }
+
+    function clear() {
+        const editorStore = useEditorStore();
+        editorStore.modalState.isShowing = false;
+        clearCurrentMacro();
+        openMacroMenu()
     }
 })

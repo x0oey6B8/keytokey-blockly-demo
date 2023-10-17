@@ -16,7 +16,7 @@ export function setStatementPrefix(javascriptGenerator, prefix) {
     } else if (prefix == StatementPrefix.COMMENT_WITH_BLOCK_ID) {
         javascriptGenerator.STATEMENT_PREFIX = '// ⇓ブロックID: %1\n';
     } else if (prefix == StatementPrefix.CHECK_POINT) {
-        javascriptGenerator.STATEMENT_PREFIX = 'checkPoint(%1);\n';
+        javascriptGenerator.STATEMENT_PREFIX = 'checkPoint(%1, /*MACRO_ID_PLACE_HOLDER*/, /*FILE_ID_PLACE_HOLDER*/);\n';
     } else {
         javascriptGenerator.STATEMENT_PREFIX = '';
     }

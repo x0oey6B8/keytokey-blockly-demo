@@ -11,7 +11,11 @@ export interface ICommandItem {
     canShow?: boolean;
     isSelected?: boolean;
     updateCanShow?: (args: ICallbackArgs) => boolean,
-    callback?: (args: ICallbackArgs) => void
+    callback?: (args: ICallbackArgs) => void,
+    onMouseLeave?: (commandItem: ICommandItem) => void;
+    onMouseEnter?: (commandItem: ICommandItem) => void;
+    onSelected?: (commandItem: ICommandItem) => void;
+    onUnselected?: (commandItem: ICommandItem) => void;
 }
 
 
@@ -34,6 +38,10 @@ export class CommandItem implements ICommandItem {
     elementType: ElementType = "COMMAND";
     groupTag?: string = "";
     callback?: (args: ICallbackArgs) => void;
+    onMouseEnter?: (commandItem: ICommandItem) => void;
+    onMouseLeave?: (commandItem: ICommandItem) => void;
+    onSelected?: (commandItem: ICommandItem) => void;
+    onUnselected?: (commandItem: ICommandItem) => void;
     updateCanShow?: ((args: ICallbackArgs) => boolean) | undefined;
     constructor(init?: Partial<CommandItem>) {
         Object.assign(this, init);

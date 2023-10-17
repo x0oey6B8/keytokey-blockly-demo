@@ -20,7 +20,7 @@ export const options: BlocklyOptions = {
     grid: {
         spacing: 32,
         length: 3,
-        colour: "#bbbbbb45",
+        colour: "#bbbbbb60",
         snap: true,
     },
     zoom: {

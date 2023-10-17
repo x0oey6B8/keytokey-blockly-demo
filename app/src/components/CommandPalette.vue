@@ -190,6 +190,9 @@ function listNonCommandItems() {
 
 function invokeCallback(commandItem: ICommandItem) {
     emits('selected');
+    if (commandItem === undefined) {
+        return;
+    }
     if (commandItem.callback) {
         if (textValidationResult.value.isValid) {
             commandItem.callback({
@@ -221,6 +224,7 @@ function updateSelectedIndex() {
     const showableCommandItems = listShowableCommandItems();
     for (const command of showableCommandItems) {
         command.isSelected = false;
+        command.onUnselected?.(command);
     }
 
     if (showableCommandItems.length <= 0) {
@@ -235,6 +239,7 @@ function updateSelectedIndex() {
     }
     const command = showableCommandItems[selectedIndex];
     command.isSelected = true;
+    command.onSelected?.(command);
     scrollIntoSelectedIndex(command.id);
 }
 
@@ -256,7 +261,10 @@ function updateSelectedIndex() {
             </div>
         </div>
         <div v-if="listShowableCommandItems().length > 0" class="command-items scrollbar" ref="commandItemsContainer">
-            <div v-for="command in commandItems" :key="command.id">
+            <div v-for="command in commandItems"
+                :key="command.id"
+                @mouseenter="command.onMouseEnter?.(command)"
+                @mouseleave="command.onMouseLeave?.(command)">
                 <div v-if="command.canShow">
                     <div v-if="command.elementType === 'COMMAND'"
                         class="command-item"

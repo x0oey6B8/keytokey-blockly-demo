@@ -3,7 +3,7 @@ import Blockly from "blockly"
 export function overwriteMessages() {
 
     // リストブロック
-    Blockly.Msg["LISTS_CREATE_WITH_INPUT_WITH"] = "リスト作成：";
+    Blockly.Msg["LISTS_CREATE_WITH_INPUT_WITH"] = "";
 
     // ループブロック
     Blockly.Msg["CONTROLS_REPEAT_INPUT_DO"] = "";

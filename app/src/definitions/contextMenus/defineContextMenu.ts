@@ -98,6 +98,8 @@ export function defineContextMenu() {
         callback: (scope) => {
             if (navigator?.clipboard && scope.block) {
                 navigator.clipboard.writeText(scope.block.id);
+                const notification = useNotificationStore();
+                notification.toastMessage("コピーしました");
             }
         },
         preconditionFn: () => {

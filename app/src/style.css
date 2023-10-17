@@ -39,6 +39,11 @@ body {
     x: 50 !important;
 }
 
+.blocklyFlyout {
+    border-left: solid 1px #525252;
+    /* box-shadow: -10px 5px 10px #22222280; */
+}
+
 .blocklyTreeSeparator {
     border-bottom: solid #444 1px;
     margin: 10px;

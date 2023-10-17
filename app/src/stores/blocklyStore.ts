@@ -8,6 +8,7 @@ import { defineBlocks } from "../definitions/blocks/defineBlocks";
 import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
 import { overwriteMessages } from "../definitions/message/overwrite"
+import { useAppStore } from "./appStore";
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
@@ -47,6 +48,7 @@ class WorkspaceSession {
     workspaceSvg: WorkspaceSvg
     isMainWorkspace: boolean;
     javascriptGenerator: any;
+    canWriteToFile: boolean = false;
 
     constructor(container: HTMLElement, isMainWorkspace: boolean, javascriptGenerator: any) {
         this.javascriptGenerator = javascriptGenerator;
@@ -55,21 +57,23 @@ class WorkspaceSession {
         this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
 
-        this.restoreState();
-        this.addEntryProcedureBlock();
+        const appStore = useAppStore();
         this.workspaceSvg.addChangeListener((e) => {
-            this.backupState();
-            console.log(e);
+            if (e.recordUndo && this.canWriteToFile) {
+                console.log(e);
+                const state = this.getState();
+                const code = this.createCode(StatementPrefix.CHECK_POINT);
+                appStore.currentMacroFile?.write(state, code);
+            }
         });
     }
 
+    setInitialScrollPosition() {
+        this.workspaceSvg.scroll(5, 5);
+    }
+
     addKeyValue() {
-        // notificationStore.toastMessage("未実装ダヨ", {
-        //     position: "top-center",
-        //     autoClose: 3000,
-        //     type: "info",
-        //     onClose: () => console.log("end")
-        // })
+        throw new Error("not implemented");
     }
 
     makeWorkspaceReadOnly() {
@@ -124,12 +128,25 @@ class WorkspaceSession {
         Blockly.svgResize(this.workspaceSvg as Blockly.WorkspaceSvg);
     }
 
-    clearWorkspace() {
-        const result = confirm("ワークスペースの内容をリセットします。\nよろしいですか？");
-        if (result) {
+    clearWorkspace(options: IWorkspaceClearOptions = {
+        ask: true,
+        addEntryBlock: true
+    }) {
+        if (options.ask) {
+            const result = confirm("ワークスペースの内容をリセットします。\nよろしいですか？");
+            if (result) {
+                this.workspaceSvg.clear();
+            }
+        } else {
             this.workspaceSvg.clear();
+        }
+        if (options.addEntryBlock) {
             this.addEntryProcedureBlock();
         }
+    }
+
+    removeBlock(block: BlockSvg) {
+        block.dispose();
     }
 
     getAllBlocks(): Blockly.BlockSvg[] {
@@ -216,9 +233,17 @@ class WorkspaceSession {
             "",
             "})();"
         ]
-        const code = codes.join("\n");
+        let code = codes.join("\n");
+        code = this.replacePlaceHolderToId(code);
         console.log(performance.now() - s);
         return code;
+    }
+
+    replacePlaceHolderToId(input: string): string {
+        const appStore = useAppStore();
+        return input
+            .split("/*MACRO_ID_PLACE_HOLDER*/").join(`'${appStore.currentMacro?.setting.id}'`)
+            .split("/*FILE_ID_PLACE_HOLDER*/").join(`'${appStore.currentMacroFile?.fileSetting?.id}'`)
     }
 
     createDecodedCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
@@ -255,21 +280,6 @@ class WorkspaceSession {
         return indentedText;
     }
 
-    backupState() {
-        const currentState = this.getState();
-        localStorage.setItem("state", currentState);
-    }
-
-    restoreState() {
-        try {
-            const previousState = localStorage.getItem("state");
-            if (previousState) {
-                this.setState(previousState);
-            }
-        } catch (error) {
-        }
-    }
-
     getEntryProcedureBlock() {
         const anyEntryBlocks = this.workspaceSvg.getAllBlocks(true).filter(block => block.type === "procedures_defnoreturn" && block.getFieldValue("NAME") === "ここから実行");
         return anyEntryBlocks.length > 0 ? anyEntryBlocks[0] : null;
@@ -280,7 +290,7 @@ class WorkspaceSession {
         if (!entryBlock) {
             const entryBlockXml = `
             <xml>
-                <block type="procedures_defnoreturn" x="50" y="50">
+                <block type="procedures_defnoreturn" x="0" y="0" movable="false" deletable="false">
                     <field name="NAME" >ここから実行</field>
                 </block>
             </xml>
@@ -303,6 +313,13 @@ class WorkspaceSession {
         if (workspace) {
             const state = JSON.parse(json);
             Blockly.serialization.workspaces.load(state, workspace);
+            this.addEntryProcedureBlock();
+            this.setInitialScrollPosition();
         }
     }
+}
+
+export interface IWorkspaceClearOptions {
+    ask: boolean,
+    addEntryBlock: boolean,
 }
