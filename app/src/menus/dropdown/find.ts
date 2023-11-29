@@ -6,6 +6,7 @@ import * as BlocklyMenus from "../commands/blockly"
 
 export class FindEntryProcedureBlockMenuItem implements IDropDownMenuItem {
     header = "「ここから実行」ブロックを探す";
+    subHeader = "find";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -15,6 +16,7 @@ export class FindEntryProcedureBlockMenuItem implements IDropDownMenuItem {
 
 export class FindBlockByIdMenuItem implements IDropDownMenuItem {
     header = "IDからブロックを探す";
+    subHeader = "find";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -34,6 +36,7 @@ export class FindBlockByIdMenuItem implements IDropDownMenuItem {
 
 export class FindProcedureBlockFromListMenuItem implements IDropDownMenuItem {
     header = "関数を一覧から探す";
+    subHeader = "find";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -49,6 +52,7 @@ export class FindProcedureBlockFromListMenuItem implements IDropDownMenuItem {
 
 export class ReplayMenuItem implements IDropDownMenuItem {
     header = "フォーカス";
+    subHeader = "find";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();

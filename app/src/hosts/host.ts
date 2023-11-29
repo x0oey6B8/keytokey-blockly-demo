@@ -1,4 +1,5 @@
 import { IPathUtils } from "./pathUtils";
+import { TemplateMatchingSettings, ITemplateMatchingSettings, DummyTemplateMatchingSettings } from "./templateMatchingSettings";
 
 export function getHostObjects() {
     // @ts-ignore
@@ -7,9 +8,7 @@ export function getHostObjects() {
 }
 
 class HostObjects implements IHostObjects {
-    hostObjects: any
-    constructor(hostObjects: any) {
-        this.hostObjects = hostObjects;
+    constructor(private hostObjects: any) {
     }
 
     hasHost = () => this.hostObjects != null && this.hostObjects != undefined;
@@ -20,7 +19,14 @@ class HostObjects implements IHostObjects {
         },
     }
 
+    templateMatchingSettings = new TemplateMatchingSettings(this.hostObjects);
+
     macroManager: IMacroManager = {
+        setImplementation: async (request: ISetImplementationCodeRequest) => {
+            const json = await this.hostObjects.macroManager.SetImplementation(JSON.stringify(request));
+            const result: IRequestResult = JSON.parse(json);
+            return result;
+        },
         create: async (request: IMacroCreationRequest) => {
             const json = await this.hostObjects.macroManager.Create(JSON.stringify(request));
             const result: IRequestResult = JSON.parse(json);
@@ -76,6 +82,7 @@ class HostObjects implements IHostObjects {
 interface IHostObjects {
     pathUtils: IPathUtils;
     macroManager: IMacroManager;
+    templateMatchingSettings: ITemplateMatchingSettings;
 }
 
 export interface IRequestResult {
@@ -120,7 +127,12 @@ export interface IWriteRequest extends IFileInfo {
     javascript: string;
 }
 
+export interface ISetImplementationCodeRequest {
+    code: string;
+}
+
 export interface IMacroManager {
+    setImplementation: (request: ISetImplementationCodeRequest) => Promise<IRequestResult>;
     create: (request: IMacroCreationRequest) => Promise<IRequestResult>;
     updateSetting: (setting: IMacroSetting) => Promise<IRequestResult>;
     clone: (request: IMacroCloneRequest) => Promise<IRequestResult>;
@@ -214,6 +226,8 @@ class HostObjectsPseudo implements IHostObjects {
         },
     }
 
+    templateMatchingSettings = new DummyTemplateMatchingSettings();
+
     macroManager: IMacroManager = {
         create: async (request: IMacroCreationRequest) => {
             return await this.macroStorage.create(request);
@@ -245,6 +259,14 @@ class HostObjectsPseudo implements IHostObjects {
         },
         read: async (file: IFileInfo): Promise<IMacroFileContent> => {
             return await this.macroStorage.read(file);
+        },
+        setImplementation: async (): Promise<IRequestResult> => {
+            const result: IRequestResult = {
+                hasError: false,
+                errorMessage: "",
+                json: ""
+            };
+            return result;
         }
     }
 }

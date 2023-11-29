@@ -7,8 +7,25 @@ import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { useEditorStore } from "../../stores/editorStore";
 import { useNotificationStore } from "../../stores/notificationStore";
 
+export class SetEntryBlockDefaultPosition implements IDropDownMenuItem {
+    header = "「ここから実行」ブロックを初期位置に設定";
+    subHeader = "workspace";
+    condition = () => true;
+    clicked = () => {
+        const blocklyStore = useBlocklyStore();
+        const session = blocklyStore.getCurrentWorkspaceSession();
+        if (session) {
+            const entryBlock = session.getEntryProcedureBlock();
+            if (entryBlock) {
+                session.moveTo(entryBlock, 16, -17);
+            }
+        }
+    };
+}
+
 export class SwitchToolboxPositionMenuItem implements IDropDownMenuItem {
     header = "ツールボックスの位置を切り替える";
+    subHeader = "workspace";
     condition = () => true;
     clicked = () => {
         switchToolBoxPosition();
@@ -17,6 +34,7 @@ export class SwitchToolboxPositionMenuItem implements IDropDownMenuItem {
 
 export class MakeWorkspaceReadOnlyMenuItem implements IDropDownMenuItem {
     header = "Make Workspace Readonly";
+    subHeader = "workspace";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -26,6 +44,7 @@ export class MakeWorkspaceReadOnlyMenuItem implements IDropDownMenuItem {
 
 export class MakeWorkspaceEditableMenuItem implements IDropDownMenuItem {
     header = "Make Workspace Editable";
+    subHeader = "workspace";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -34,7 +53,8 @@ export class MakeWorkspaceEditableMenuItem implements IDropDownMenuItem {
 }
 
 export class CopyWorkspaceAsXmlMenuItem implements IDropDownMenuItem {
-    header = "テキストとしてコピー（XML)";
+    header = "内容をテキストとしてコピー（XML)";
+    subHeader = "workspace";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -53,7 +73,8 @@ export class CopyWorkspaceAsXmlMenuItem implements IDropDownMenuItem {
 }
 
 export class CopyWorkspaceAsJsonMenuItem implements IDropDownMenuItem {
-    header = "テキストとしてコピー（JSON)";
+    header = "内容をテキストとしてコピー（JSON)";
+    subHeader = "workspace";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -73,6 +94,7 @@ export class CopyWorkspaceAsJsonMenuItem implements IDropDownMenuItem {
 
 export class ClearWorkspaceMenuItem implements IDropDownMenuItem {
     header = "内容をクリア";
+    subHeader = "workspace";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
@@ -82,6 +104,7 @@ export class ClearWorkspaceMenuItem implements IDropDownMenuItem {
 
 export class ClearSpecificBlockByIdMenuItem implements IDropDownMenuItem {
     header = "特定のブロックを強制削除";
+    subHeader = "workspace";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();

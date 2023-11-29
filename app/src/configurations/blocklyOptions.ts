@@ -18,7 +18,7 @@ export const options: BlocklyOptions = {
     sounds: false,
     oneBasedIndex: true,
     grid: {
-        spacing: 32,
+        spacing: 33,
         length: 3,
         colour: "#bbbbbb60",
         snap: true,
@@ -60,7 +60,14 @@ function getToolBoxXml(): string {
         <label text="キーボード／マウス"></label>
         <button text="値を検索して追加" callbackKey="addKeyValue"></button>
         <button text="値をキー／マウス入力で追加" callbackKey="addKeyValue"></button>
-        <block type="keys_value">
+        <block type="keys">
+            <field name="VALUE">A</field>
+        </block>
+        
+        <label text="コントローラーのボタンやスティック"></label>
+        <button text="値を検索して追加" callbackKey="addKeyValue"></button>
+        <button text="値をキー／マウス入力で追加" callbackKey="addKeyValue"></button>
+        <block type="controller_buttons">
             <field name="VALUE">A</field>
         </block>
 
@@ -90,7 +97,40 @@ function getToolBoxXml(): string {
             </block>
             </value>
         </block>
-        <block type="get_point"></block>
+        <block type="get_point_property"></block>
+        <block type="random_point">
+            <value name="X_FROM">
+                <block type="math_number">
+                    <field name="NUM">-10</field>
+                </block>
+            </value>
+            <value name="X_TO">
+                <block type="math_number">
+                    <field name="NUM">10</field>
+                </block>
+            </value>
+            <value name="Y_FROM">
+                <block type="math_number">
+                    <field name="NUM">0</field>
+                </block>
+            </value>
+            <value name="Y_TO">
+                <block type="math_number">
+                    <field name="NUM">100</field>
+                </block>
+            </value>
+        </block>
+
+        <label text="サイズ"></label>
+        <block type="size"></block>
+
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
     </category>
 
 
@@ -152,7 +192,10 @@ function getToolBoxXml(): string {
                 </shadow>
             </value>
         </block>
+        <!--
         <block type="controls_forEach"></block>
+        -->
+        <block type="for_of"></block>
         <block type="controls_flow_statements"></block>
     </category>
 
@@ -348,6 +391,7 @@ function getToolBoxXml(): string {
                 <shadow type="text"></shadow>
             </value>
         </block>
+
         <label text="Input/Output:"></label>
         <block type="text_print">
             <value name="TEXT">
@@ -356,11 +400,25 @@ function getToolBoxXml(): string {
                 </shadow>
             </value>
         </block>
+        <!--
         <block type="text_prompt_ext">
             <value name="TEXT">
                 <shadow type="text">
                     <field name="TEXT">abc</field>
                 </shadow>
+            </value>
+        </block>
+        -->
+        <block type="input_text">
+            <value name="TEXT">
+                <shadow type="text">
+                    <field name="TEXT">入力する文字</field>
+                </shadow>
+            </value>
+            <value name="INTERVAL">
+                <block type="math_number">
+                    <field name="NUM">5</field>
+                </block>
             </value>
         </block>
     </category>
@@ -423,8 +481,10 @@ function getToolBoxXml(): string {
 
     <sep></sep>
 
+    <category name="プロファイル"></category>
+
+
     <category name="トリガー">
-        <label text=""></label>
         <label text="マクロの実行トリガー"></label>
         <block type="trigger_is_pressed"></block>
     </category>
@@ -435,60 +495,63 @@ function getToolBoxXml(): string {
         <block type="down_up">
             <field name="BEHAVIOR">Down</field>
             <value name="KEY">
-            <block type="keys_value">
+            <block type="keys">
                 <field name="VALUE">A</field>
-            </block>
-            </value>
-            <value name="WAIT">
-            <block type="math_number">
-                <field name="NUM">0</field>
             </block>
             </value>
         </block>
         <block type="down_up">
             <field name="BEHAVIOR">Up</field>
             <value name="KEY">
-            <block type="keys_value">
+            <block type="keys">
                 <field name="VALUE">A</field>
-            </block>
-            </value>
-            <value name="WAIT">
-            <block type="math_number">
-                <field name="NUM">0</field>
             </block>
             </value>
         </block>
         <block type="down_up">
             <field name="BEHAVIOR">Down</field>
             <value name="KEY">
-                <block type="keys_value">
+                <block type="keys">
                     <field name="VALUE">A</field>
                 </block>
             </value>
-            <value name="WAIT">
-                <block type="math_number">
-                    <field name="NUM">0</field>
-                </block>
-            </value>
             <next>
-                <block type="down_up">
-                    <field name="BEHAVIOR">Up</field>
-                    <value name="KEY">
-                        <block type="keys_value">
-                            <field name="VALUE">A</field>
-                        </block>
-                    </value>
-                    <value name="WAIT">
+                <block type="wait">
+                    <field name="UNIT">MILLISECONDS</field>
+                    <value name="WAIT_TIME">
                         <block type="math_number">
-                            <field name="NUM">0</field>
+                            <field name="NUM">10</field>
                         </block>
                     </value>
+                    <next>
+                        <block type="down_up">
+                            <field name="BEHAVIOR">Up</field>
+                            <value name="KEY">
+                                <block type="keys">
+                                    <field name="VALUE">A</field>
+                                </block>
+                            </value>
+                            <next>
+                                <block type="wait">
+                                    <field name="UNIT">MILLISECONDS</field>
+                                    <value name="WAIT_TIME">
+                                        <block type="math_number">
+                                            <field name="NUM">10</field>
+                                        </block>
+                                    </value>
+                                </block>
+                            </next>
+                        </block>
+                    </next>
                 </block>
             </next>
         </block>
+        
+        <label text=""></label>
+        <label text="キーボード／マウスを押して離す"></label>
         <block type="tap">
             <value name="KEY1">
-                <block type="keys_value">
+                <block type="keys">
                     <field name="VALUE">A</field>
                 </block>
             </value>
@@ -503,10 +566,19 @@ function getToolBoxXml(): string {
                 </block>
             </value>
         </block>
-        <block type="up_all"></block>
 
         <label text=""></label>
-        <label text="マウスの移動（絶対座標）"></label>
+        <label text="キーボード／マウスをすべて離す"></label>
+        <block type="up_all">
+            <value name="EXCLUDED_KEYS">
+                <block type="lists_create_with">
+                    <mutation items="0"></mutation>
+                </block>
+            </value>
+        </block>
+
+        <label text=""></label>
+        <label text="マウス移動（絶対座標）"></label>
         <block type="mouse_move">
             <field name="SPEED">WARP</field>
             <value name="POINT">
@@ -576,7 +648,7 @@ function getToolBoxXml(): string {
         </block>
 
         <label text=""></label>
-        <label text="マウスの移動（相対座標）"></label>
+        <label text="マウス移動（相対座標）"></label>
         <block type="mouse_move_relative">
             <field name="SPEED">WARP</field>
             <value name="DX">
@@ -594,31 +666,43 @@ function getToolBoxXml(): string {
         <label text=""></label>
         <label text="マウスカーソルの座標"></label>
         <block type="mouse_get_point"></block>
-        <block type="get_point">
-            <field name="DROPDOWN">X</field>
+        <block type="get_point_property">
+            <field name="DROPDOWN">x</field>
             <value name="POINT">
                 <block type="mouse_get_point"></block>
             </value>
         </block>
-        <block type="get_point">
-            <field name="DROPDOWN">Y</field>
+        <block type="get_point_property">
+            <field name="DROPDOWN">y</field>
             <value name="POINT">
                 <block type="mouse_get_point"></block>
             </value>
         </block>
 
         <label text=""></label>
+        <label text="マウスのスクロール"></label>
+        <block type="scroll">
+            <field name="direction">down</field>
+            <value name="DELTA">
+                <block type="math_number">
+                    <field name="NUM">120</field>
+                </block>
+            </value>
+        </block>
+        </block>
+
+        <label text=""></label>
         <label text="キー／マウスの状態"></label>
         <block type="key_is_pressed">
             <value name="KEY">
-                <block type="keys_value">
+                <block type="keys">
                     <field name="VALUE">A</field>
                 </block>
             </value>
         </block>
-        <block type="phisical_key_is_pressed">
+        <block type="physical_key_is_pressed">
             <value name="KEY">
-                <block type="keys_value">
+                <block type="keys">
                     <field name="VALUE">A</field>
                 </block>
             </value>
@@ -629,12 +713,12 @@ function getToolBoxXml(): string {
                 <block type="lists_create_with" inline="true">
                     <mutation items="2"></mutation>
                     <value name="ADD0">
-                        <block type="keys_value">
+                        <block type="keys">
                             <field name="VALUE">A</field>
                         </block>
                     </value>
                     <value name="ADD1">
-                        <block type="keys_value">
+                        <block type="keys">
                             <field name="VALUE">B</field>
                         </block>
                     </value>
@@ -642,10 +726,35 @@ function getToolBoxXml(): string {
             </value>
         </block>
         
+        <!--
         <label text=""></label>
         <label text="イベント"></label>
         <block type="key_event"></block>
-        
+        -->
+
+        <label text="テキストの入力"></label>
+        <block type="input_text">
+            <value name="TEXT">
+                <shadow type="text">
+                    <field name="TEXT">入力する文字</field>
+                </shadow>
+            </value>
+            <value name="INTERVAL">
+                <block type="math_number">
+                    <field name="NUM">5</field>
+                </block>
+            </value>
+        </block>
+
+        <label text=""></label>
+        <label text="記録した入力の再生"></label>
+        <block type="replay">
+            <value name="PATH">
+                <block type="text">
+                    <field name="TEXT">c:\\keytokey\\記録ファイル.kilog</field>
+                </block>
+            </value>
+        </block>
 
         <label text=""></label>
         <label text="テンプレート"></label>
@@ -654,19 +763,14 @@ function getToolBoxXml(): string {
         <block type="down_up">
             <field name="BEHAVIOR">Down</field>
             <value name="KEY">
-                <block type="keys_value">
-                    <field name="VALUE">LControl</field>
-                </block>
-            </value>
-            <value name="WAIT">
-                <block type="math_number">
-                    <field name="NUM">10</field>
+                <block type="keys">
+                    <field name="VALUE">LControlKey</field>
                 </block>
             </value>
             <next>
                 <block type="tap">
                     <value name="KEY1">
-                        <block type="keys_value">
+                        <block type="keys">
                             <field name="VALUE">C</field>
                         </block>
                     </value>
@@ -684,13 +788,8 @@ function getToolBoxXml(): string {
                         <block type="down_up">
                             <field name="BEHAVIOR">Up</field>
                             <value name="KEY">
-                                <block type="keys_value">
-                                    <field name="VALUE">LControl</field>
-                                </block>
-                            </value>
-                            <value name="WAIT">
-                                <block type="math_number">
-                                    <field name="NUM">10</field>
+                                <block type="keys">
+                                    <field name="VALUE">LControlKey</field>
                                 </block>
                             </value>
                         </block>
@@ -704,32 +803,22 @@ function getToolBoxXml(): string {
         <block type="down_up">
             <field name="BEHAVIOR">Down</field>
             <value name="KEY">
-                <block type="keys_value">
-                    <field name="VALUE">LControl</field>
-                </block>
-            </value>
-            <value name="WAIT">
-                <block type="math_number">
-                    <field name="NUM">10</field>
+                <block type="keys">
+                    <field name="VALUE">LControlKey</field>
                 </block>
             </value>
             <next>
                 <block type="down_up">
                     <field name="BEHAVIOR">Down</field>
                     <value name="KEY">
-                        <block type="keys_value">
-                            <field name="VALUE">LShift</field>
-                        </block>
-                    </value>
-                    <value name="WAIT">
-                        <block type="math_number">
-                            <field name="NUM">10</field>
+                        <block type="keys">
+                            <field name="VALUE">LShiftKey</field>
                         </block>
                     </value>
                     <next>
                         <block type="tap">
                             <value name="KEY1">
-                                <block type="keys_value">
+                                <block type="keys">
                                     <field name="VALUE">D</field>
                                 </block>
                             </value>
@@ -747,26 +836,16 @@ function getToolBoxXml(): string {
                                 <block type="down_up">
                                     <field name="BEHAVIOR">Up</field>
                                     <value name="KEY">
-                                        <block type="keys_value">
-                                            <field name="VALUE">LShift</field>
-                                        </block>
-                                    </value>
-                                    <value name="WAIT">
-                                        <block type="math_number">
-                                            <field name="NUM">10</field>
+                                        <block type="keys">
+                                            <field name="VALUE">LShiftKey</field>
                                         </block>
                                     </value>
                                     <next>
                                         <block type="down_up">
                                             <field name="BEHAVIOR">Up</field>
                                             <value name="KEY">
-                                                <block type="keys_value">
-                                                    <field name="VALUE">LControl</field>
-                                                </block>
-                                            </value>
-                                            <value name="WAIT">
-                                                <block type="math_number">
-                                                    <field name="NUM">10</field>
+                                                <block type="keys">
+                                                    <field name="VALUE">LControlKey</field>
                                                 </block>
                                             </value>
                                         </block>
@@ -799,6 +878,22 @@ function getToolBoxXml(): string {
                 </block>
             </value>
         </block>
+        <label text="キーの入力を待つ"></label>
+        <block type="wait_for_input">
+            <value name="KEY">
+                <block type="keys">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+        </block>
+        <label text="コントローラーの入力を待つ"></label>
+        <block type="wait_for_controller">
+            <value name="BUTTON">
+                <block type="controller_buttons">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+        </block>
     </category>
 
 
@@ -811,19 +906,279 @@ function getToolBoxXml(): string {
 
 
     <category name="コントローラー">
+        <label text="現在設定中のコントローラー"></label>
+        <block type="controller"></block>
+        <block type="controller_proeprty"></block>
+
+        <label text="ボタンやスティックが押されているかどうか"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="is_controller_pressed">
+            <field name="DROPDOWN">PRESSED</field>
+            <value name="CONTROLLER">
+                <block type="controller"></block>
+            </value>
+            <value name="BUTTON">
+                <block type="controller_buttons">
+                    <field name="VALUE">A</field>
+                </block>
+            </value>
+        </block>
+
+        <label text="スティック"></label>
+        <block type="controller_stick_property">
+            <value name="CONTROLLER">
+                <block type="controller"></block>
+            </value>
+        </block>
+
+
+        <label text="テンプレート"></label>
+        <label text="テンプレート"></label>
     </category>
-
-
-    <category name="仮想コントローラー">
+    <category name="XInputの状態">
+    </category>
+    <category name="仮想XInput">
+    </category>
+    <category name="仮想DualShock4">
+    </category>
+    <category name="仮想vJoy">
     </category>
 
     <category name="画像認識">
+
+        <label text="画像認識を実行し結果を取得"></label>
+        <block type="template_matching_match_by_id">
+            <value name="IDENTIFIER">
+                <block type="text">
+                    <field name="TEXT">識別キー</field>
+                </block>
+            </value>
+        </block>
+
+        <label text="画像認識の実行結果の値"></label>
+        <block type="template_matching_result_properties">
+            <field name="DROPDOWN">IS_SUCCESS</field>
+            <value name="RESULT">
+                <block type="variables_get">
+                    <field name="VAR">結果</field>
+                </block>
+            </value>
+        </block>
+
+        <label text="見つかった画像情報の値"></label>
+        <block type="template_matching_found_image_properties"></block>
+        <block xmlns="https://developers.google.com/blockly/xml" type="template_matching_found_image_properties">
+            <field name="DROPDOWN">FOUND_POINT_CENTER</field>
+            <value name="RESULT">
+                <block type="template_matching_result_properties">
+                    <field name="DROPDOWN">FOUND_FIRST_IMAGE</field>
+                    <value name="RESULT">
+                        <block type="variables_get">
+                            <field name="VAR" id="2}oH}@8I#0H8^Fq/U8Zj">結果</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+
+        <label text="テンプレート"></label>
+        <label text="画像認識を実行し画像を一つ探す"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="variables_set">
+            <field name="VAR" id="2}oH}@8I#0H8^Fq/U8Zj">結果</field>
+            <value name="VALUE">
+                <block type="template_matching_match_by_id">
+                    <field name="DROPDOWN">MULTIPLE</field>
+                    <value name="IDENTIFIER">
+                        <block type="text">
+                            <field name="TEXT">識別キー</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+            <next>
+                <block type="controls_if">
+                    <mutation else="1"></mutation>
+                    <value name="IF0">
+                        <block type="template_matching_result_properties">
+                            <field name="DROPDOWN">IS_SUCCESS</field>
+                            <value name="RESULT">
+                                <block type="variables_get">
+                                    <field name="VAR" id="2}oH}@8I#0H8^Fq/U8Zj">結果</field>
+                                </block>
+                            </value>
+                        </block>
+                    </value>
+                    <statement name="DO0">
+                        <block type="mouse_move">
+                            <field name="SPEED">WARP</field>
+                            <value name="POINT">
+                                <block type="template_matching_found_image_properties">
+                                    <field name="DROPDOWN">FOUND_POINT_CENTER</field>
+                                    <value name="RESULT">
+                                        <block type="template_matching_result_properties">
+                                            <field name="DROPDOWN">FOUND_FIRST_IMAGE</field>
+                                            <value name="RESULT">
+                                                <block type="variables_get">
+                                                    <field name="VAR" id="2}oH}@8I#0H8^Fq/U8Zj">結果</field>
+                                                </block>
+                                            </value>
+                                        </block>
+                                    </value>
+                                </block>
+                            </value>
+                        </block>
+                    </statement>
+                    <statement name="ELSE">
+                        <block type="console_log">
+                            <value name="VALUE">
+                                <block type="text">
+                                    <field name="TEXT">見つからなかった</field>
+                                </block>
+                            </value>
+                        </block>
+                    </statement>
+                </block>
+            </next>
+        </block>
+
+        <label text="画像認識を実行し画像を複数探す"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="variables_set">
+            <field name="VAR" id="2}oH}@8I#0H8^Fq/U8Zj">結果</field>
+            <value name="VALUE">
+                <block type="template_matching_match_by_id">
+                    <field name="DROPDOWN">MULTIPLE</field>
+                    <value name="IDENTIFIER">
+                        <block type="text">
+                            <field name="TEXT">識別キー</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+            <next>
+                <block type="controls_if">
+                    <mutation else="1"></mutation>
+                    <value name="IF0">
+                        <block type="template_matching_result_properties">
+                            <field name="DROPDOWN">IS_SUCCESS</field>
+                            <value name="RESULT">
+                                <block type="variables_get">
+                                    <field name="VAR" id="2}oH}@8I#0H8^Fq/U8Zj">結果</field>
+                                </block>
+                            </value>
+                        </block>
+                    </value>
+                    <statement name="DO0">
+                        <block type="for_of">
+                            <field name="VARIABLE" id="^aNAoR-zu93J(_6BRE4]">画像情報</field>
+                            <value name="LIST">
+                                <block type="template_matching_result_properties">
+                                    <field name="DROPDOWN">FOUND_ALL_IMAGES</field>
+                                    <value name="RESULT">
+                                        <block type="variables_get">
+                                            <field name="VAR" id="2}oH}@8I#0H8^Fq/U8Zj">結果</field>
+                                        </block>
+                                    </value>
+                                </block>
+                            </value>
+                            <statement name="STATEMENT">
+                                <block type="mouse_move">
+                                    <field name="SPEED">WARP</field>
+                                    <value name="POINT">
+                                        <block type="template_matching_found_image_properties">
+                                            <field name="DROPDOWN">FOUND_POINT_CENTER</field>
+                                            <value name="RESULT">
+                                                <block type="variables_get">
+                                                    <field name="VAR" id="^aNAoR-zu93J(_6BRE4]">画像情報</field>
+                                                </block>
+                                            </value>
+                                        </block>
+                                    </value>
+                                </block>
+                            </statement>
+                        </block>
+                    </statement>
+                    <statement name="ELSE">
+                        <block type="console_log">
+                            <value name="VALUE">
+                                <block type="text">
+                                    <field name="TEXT">見つからなかった</field>
+                                </block>
+                            </value>
+                        </block>
+                    </statement>
+                </block>
+            </next>
+        </block>
     </category>
+
 
     <category name="ウィンドウ">
+        <label text="ウィンドウの取得"></label>
+        <block type="get_window"></block>
+
+        <label text="ウィンドウを探す"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="find_window_by">
+            <value name="TITLE">
+                <block type="text">
+                    <field name="TEXT">タイトル</field>
+                </block>
+            </value>
+        </block>
+
+        <label text="ウィンドウの作成"></label>
+        <block type="create_window_by_window_handle"></block>
+
+        <label text="ウィンドウの値を取得"></label>
+        <block type="window_get_property"></block>
+        <block xmlns="https://developers.google.com/blockly/xml" type="window_get_property">
+            <field name="DROPDOWN">POINT</field>
+            <value name="WINDOW">
+                <block type="get_window"></block>
+            </value>
+        </block>
+
+        <label text="ウィンドウの値を設定"></label>
+        <block type="window_set_property"></block>
+        <block type="window_set_bounds"></block>
+
+        <label text="ウィンドウの情報をコンソールに出力"></label>
+        <block type="window_dump"></block>
+
+        <label text="テンプレート"></label>
+        <label text="テンプレート"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="variables_set">
+            <field name="VAR" id="W;=5~p}vbgVJ(Ah$.BT2">ウィンドウ</field>
+            <value name="VALUE">
+                <block type="create_window_by_window_handle">
+                    <value name="WINDOW_HANDLE">
+                        <block type="math_number">
+                            <field name="NUM">0</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+            <next>
+                <block type="variables_set">
+                    <field name="VAR" id="]ZrGM3]S_n]O##+emxQ]">値</field>
+                    <value name="VALUE">
+                        <block type="window_get_property">
+                            <field name="DROPDOWN">POINT</field>
+                            <value name="WINDOW">
+                                <block type="variables_get">
+                                    <field name="VAR" id="W;=5~p}vbgVJ(Ah$.BT2">ウィンドウ</field>
+                                </block>
+                            </value>
+                        </block>
+                    </value>
+                </block>
+            </next>
+        </block>
+
     </category>
 
+ 
     <category name="コンソール">
+        <block type="console_log"></block>
+        <block type="console_clear"></block>
     </category>
 
     <category name="ファイル">
@@ -883,93 +1238,11 @@ function getToolBoxXml(): string {
 -->
 
     <category name="その他">
+        <label text="メモ"></label>
         <block type="comment"></block>
-        <block type="global_get_variable"></block>
-    </category>
 
-    <category name="テンプレート">
-        <block type="text_print">
-            <value name="TEXT">
-                <block type="text">
-                    <field name="TEXT">'Twas brillig, and the slithy toves</field>
-                </block>
-            </value>
-            <next>
-                <block type="text_print">
-                    <value name="TEXT">
-                        <block type="text">
-                            <field name="TEXT"> Did gyre and gimble in the wabe:</field>
-                        </block>
-                    </value>
-                    <next>
-                        <block type="text_print">
-                            <value name="TEXT">
-                                <block type="text">
-                                    <field name="TEXT">All mimsy were the borogroves,</field>
-                                </block>
-                            </value>
-                            <next>
-                                <block type="text_print">
-                                    <value name="TEXT">
-                                        <block type="text">
-                                            <field name="TEXT"> And the mome raths outgrabe.</field>
-                                        </block>
-                                    </value>
-                                </block>
-                            </next>
-                        </block>
-                    </next>
-                </block>
-            </next>
-        </block>
-        
-        <block type="controls_if" id="-i[bNHVL@N)p=l$Bd!p0" x="126" y="90">
-            <statement name="DO0">
-                <block type="controls_repeat_ext" id="dg2'0eh)p[s48Km3bLlN">
-                    <value name="TIMES">
-                        <shadow type="math_number" id="WE;;nrs'.H,cm.2e?a+*">
-                            <field name="NUM">10</field>
-                        </shadow>
-                    </value>
-                </block>
-            </statement>
-            <next>
-                <block type="text_print" id="21:oC=z'{szruSfwuwG|">
-                    <value name="TEXT">
-                        <block type="text" id=";pir/uIEZo)8)jqDyGyK">
-                            <field name="TEXT">'Twas brillig, and the slithy toves</field>
-                        </block>
-                    </value>
-                    <next>
-                        <block type="text_print" id="pUyAKTC!*d[XDR:UphM3">
-                            <value name="TEXT">
-                                <block type="text" id="k-m49,q~}Po]?,usR$Ln">
-                                    <field name="TEXT"> Did gyre and gimble in the wabe:</field>
-                                </block>
-                            </value>
-                            <next>
-                                <block type="text_print" id="HEnKrY8^)?._7lLCPo|9">
-                                    <value name="TEXT">
-                                        <block type="text" id="?@kExHQM?W.IpPOuTxSO">
-                                            <field name="TEXT">All mimsy were the borogroves,</field>
-                                        </block>
-                                    </value>
-                                    <next>
-                                        <block type="text_print" id="Ou/q^Na0'$^VR7T(5[1R">
-                                            <value name="TEXT">
-                                                <block type="text" id="x'-kMSbMYFY%bouTGb%5">
-                                                    <field name="TEXT"> And the mome raths outgrabe.</field>
-                                                </block>
-                                            </value>
-                                        </block>
-                                    </next>
-                                </block>
-                            </next>
-                        </block>
-                    </next>
-                </block>
-            </next>
-        </block>
+        <label text="その他"></label>
+        <block type="global_get_variable"></block>
     </category>
 </xml>
 `;

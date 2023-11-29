@@ -3,7 +3,7 @@ import { Macro, MacroFile, host } from "../hosts/host";
 import * as MacroMenus from "../menus/commands/macro"
 import * as FindMenus from "../menus/dropdown/find"
 import * as WorkspaceMenus from "../menus/dropdown/workspace"
-import * as CodeGenerationMenus from "../menus/dropdown/codeGenration"
+import * as CodeGenerationMenus from "../menus/dropdown/codeGeneration"
 import { ICommandItem, Label, Separator } from "../models/commandPalette";
 import { ITab } from "../models/tab";
 import { DropDownCommandPaletteOptions, DropDownMenuToCommandItems, IAppDropDownMenu } from "../models/dropdown";
@@ -17,6 +17,7 @@ export const useAppStore = defineStore("AppStore", () => {
     const currentMacro = ref<Macro>();
     const currentMacroFile = ref<MacroFile>();
     const tabs = ref<ITab[]>([]);
+    const implementation = ref("");
 
     const blocklyStore = useBlocklyStore();
     const commandStore = useCommandPaletteStore();
@@ -33,9 +34,10 @@ export const useAppStore = defineStore("AppStore", () => {
         {
             header: "ワークスペース",
             menuItems: [
+                new WorkspaceMenus.SetEntryBlockDefaultPosition(),
                 new WorkspaceMenus.SwitchToolboxPositionMenuItem(),
-                new WorkspaceMenus.MakeWorkspaceReadOnlyMenuItem(),
-                new WorkspaceMenus.MakeWorkspaceEditableMenuItem(),
+                // new WorkspaceMenus.MakeWorkspaceReadOnlyMenuItem(),
+                // new WorkspaceMenus.MakeWorkspaceEditableMenuItem(),
                 new WorkspaceMenus.CopyWorkspaceAsXmlMenuItem(),
                 new WorkspaceMenus.CopyWorkspaceAsJsonMenuItem(),
                 new WorkspaceMenus.ClearWorkspaceMenuItem(),
@@ -47,7 +49,6 @@ export const useAppStore = defineStore("AppStore", () => {
             menuItems: [
                 new CodeGenerationMenus.CreateCodeMenuItem(),
                 new CodeGenerationMenus.CreateCodeNoCheckPointsMenuItem(),
-                new CodeGenerationMenus.CreateDecodedCodeMenuItem(),
                 new CodeGenerationMenus.CreateDecodedCodeNoCheckPointsMenuItem(),
             ]
         },
@@ -56,6 +57,7 @@ export const useAppStore = defineStore("AppStore", () => {
             menuItems: [
                 {
                     header: "デバッグを開始",
+                    subHeader: "debug",
                     condition: () => true,
                     clicked: () => {
                         openDropdownMenus()
@@ -68,6 +70,7 @@ export const useAppStore = defineStore("AppStore", () => {
             menuItems: [
                 {
                     header: "使用方法",
+                    subHeader: "help",
                     condition: () => true,
                     clicked: () => {
                         openDropdownMenus()
@@ -83,6 +86,7 @@ export const useAppStore = defineStore("AppStore", () => {
             menuItems: [
                 {
                     header: "テスト",
+                    subHeader: "dev",
                     condition: () => true,
                     clicked: () => { },
                 }
@@ -95,12 +99,31 @@ export const useAppStore = defineStore("AppStore", () => {
         currentMacro,
         currentMacroFile,
         tabs,
+        implementation,
         openMacroMenu,
         openDropdownMenus,
         setNewMacro,
         clearCurrentMacroIfItsSameWith,
-        clear
+        clear,
+        readImplementationFile
     };
+
+    function readImplementationFile() {
+        try {
+            return fetch("/implementation.js")
+                .then(async (response) => {
+                    if (response.ok) {
+                        implementation.value = await response.text();
+                        host.macroManager.setImplementation({
+                            code: implementation.value
+                        })
+                    }
+                })
+                .catch(() => "");
+        } catch (error) {
+            return "";
+        }
+    }
 
     function openDropdownMenus() {
         const commandPaletteOptions = new DropDownCommandPaletteOptions(appDropDownMenus, new DropDownMenuToCommandItems());
@@ -168,11 +191,10 @@ export const useAppStore = defineStore("AppStore", () => {
             new Label({ header: "マクロの操作", groupTag: "Macro" }),
             new Separator({ groupTag: "Macro", canShow: true }),
             new MacroMenus.CreateNewMacroCommandItem(new MacroMenus.CreateNewMacroCommandOptions(macros)),
-            new MacroMenus.CategorizeMacroCommandItem(macros),
             new MacroMenus.CloneMacroCommandItem(macros),
             new MacroMenus.DeleteMacroCommandItem(macros),
             new MacroMenus.RenameMacroCommandItem(macros),
-            new MacroMenus.TestCommandItem(),
+            new MacroMenus.CategorizeMacroCommandItem(macros),
             new Label({ header: "マクロの切り替え", groupTag: "ChangeMacro", updateCanShow }),
             new Separator({ groupTag: "ChangeMacro", updateCanShow }),
         ];
@@ -191,6 +213,8 @@ export const useAppStore = defineStore("AppStore", () => {
         const editorStore = useEditorStore();
         editorStore.modalState.isShowing = false;
         clearCurrentMacro();
+        const blockly = useBlocklyStore();
+        blockly.getCurrentWorkspaceSession()?.clearWorkspace({ ask: false, addEntryBlock: false });
         openMacroMenu()
     }
 })

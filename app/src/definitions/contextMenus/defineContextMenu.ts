@@ -27,6 +27,20 @@ export function defineContextMenu() {
         },
     });
 
+    // Blockly.ContextMenuRegistry.registry.register({
+    //     displayText: "ブロックを複製して選択ブロックに接続",
+    //     id: "ブロックを複製して選択ブロックに接続",
+    //     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
+    //     weight: 5,
+    //     callback: () => {
+    //         blocklyStore.getCurrentWorkspaceSession()?.cloneSelectedBlock();
+    //     },
+    //     preconditionFn: () => {
+    //         const canDisconnect = blocklyStore.getCurrentWorkspaceSession()?.canDisconnectSelectedBlock();
+    //         return !canDisconnect ? "disabled" : getEnabledOrDisabled(canDisconnect);
+    //     },
+    // });
+
     Blockly.ContextMenuRegistry.registry.register({
         displayText: "テキストとしてコピー（子ブロックなし）",
         id: "テキストとしてコピー（子ブロックなし）",

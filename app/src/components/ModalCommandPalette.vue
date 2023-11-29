@@ -37,6 +37,7 @@ function updateText(newText: string) {
                     <CommandPalette
                         @click.stop
                         @selected="closeModal"
+                        @escape-pressed="closeModal"
                         @text-updated="updateText"
                         :text="props.text"
                         :hint="props.hint"

@@ -27,23 +27,23 @@ export const keys: Blockly.MenuOption[] = [
     ],
     [
         "左Shift",
-        "LShift"
+        "LShiftKey"
     ],
     [
         "右Shift",
-        "RShift"
+        "RShiftKey"
     ],
     [
         "左Control",
-        "LControl"
+        "LControlKey"
     ],
     [
         "右Control",
-        "RControl"
+        "RControlKey"
     ],
     [
         "左Alt",
-        "LeftAlt"
+        "LAlt"
     ],
     [
         "右Alt",

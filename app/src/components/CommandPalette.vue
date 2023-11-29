@@ -11,6 +11,7 @@ const props = defineProps<{
 }>();
 const emits = defineEmits<{
     (e: 'selected'): void,
+    (e: 'escape-pressed'): void,
     (e: 'text-updated', text: string): void,
 }>();
 const commandText = ref(null);
@@ -203,6 +204,10 @@ function invokeCallback(commandItem: ICommandItem) {
     }
 }
 
+function escapePressed() {
+    emits("escape-pressed");
+}
+
 function enterPressed() {
     emits('selected');
     const showableCommandItems = listShowableCommandItems();
@@ -254,6 +259,7 @@ function updateSelectedIndex() {
                 :placeholder="props.hint"
                 @update:model-value="textUpdated"
                 @keypress.enter="enterPressed"
+                @keydown.esc="escapePressed"
                 @keydown.up="decrementSelectedIndex"
                 @keydown.down="incrementSelectedIndex">
             <div class="validation-message" v-if="!textValidationResult.isValid && textValidationResult.validationMessage">

@@ -2,6 +2,7 @@ import { CommandItem, CommandPaletteOptions, ICommandItem, Label, Separator } fr
 
 export interface IDropDownMenuItem {
     header: string,
+    subHeader: string,
     condition: () => boolean,
     clicked: () => void
 }
@@ -32,6 +33,7 @@ export class DropDownMenuToCommandItems implements IDropDownMenuToCommandItems {
                 commandItems.push(new CommandItem({
                     groupTag: menu.header,
                     header: menuItem.header,
+                    subHeader: menuItem.subHeader,
                     callback: () => menuItem.clicked(),
                 }))
             }

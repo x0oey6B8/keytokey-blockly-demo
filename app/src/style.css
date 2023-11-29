@@ -67,6 +67,22 @@ body {
     border-radius: 12px;
 }
 
+/* ツールボックスのネストされたカテゴリーの開閉アイコン */
+.blocklyTreeIconOpen {
+    /* image-backgroundの色を反転 */
+    filter: invert(100%);
+    /* 位置調整 */
+    margin: 3.5px 2px 0px 5px;
+    /* アイコンを縮小 */
+    transform: scale(0.8)
+}
+
+.blocklyTreeIconClosed {
+    filter: invert(100%);
+    margin: 3.5px 2px 0px 5px;
+    transform: scale(0.8)
+}
+
 /* 接続されてないブロックの色 */
 .blocklyDisabled>.blocklyPath {
     /* opacity: 0.99; */
@@ -99,4 +115,9 @@ body {
 /* Change the text color of disabled menu items */
 .blocklyContextMenu .goog-menuitem-disabled .goog-menuitem-content {
     color: gray !important;
+}
+
+/* vue3-toastifyの通知の位置調整 */
+.Toastify__toast {
+    top: 22px !important;
 }

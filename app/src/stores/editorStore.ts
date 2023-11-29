@@ -5,6 +5,7 @@ import { IModalState } from "../components/Modal.vue";
 export const useEditorStore = defineStore("editorStore", () => {
     let textValue = ref("");
     let language = ref("");
+    const willMakeInvalidIdentifierTextWhite = ref(true);
     const modalState: Ref<IModalState> = ref({
         isShowing: false,
         lock: false,
@@ -15,6 +16,7 @@ export const useEditorStore = defineStore("editorStore", () => {
         textValue,
         language,
         modalState,
+        willMakeInvalidIdentifierTextWhite,
         setCode
     }
 

@@ -2,6 +2,10 @@ import Blockly from "blockly"
 
 export function overwriteMessages() {
 
+    // ブロック共通
+    Blockly.Msg["EXTERNAL_INPUTS"] = "入力を縦並びにする";
+    Blockly.Msg["INLINE_INPUTS"] = "入力を横並びにする";
+
     // リストブロック
     Blockly.Msg["LISTS_CREATE_WITH_INPUT_WITH"] = "";
 
@@ -16,4 +20,7 @@ export function overwriteMessages() {
     Blockly.Msg["PROCEDURES_BEFORE_PARAMS"] = ":";
     Blockly.Msg["PROCEDURES_CALL_BEFORE_PARAMS"] = ":";
     Blockly.Msg["PROCEDURES_HIGHLIGHT_DEF"] = "関数の定義へ移動";
+
+    // テキストブロック
+    Blockly.Msg["TEXT_JOIN_TITLE_CREATEWITH"] = "テキスト連結：";
 }

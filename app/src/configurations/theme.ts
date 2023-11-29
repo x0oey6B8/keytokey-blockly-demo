@@ -42,9 +42,9 @@ export function defineTheme() {
             },
             'list_category': {
                 colour: BlockColors.List,
-            }
+            },
             // 'variable_category': {
-            //     colour: BlockColors.Action
+            //     colour: BlockColors.Variable
             // }
         },
         blockStyles: {
@@ -69,8 +69,8 @@ export function defineTheme() {
                 'colourSecondary': BlockColors.List,
             },
             // 'variable_blocks': {
-            //     'colourPrimary': BlockColors.Action,
-            //     'colourSecondary': BlockColors.Action,
+            //     'colourPrimary': BlockColors.Variable,
+            //     'colourSecondary': BlockColors.Variable,
             // },
             'キーボード／マウス': {
                 'colourPrimary': '#01579b',

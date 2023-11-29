@@ -40,7 +40,7 @@ onMounted(async () => {
     const lang: any = monaco.languages.getLanguages().find(l => l.id === 'javascript');
     await new Promise((resolve) => lang.loader().then((module: any) => {
         // console.log(module.conf);
-        // console.log(module.language);
+        console.log(module.language);
         //console.log((monaco as any)._themeService);
         const def: monaco.languages.IMonarchLanguage = module.language;
         def.tokenizer.root.unshift([/[_\w$]*\(/, 'function.name']);
@@ -113,13 +113,13 @@ onMounted(async () => {
 
 <template>
     <div class="background">
-        <div class="sub-background">
+        <div class="sub-background" :class="{ mtkf: store.willMakeInvalidIdentifierTextWhite }">
             <div id="container" style="width: 99%; height: 99%; margin: auto;"></div>
         </div>
     </div>
 </template>
 
-<style scoped>
+<style>
 .background {
     border-radius: 5px;
     padding: 5px;
@@ -139,6 +139,10 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.mtkf {
+    color: #bdbebe !important;
 }
 
 </style>

@@ -9,23 +9,27 @@ import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
 import { overwriteMessages } from "../definitions/message/overwrite"
 import { useAppStore } from "./appStore";
+import { defineTestCodeGenerator } from "../definitions/generators/defineCodeGenerator";
+import { definedCodeGenerators } from "../definitions/generators/codeGenerator";
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
     const generator = javascriptGenerator;
+    console.log(generator); // 消さないで：何故かは知らないけど出力するとgeneratorがundefinedにならない
 
-    //Blockly.FieldDropdown.MAX_MENU_HEIGHT_VH = 0.65
     let workspaceSession: WorkspaceSession | undefined = undefined;
 
     setLocaleToJa();
     defineTheme();
     defineBlocks();
     defineCodeGenerator(generator);
+    defineTestCodeGenerator(generator);
     defineContextMenu();
     overwriteMessages();
     registerGlobalFunctions();
 
     return {
+        generator,
         registerNewWorkspaceSession,
         getCurrentWorkspaceSession
     };
@@ -60,7 +64,7 @@ class WorkspaceSession {
         const appStore = useAppStore();
         this.workspaceSvg.addChangeListener((e) => {
             if (e.recordUndo && this.canWriteToFile) {
-                console.log(e);
+                //console.log(e);
                 const state = this.getState();
                 const code = this.createCode(StatementPrefix.CHECK_POINT);
                 appStore.currentMacroFile?.write(state, code);
@@ -69,7 +73,7 @@ class WorkspaceSession {
     }
 
     setInitialScrollPosition() {
-        this.workspaceSvg.scroll(5, 5);
+        this.workspaceSvg.scroll(0, 0);
     }
 
     addKeyValue() {
@@ -82,6 +86,11 @@ class WorkspaceSession {
 
     makeWorkspaceEditable() {
         this.workspaceSvg.options.readOnly = false;
+    }
+
+    moveTo(block: BlockSvg, x: number, y: number) {
+        block.moveTo(new Blockly.utils.Coordinate(x, y));
+
     }
 
     centerToEntryBlock() {
@@ -194,6 +203,44 @@ class WorkspaceSession {
         }
     }
 
+    cloneSelectedBlock() {
+        const selectedBlock = this.getSelectedBlock();
+        if (!selectedBlock) {
+            return;
+        }
+
+        const xml = this.copyBlockAsXml(false);
+        if (!xml) {
+            return;
+        }
+
+        const blockIds = this.pasteBlock(xml);
+        if (blockIds.length < 1) {
+            return;
+        }
+
+        const newBlock = this.workspaceSvg.getBlockById(blockIds[0]);
+        if (!newBlock) {
+            return;
+        }
+
+        // 接続
+        const nextBlock = selectedBlock.getNextBlock(); // 元のブロックの次のブロックを取得
+
+        // 新しいブロックと元のブロックの接続を行う前に、それぞれの接続が存在するかを確認
+        const newBlockPrevConnection = newBlock.previousConnection;
+        const selectedBlockNextConnection = selectedBlock.nextConnection;
+
+        if (nextBlock && newBlockPrevConnection && selectedBlockNextConnection) {
+            // 接続を解除せずに接続を行う
+            newBlockPrevConnection.connect(nextBlock.previousConnection);
+            selectedBlockNextConnection.connect(newBlockPrevConnection);
+        } else if (selectedBlockNextConnection && newBlockPrevConnection) {
+            // 元のブロックに次のブロックがない場合の接続
+            selectedBlockNextConnection.connect(newBlockPrevConnection);
+        }
+    }
+
     copyBlockAsXml(copyChildren: boolean) {
         const selectedBlock = this.getSelectedBlock();
         if (selectedBlock) {
@@ -234,7 +281,7 @@ class WorkspaceSession {
             "})();"
         ]
         let code = codes.join("\n");
-        code = this.replacePlaceHolderToId(code);
+        //code = this.replacePlaceHolderToId(code);
         console.log(performance.now() - s);
         return code;
     }
@@ -250,6 +297,13 @@ class WorkspaceSession {
         const code = this.createCode(prefix);
         const decodedCode = this.decode(code);
         return decodedCode;
+    }
+
+    createDescriptionCode() {
+        for (const gen of definedCodeGenerators) { gen.target = "DESCRIPTION" }
+        const code = this.createDecodedCode(StatementPrefix.NONE);
+        for (const gen of definedCodeGenerators) { gen.target = "JAVASCRIPT" }
+        return code;
     }
 
     private decode(text: string) {
@@ -290,12 +344,16 @@ class WorkspaceSession {
         if (!entryBlock) {
             const entryBlockXml = `
             <xml>
-                <block type="procedures_defnoreturn" x="0" y="0" movable="false" deletable="false">
-                    <field name="NAME" >ここから実行</field>
+                <block type="procedures_defnoreturn" deletable="false">
+                    <field name="NAME" editable="false">ここから実行</field>
                 </block>
             </xml>
             `
             this.pasteBlock(entryBlockXml);
+            const entryBlock = this.getEntryProcedureBlock();
+            if (entryBlock) {
+                this.moveTo(entryBlock, 16, -17);
+            }
         }
     }
 

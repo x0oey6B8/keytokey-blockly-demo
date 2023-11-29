@@ -5,22 +5,8 @@ import { ICommandTextValidator, useCommandPaletteStore } from "../../stores/comm
 import { useNotificationStore } from "../../stores/notificationStore";
 import { useBlocklyStore } from "../../stores/blocklyStore";
 
-export class TestCommandItem extends CommandItem {
-    header: string = "テスト";
-    subHeader: string = "No description.";
-    callback = async () => {
-        //console.log(args.text);
-        //console.log(await host.macroManager.find({ name: "aaaaa" }));
-        const appStore = useAppStore();
-        const content = await appStore.currentMacroFile?.read();
-        if (content) {
-            console.log(content);
-        }
-    }
-}
-
 /*
-    メイン
+    マクロのメニューを表示するためのオプション
 */
 
 // MacroMenuCommandPaletteOptions クラスはマクロメニューのコマンドパレットオプションを表します。
@@ -28,7 +14,7 @@ export class MacroMenuCommandPaletteOptions extends CommandPaletteOptions {
     // コンストラクター。マクロの設定を受け取り、オプションを初期化します。
     constructor(settings: Macro[], init?: Partial<CommandPaletteOptions>) {
         super(init); // 親クラスのコンストラクターを呼び出します。
-        this.hint = settings.length < 1 ? "新規作成からマクロを作成してください" : ""; // ヒントメッセージを設定します。
+        this.hint = settings.length < 1 ? "「新しいマクロを作成」からマクロを作成してください" : ""; // ヒントメッセージを設定します。
 
         // コマンドアイテムを設定（新しいマクロを作成するコマンドアイテムを含む）
         this.commandItems = [new DecidedToCreateMacroCommandItem("CreateNew")];
@@ -91,9 +77,9 @@ export class ChangeCurrentMacroCommandItem extends CommandItem {
 // CreateNewMacroCommandItem クラスは新しいマクロを作成するコマンドアイテムを表します。
 export class CreateNewMacroCommandItem extends CommandItem {
     // ダイアログのヘッダー
-    header = "新規作成";
+    header = "新しいマクロを作成";
     // ダイアログのサブヘッダー
-    subHeader = "新しいマクロを作成します。";
+    subHeader = "create new";
 
     // コールバック関数。新しいマクロの作成ダイアログを開きます。
     callback = async (_: ICallbackArgs) => {
@@ -244,8 +230,8 @@ export class MacroNameValidator implements ICommandTextValidator {
 
 export class CategorizeMacroCommandItem extends CommandItem {
     // ヘッダーとサブヘッダーを設定します。
-    header = "分類"; // ダイアログのヘッダー
-    subHeader = "マクロを一覧から選択してカテゴリーを設定します。"; // ダイアログのサブヘッダー
+    header = "マクロにカテゴリーを設定"; // ダイアログのヘッダー
+    subHeader = "categorize"; // ダイアログのサブヘッダー
 
     // 表示条件を更新するコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;
@@ -278,6 +264,9 @@ export class CategorizeMacroCommandItem extends CommandItem {
 
 class MacroCategorizer {
     static categorize(categorizationTarget: Macro) {
+        // コマンドパレットストアを取得します。
+        const commandPalette = useCommandPaletteStore();
+
         // 新しいマクロを作成するコマンドアイテムを作成します。
         const commandItem = new CommandItem({
             header: "上記のカテゴリー名に決定する",
@@ -293,6 +282,7 @@ class MacroCategorizer {
                     });
                     return;
                 }
+                commandPalette.close();
             }
         })
 
@@ -305,7 +295,6 @@ class MacroCategorizer {
             commandItems: [commandItem] // コマンドアイテムを設定
         });
 
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを取得します。
         commandPalette.open(options); // コマンドパレットを開きます。
     }
 }
@@ -318,8 +307,8 @@ class MacroCategorizer {
 // CloneMacroCommandItem クラスをエクスポートします。これはコマンドアイテムのサブクラスです。
 export class CloneMacroCommandItem extends CommandItem {
     // ヘッダーとサブヘッダーを設定します。
-    header = "複製"; // ダイアログのヘッダー
-    subHeader = "マクロを一覧から選択して複製します。"; // ダイアログのサブヘッダー
+    header = "マクロを複製"; // ダイアログのヘッダー
+    subHeader = "clone"; // ダイアログのサブヘッダー
 
     // 表示条件を更新するコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;
@@ -406,9 +395,9 @@ export class ManipulateCommandPaletteOptions extends CommandPaletteOptions {
 // DeleteMacroCommandItem クラスはコマンドアイテムのサブクラスで、マクロの削除機能を提供します。
 export class DeleteMacroCommandItem extends CommandItem {
     // ダイアログのヘッダー
-    header = "削除";
+    header = "マクロを削除";
     // ダイアログのサブヘッダー
-    subHeader = "マクロを一覧から選択して削除します。";
+    subHeader = "delete";
 
     // 表示条件を更新するためのコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;
@@ -486,9 +475,9 @@ export class DeleteMacroCommandItem extends CommandItem {
 // RenameMacroCommandItem クラスはコマンドアイテムのサブクラスで、マクロの名前変更機能を提供します。
 export class RenameMacroCommandItem extends CommandItem {
     // ダイアログのヘッダー
-    header = "名前変更";
+    header = "マクロの名前を変更";
     // ダイアログのサブヘッダー
-    subHeader = "マクロを一覧から選択して名前を変更します。";
+    subHeader = "rename";
 
     // 表示条件を更新するためのコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;

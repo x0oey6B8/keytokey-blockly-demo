@@ -11,6 +11,7 @@ import { useAppStore } from "./stores/appStore";
 import { useBlocklyStore } from "./stores/blocklyStore";
 import { useEditorStore } from "./stores/editorStore";
 import { useCommandPaletteStore } from "./stores/commandPaletteStore";
+import { useMagicKeys, useMouse } from "@vueuse/core";
 
 const appStore = useAppStore();
 const blockly = useBlocklyStore();
@@ -18,11 +19,27 @@ const editor = useEditorStore();
 const commandPalette = useCommandPaletteStore();
 // const overflow = ref(false);
 
-onMounted(() => {
+const { x, y } = useMouse();
+useMagicKeys({
+    passive: false,
+    onEventFired(e) {
+        if (e.ctrlKey && e.key === 'm' && e.type === "keydown") {
+            appStore.openDropdownMenus();
+            e.preventDefault();
+        }
+        else if (e.ctrlKey && e.key === 'p' && e.type === "keydown"){
+            appStore.openMacroMenu();
+            e.preventDefault();
+        }
+    }
+});
+
+onMounted(async () => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
     blockly.registerNewWorkspaceSession(container);
     window.addEventListener("resize", resize);
     resize();
+    await appStore.readImplementationFile();
     appStore.openMacroMenu();
     blockly.getCurrentWorkspaceSession()?.setInitialScrollPosition();
 });
@@ -47,7 +64,7 @@ function resize() {
             <div class="tab-container">
                 <span v-if="appStore.currentMacro == undefined"
                     style="margin: 0px 0px 6px 12px; font-size: 14px; color: #777;">
-                    マクロが選択されていません
+                    マクロが選択されていません{{ x }},{{ y }}
                 </span>
                 <Tab :tabs="appStore.tabs"></Tab>
                 <div class="icon-container">

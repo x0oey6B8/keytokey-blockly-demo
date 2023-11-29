@@ -11,7 +11,7 @@ export const useNotificationStore = defineStore("notification", () => {
     function toastMessage(message: string, options: ToastOptions = {
         autoClose: 3000,
         theme: "colored",
-        type: "info",
+        type: "info"
     }) {
         return toast(message, options);
     }
