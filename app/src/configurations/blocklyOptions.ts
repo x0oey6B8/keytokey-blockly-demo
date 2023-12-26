@@ -2,11 +2,12 @@ import { BlocklyOptions } from "blockly";
 
 export const options: BlocklyOptions = {
     renderer: "zelos",
+    // renderer: "",
     theme: "myStyle",
     media: "media",
     toolbox: getToolBoxXml(),
     collapse: true,
-    comments: false,
+    comments: true,
     disable: true,
     maxBlocks: Infinity,
     trashcan: true,
@@ -124,6 +125,15 @@ function getToolBoxXml(): string {
         <label text="サイズ"></label>
         <block type="size"></block>
 
+        <label text="方角"></label>
+        <block type="direction"></block>
+
+        <label text="ウィンドウの状態"></label>
+        <block type="window_state"></block>
+
+        <label text="IMEの変換モード"></label>
+        <block type="ime_conversion_mode"></block>
+
         <label text="　"></label>
         <label text="　"></label>
         <label text="　"></label>
@@ -197,6 +207,17 @@ function getToolBoxXml(): string {
         -->
         <block type="for_of"></block>
         <block type="controls_flow_statements"></block>
+
+        <label text="テンプレート"></label>
+        <label text="トリガーが押されている間ループ"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_whileUntil">
+            <field name="MODE">WHILE</field>
+            <value name="BOOL">
+                <block type="trigger_is_pressed">
+                    <field name="DROPDOWN">PRESSED</field>
+                </block>
+            </value>
+        </block>
     </category>
 
 
@@ -481,12 +502,24 @@ function getToolBoxXml(): string {
 
     <sep></sep>
 
+
     <category name="プロファイル"></category>
 
 
     <category name="トリガー">
         <label text="マクロの実行トリガー"></label>
         <block type="trigger_is_pressed"></block>
+
+        <label text="テンプレート"></label>
+        <label text="トリガーが押されている間ループ"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_whileUntil">
+            <field name="MODE">WHILE</field>
+            <value name="BOOL">
+                <block type="trigger_is_pressed">
+                    <field name="DROPDOWN">PRESSED</field>
+                </block>
+            </value>
+        </block>
     </category>
 
 
@@ -857,6 +890,26 @@ function getToolBoxXml(): string {
                 </block>
             </next>
         </block>
+
+        <label text="マウス移動の原点座標をウィンドウの左上に設定"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="mouse_set_origin_point">
+            <value name="ORIGIN">
+                <block type="window_get_property">
+                    <field name="DROPDOWN">POINT</field>
+                    <value name="WINDOW">
+                        <block type="get_window">
+                            <field name="DROPDOWN">ACTIVE</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
+
     </category>
 
 
@@ -898,19 +951,43 @@ function getToolBoxXml(): string {
 
 
 
-
     <category name="javascript">
-        <block type="js"></block>
-        <block type="evaluate_js"></block>
+        <block type="embedded_multiline_javascript"></block>
+        <block type="embedded_singleline_javascript"></block>
+        <block type="json_stringify"></block>
+        <block type="formatted_json_stringify"></block>
     </category>
+
 
 
     <category name="コントローラー">
         <label text="現在設定中のコントローラー"></label>
         <block type="controller"></block>
-        <block type="controller_proeprty"></block>
+        <block type="xinput_controller"></block>
 
-        <label text="ボタンやスティックが押されているかどうか"></label>
+        <label text="コントローラーの情報"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controller_proeprty">
+            <field name="DROPDOWN">IS_CONNECTED</field>
+            <value name="CONTROLLER">
+                <block type="controller"></block>
+            </value>
+        </block>
+
+        <label text="スティック"></label>
+        <block type="controller_stick_property">
+            <value name="CONTROLLER">
+                <block type="controller"></block>
+            </value>
+        </block>
+
+        <label text="トリガー（コントローラー）"></label>
+        <block type="controller_trigger_property">
+            <value name="CONTROLLER">
+                <block type="controller"></block>
+            </value>
+        </block>
+
+        <label text="ボタンやスティックが押されてるかどうか"></label>
         <block xmlns="https://developers.google.com/blockly/xml" type="is_controller_pressed">
             <field name="DROPDOWN">PRESSED</field>
             <value name="CONTROLLER">
@@ -923,24 +1000,8 @@ function getToolBoxXml(): string {
             </value>
         </block>
 
-        <label text="スティック"></label>
-        <block type="controller_stick_property">
-            <value name="CONTROLLER">
-                <block type="controller"></block>
-            </value>
-        </block>
-
-
         <label text="テンプレート"></label>
         <label text="テンプレート"></label>
-    </category>
-    <category name="XInputの状態">
-    </category>
-    <category name="仮想XInput">
-    </category>
-    <category name="仮想DualShock4">
-    </category>
-    <category name="仮想vJoy">
     </category>
 
     <category name="画像認識">
@@ -1110,6 +1171,16 @@ function getToolBoxXml(): string {
         </block>
     </category>
 
+    <category name="仮想コントローラー">
+        <category name="マッピング">
+        </category>
+        <category name="XInput">
+        </category>
+        <category name="DualShock4">
+        </category>
+        <category name="vJoy">
+        </category>
+    </category>
 
     <category name="ウィンドウ">
         <label text="ウィンドウの取得"></label>
@@ -1127,7 +1198,7 @@ function getToolBoxXml(): string {
         <label text="ウィンドウの作成"></label>
         <block type="create_window_by_window_handle"></block>
 
-        <label text="ウィンドウの値を取得"></label>
+        <label text="ウィンドウの情報を取得"></label>
         <block type="window_get_property"></block>
         <block xmlns="https://developers.google.com/blockly/xml" type="window_get_property">
             <field name="DROPDOWN">POINT</field>
@@ -1136,12 +1207,107 @@ function getToolBoxXml(): string {
             </value>
         </block>
 
-        <label text="ウィンドウの値を設定"></label>
-        <block type="window_set_property"></block>
-        <block type="window_set_bounds"></block>
-
         <label text="ウィンドウの情報をコンソールに出力"></label>
-        <block type="window_dump"></block>
+        <block xmlns="https://developers.google.com/blockly/xml" type="window_dump">
+        </block>
+
+        <label text="ウィンドウの座標をセット"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="window_set_point">
+            <value name="VALUE">
+                <block type="point">
+                    <value name="X">
+                        <block type="math_number">
+                            <field name="NUM">0</field>
+                        </block>
+                    </value>
+                    <value name="Y">
+                        <block type="math_number">
+                            <field name="NUM">0</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+
+        <label text="ウィンドウのサイズをセット"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="window_set_size">
+            <value name="VALUE">
+                <block type="size">
+                    <value name="X">
+                        <block type="math_number">
+                            <field name="NUM">1920</field>
+                        </block>
+                    </value>
+                    <value name="Y">
+                        <block type="math_number">
+                            <field name="NUM">1080</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+
+        <label text="ウィンドウのタイトルをセット"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="window_set_title">
+            <value name="VALUE">
+                <block type="text">
+                    <field name="TEXT">タイトル</field>
+                </block>
+            </value>
+        </block>
+
+        <label text="ウィンドウのテキストをセット"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="window_set_text">
+            <value name="VALUE">
+                <block type="text">
+                    <field name="TEXT">テキスト</field>
+                </block>
+            </value>
+        </block>
+
+        <label text="ウィンドウに座標とサイズをセット"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="window_set_bounds" inline="false">
+            <value name="POINT">
+                <block type="point">
+                    <value name="X">
+                        <block type="math_number">
+                            <field name="NUM">0</field>
+                        </block>
+                    </value>
+                    <value name="Y">
+                        <block type="math_number">
+                            <field name="NUM">0</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+            <value name="SIZE">
+                <block type="size">
+                    <value name="X">
+                        <block type="math_number">
+                            <field name="NUM">1920</field>
+                        </block>
+                    </value>
+                    <value name="Y">
+                        <block type="math_number">
+                            <field name="NUM">1080</field>
+                        </block>
+                    </value>
+                </block>
+            </value>
+        </block>
+
+        <label text="ウィンドウを閉じる"></label>
+        <block type="window_close"></block>
+
+        <label text="ウィンドウの最大化／最小化"></label>
+        <block type="window_set_state"></block>
+
+        <label text="最小化／最大化されたウィンドウの表示を元に戻す"></label>
+        <block type="window_restore"></block>
+
+        <label text="ウィンドウの表示／非表示"></label>
+        <block type="window_set_visibility"></block>
 
         <label text="テンプレート"></label>
         <label text="テンプレート"></label>
@@ -1181,68 +1347,156 @@ function getToolBoxXml(): string {
         <block type="console_clear"></block>
     </category>
 
+    <!--
     <category name="ファイル">
     </category>
 
     <category name="サウンド">
     </category>
+    -->
 
     <category name="時間">
+        <label text="マクロを開始してからの経過時間（ミリ秒）"></label>
+        <block type="performance_now"></block>
+
+        <label text="時刻を取得"></label>
+        <block type="date_time_now"></block>
+
+        <label text="時刻をテキストとして取得"></label>
+        <block type="date_time_to_string"></block>
+        
+        <label text="時刻の値"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="date_time_property">
+            <field name="DROPDOWN">YEAR</field>
+            <value name="DATE">
+                <block type="date_time_now"></block>
+            </value>
+        </block>
+
+        <label text="テンプレート"></label>
+        <label text="処理にかかった時間の計測"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="variables_set">
+            <field name="VAR" id="8xPzdgI,ER6h|=S_Lq2S">計測開始時間</field>
+            <value name="VALUE">
+                <block type="performance_now"></block>
+            </value>
+            <next>
+                <block type="comment_statement">
+                    <field name="COMMENT">メモ：計測したい処理をここに</field>
+                    <next>
+                        <block type="variables_set">
+                            <field name="VAR" id="Dy*v|)nsgFJ_VS}?C$[j">計測終了時間</field>
+                            <value name="VALUE">
+                                <block type="performance_now"></block>
+                            </value>
+                            <next>
+                                <block type="variables_set">
+                                    <field name="VAR" id="r_2?e4eXbrNS-BP,9XM$">経過時間</field>
+                                    <value name="VALUE">
+                                        <block type="math_arithmetic">
+                                            <field name="OP">MINUS</field>
+                                            <value name="A">
+                                                <shadow type="math_number">
+                                                    <field name="NUM">1</field>
+                                                </shadow>
+                                                <block type="variables_get">
+                                                    <field name="VAR" id="Dy*v|)nsgFJ_VS}?C$[j">計測終了時間</field>
+                                                </block>
+                                            </value>
+                                            <value name="B">
+                                                <shadow type="math_number">
+                                                    <field name="NUM">1</field>
+                                                </shadow>
+                                                <block type="variables_get">
+                                                    <field name="VAR" id="8xPzdgI,ER6h|=S_Lq2S">計測開始時間</field>
+                                                </block>
+                                            </value>
+                                        </block>
+                                    </value>
+                                    <next>
+                                        <block type="console_log">
+                                            <value name="VALUE">
+                                                <block type="text_join" inline="true">
+                                                    <mutation items="2"></mutation>
+                                                    <value name="ADD0">
+                                                        <block type="text">
+                                                            <field name="TEXT">経過時間(ms)：</field>
+                                                        </block>
+                                                    </value>
+                                                    <value name="ADD1">
+                                                        <block type="variables_get">
+                                                            <field name="VAR" id="r_2?e4eXbrNS-BP,9XM$">経過時間</field>
+                                                        </block>
+                                                    </value>
+                                                </block>
+                                            </value>
+                                        </block>
+                                    </next>
+                                </block>
+                            </next>
+                        </block>
+                    </next>
+                </block>
+            </next>
+        </block>
     </category>
 
-    <category name="IME">
-    </category>
 
     <category name="モニター">
+        <label text="メインモニターを取得"></label>
+        <block type="monitor"></block>
+
+        <label text="すべてのモニターのリストを取得"></label>
+        <block type="monitor_list"></block>
+
+        <label text="モニターの情報"></label>
+        <block type="monitor_property"></block>
+
+        <label text="モニターの情報をコンソールに出力"></label>
+        <block type="monitor_dump"></block>
     </category>
 
-<!--
-    <category name="色" categorystyle="colour_category">
-        <block type="colour_picker"></block>
-        <block type="colour_random"></block>
-        <block type="colour_rgb">
-            <value name="RED">
-                <shadow type="math_number">
-                    <field name="NUM">100</field>
-                </shadow>
-            </value>
-            <value name="GREEN">
-                <shadow type="math_number">
-                    <field name="NUM">50</field>
-                </shadow>
-            </value>
-            <value name="BLUE">
-                <shadow type="math_number">
-                    <field name="NUM">0</field>
-                </shadow>
+
+    <category name="IME">
+        <label text="現在の変換モード"></label>
+        <block type="get_ime_conversion_mode"></block>
+
+        <label text="変換モードの値"></label>
+        <block type="ime_conversion_mode"></block>
+
+        <label text="変換モードをセット"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="set_ime_conversion_mode">
+            <value name="MODE">
+                <block type="ime_conversion_mode">
+                    <field name="VALUE">HankakuEisuu</field>
+                </block>
+            </value>s
+        </block>
+
+        <label text="テンプレート"></label>
+        <label text="変換モードが半角英数だったら"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_if">
+            <value name="IF0">
+                <block type="logic_expression">
+                    <field name="operator">EQUAL</field>
+                    <value name="LEFT_VALUE">
+                        <block type="get_ime_conversion_mode"></block>
+                    </value>
+                    <value name="RIGHT_VALUE">
+                        <block type="ime_conversion_mode">
+                            <field name="VALUE">HankakuEisuu</field>
+                        </block>
+                    </value>
+                </block>
             </value>
         </block>
-        <block type="colour_blend">
-            <value name="COLOUR1">
-                <shadow type="colour_picker">
-                    <field name="COLOUR">#ff0000</field>
-                </shadow>
-            </value>
-            <value name="COLOUR2">
-                <shadow type="colour_picker">
-                    <field name="COLOUR">#3333ff</field>
-                </shadow>
-            </value>
-            <value name="RATIO">
-                <shadow type="math_number">
-                    <field name="NUM">0.5</field>
-                </shadow>
-            </value>
-        </block>
+        
     </category>
--->
 
     <category name="その他">
         <label text="メモ"></label>
         <block type="comment"></block>
-
-        <label text="その他"></label>
-        <block type="global_get_variable"></block>
+        <block type="comment_statement"></block>
     </category>
 </xml>
 `;

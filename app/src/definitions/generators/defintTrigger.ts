@@ -10,7 +10,7 @@ export class TRIGGER_IS_PRESSED extends BlockCodeGenerator {
         return { code, order: "NONE" }
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         var dropdown_value = this.getFieldValue(block, "DROPDOWN");
         var code = "トリガーが押されて" + dropdown_value === "RELEASED" ? "いない" : "いる";
         return { code, order: "NONE" }

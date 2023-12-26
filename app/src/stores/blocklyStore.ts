@@ -49,6 +49,7 @@ export const useBlocklyStore = defineStore("blockly", () => {
 
 class WorkspaceSession {
 
+    workspace: Blockly.Workspace | null;
     workspaceSvg: WorkspaceSvg
     isMainWorkspace: boolean;
     javascriptGenerator: any;
@@ -60,6 +61,7 @@ class WorkspaceSession {
         this.workspaceSvg = Blockly.inject(container, options);
         this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
+        this.workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
 
         const appStore = useAppStore();
         this.workspaceSvg.addChangeListener((e) => {

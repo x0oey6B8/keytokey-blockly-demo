@@ -43,11 +43,6 @@ export function getBlockCallback(generator, name) {
 }
 
 export function defineCodeGenerator(javascriptGenerator) {
-
-    /*
-        javascript
-    */
-
     javascriptGenerator.forBlock['js'] = function (block) {
         const value_name = block.getFieldValue("CODE") + "\n";
         return value_name;
@@ -56,16 +51,5 @@ export function defineCodeGenerator(javascriptGenerator) {
     javascriptGenerator.forBlock['evaluate_js'] = function (block) {
         const value_name = block.getFieldValue("CODE");
         return [value_name, javascriptGenerator.ORDER_ATOMIC];
-    };
-
-
-    /*
-        グローバル変数
-    */
-
-    javascriptGenerator.forBlock['global_get_variable'] = function (block) {
-        var text_global_variable_name = block.getFieldValue('GLOBAL_VARIABLE_NAME');
-        var code = `global.variables.${text_global_variable_name}`
-        return [code, javascriptGenerator.ORDER_NONE];
     };
 }

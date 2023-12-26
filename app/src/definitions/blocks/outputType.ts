@@ -1,0 +1,16 @@
+export enum OutputType {
+    Number = "Number",
+    String = "String",
+    Boolean = "Boolean",
+    Array = "Array",
+    Keys = "Keys",
+    ControllerButtons = "ControllerButtons",
+    Size = "Size",
+    Point = "Point",
+    Date = "Date",
+    Direction = "Direction",
+    Window = "Window",
+    WindowState = "WindowState",
+    Monitor = "Monitor",
+    IMEConversionMode = "IME",
+}

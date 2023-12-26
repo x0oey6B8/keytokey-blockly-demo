@@ -26,7 +26,7 @@ export class WAIT extends WAIT_BASE {
         return code;
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const unitText = this.unitToText(v.unit);
         const code = `${v.time}${unitText}待つ\n`
@@ -43,7 +43,7 @@ export class HIGH_PRECISION_WAIT extends WAIT_BASE {
         return code;
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.time}ミリ秒待つ\n`
         return code;
@@ -59,7 +59,7 @@ export class WAIT_FOR_INPUT extends BlockCodeGenerator {
         return code;
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.key}の入力を待つ\n`
         return code;
@@ -77,11 +77,11 @@ export class WAIT_FOR_CONTROLLER extends BlockCodeGenerator {
     // @ts-ignore
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
-        const code = `controller.waitForInput(${v.button});\n`
+        const code = `waitForController(${v.button});\n`
         return code;
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `コントローラー：${v.button}の入力を待つ\n`
         return code;

@@ -11,6 +11,9 @@ import { defineWindowBlocks } from "./windowBlocks.ts";
 import { defineLoopBlocks } from "./loopBlocks.ts";
 import { defineTemplateMatchingBlocks } from "./templateMatchingBlock.ts";
 import { defineControllerBlocks } from "./controllerBlocks.ts";
+import { defineTimeBlock } from "./timeBlock.ts";
+import { defineMonitorBlocks } from "./monitorBlocks.ts";
+import { defineIMEBlocks } from "./imeBlocks.ts";
 
 export function defineBlocks(): void {
 
@@ -25,32 +28,34 @@ export function defineBlocks(): void {
     defineWindowBlocks();
     defineTemplateMatchingBlocks();
     defineControllerBlocks();
+    defineTimeBlock();
+    defineMonitorBlocks();
+    defineIMEBlocks();
 
     Blockly.Blocks['comment'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("メモ：")
-                .appendField(new Blockly.FieldMultilineInput(""), "COMMENT");
-            this.setColour("#4FA65A");
+                .appendField("  ")
+                .appendField(new Blockly.FieldMultilineInput("メモ"), "COMMENT");
+            this.setColour(BlockColors.Comment);
             this.setNextStatement(true);
             this.setPreviousStatement(true);
-            this.setTooltip("");
+            this.setTooltip("メモ");
             this.setHelpUrl("");
         }
     } as Block;
 
-
-    Blockly.Blocks['global_get_variable'] = {
+    Blockly.Blocks['comment_statement'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("グローバル変数：");
-            this.appendDummyInput()
-                .appendField(new Blockly.FieldTextInput("変数名"), "GLOBAL_VARIABLE_NAME");
+                .appendField("  ")
+                .appendField(new Blockly.FieldTextInput("メモ"), "COMMENT");
+            this.appendStatementInput("DO")
+                .setCheck(null);
             this.setInputsInline(true);
-            this.setOutput(true, null);
-            this.setColour(BlockColors.Action);
-            this.setTooltip("");
-            this.setHelpUrl("");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(BlockColors.Comment);
         }
-    };
+    } as Block;
 }

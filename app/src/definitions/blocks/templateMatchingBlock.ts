@@ -10,6 +10,7 @@ export function defineTemplateMatchingBlocks() {
             this.appendDummyInput()
                 .appendField("を実行し");
             this.appendDummyInput()
+                // @ts-ignore
                 .appendField(new Blockly.FieldDropdown([["画像を一つ探す", "SINGLE"], ["画像を複数探す", "MULTIPLE"]]), "DROPDOWN")
             this.setInputsInline(true);
             this.setColour(BlockColors.Action);
@@ -33,6 +34,7 @@ export function defineTemplateMatchingBlocks() {
                 .setCheck("TemplateMatchingResult");
             this.appendDummyInput()
                 .appendField("→", "LABEL1")
+                // @ts-ignore
                 .appendField(new Blockly.FieldDropdown(menus), "DROPDOWN");
             this.setOutput(true, null);
             this.setColour(BlockColors.Logic);
@@ -92,6 +94,7 @@ export function defineTemplateMatchingBlocks() {
                 .setCheck("FoundImage");
             this.appendDummyInput()
                 .appendField("→", "LABEL1")
+                // @ts-ignore
                 .appendField(new Blockly.FieldDropdown(menus), "DROPDOWN");
             this.setOutput(true, null);
             this.setColour(BlockColors.Logic);

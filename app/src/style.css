@@ -121,3 +121,13 @@ body {
 .Toastify__toast {
     top: 22px !important;
 }
+
+.blocklyCommentTextarea {
+    font-size: 18px;
+    font-family: "Noto Sans JP";
+}
+
+.blocklyCommentIcon {
+    width: 20px;
+    height: 20px;
+}

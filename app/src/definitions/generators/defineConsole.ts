@@ -8,7 +8,7 @@ export class CONSOLE_LOG extends BlockCodeGenerator {
         const code = `console.log(${value});\n`;
         return { code, order: "RAW" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const value = this.valueToCode(block, "VALUE", "ATOMIC");
         const code = `コンソールに ${value} を出力\n`;
         return { code, order: "RAW" };
@@ -21,7 +21,7 @@ export class CONSOLE_CLEAR extends BlockCodeGenerator {
         const code = `console.clear();\n`;
         return { code, order: "RAW" };
     }
-    GenerateAsComment(): GeneratedCode {
+    GenerateAsFreeString(): GeneratedCode {
         const code = `コンソールをクリア\n`;
         return { code, order: "RAW" };
     }

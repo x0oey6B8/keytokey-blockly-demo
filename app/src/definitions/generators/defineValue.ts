@@ -8,7 +8,7 @@ export class VALUE_KEYS extends BlockCodeGenerator {
         const v = this.getValues(block);
         return { code: `"${v.dropdown_value}"`, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -24,7 +24,7 @@ export class VALUE_CONTROLLER_BUTTONS extends BlockCodeGenerator {
         const v = this.getValues(block);
         return { code: `"${v.dropdown_value}"`, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -40,7 +40,7 @@ export class VALUE_POINT extends BlockCodeGenerator {
         const code = `{ x: ${v.x}, y: ${v.y} }`;
         return { code, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -57,7 +57,7 @@ export class VALUE_SIZE extends BlockCodeGenerator {
         const code = `{ width: ${v.x}, height: ${v.y} }`;
         return { code, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -74,7 +74,7 @@ export class VALUE_POINT_GET_PROPERTY extends BlockCodeGenerator {
         const code = `${v.point}.${v.property}`;
         return { code, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -91,7 +91,7 @@ export class VALUE_RANDOM_POINT extends BlockCodeGenerator {
         const code = `randomPoint(${v.x_from}, ${v.x_to}, ${v.y_from}, ${v.y_to})`;
         return { code, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -100,5 +100,29 @@ export class VALUE_RANDOM_POINT extends BlockCodeGenerator {
         var y_from = this.valueToCode(block, 'Y_FROM', "ATOMIC");
         var y_to = this.valueToCode(block, 'Y_TO', "ATOMIC");
         return { x_from, x_to, y_from, y_to };
+    }
+}
+
+export class DIRECTION extends BlockCodeGenerator {
+    name = "direction";
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const value = this.getFieldValue(block, 'VALUE');
+        const code = `"${value}"`;
+        return { code, order: "NONE" };
+    }
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+}
+
+export class IME_CONVERSION_MODE extends BlockCodeGenerator {
+    name = "ime_conversion_mode";
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const value = this.getFieldValue(block, 'VALUE');
+        const code = `"${value}"`;
+        return { code, order: "NONE" };
+    }
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
     }
 }

@@ -74,7 +74,10 @@ function resize() {
                 </div>
             </div>
             <div class="button-container">
-                <button id="button" @click="appStore.openMacroMenu()">
+                <button 
+                    id="button" 
+                    @click="appStore.openMacroMenu()" 
+                    title="Ctrl+P">
                     <Menu class="icon" style="margin: 0"></Menu>
                     <span style="margin-bottom: 3px;">マクロ一覧</span>
                 </button>

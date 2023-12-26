@@ -6,11 +6,11 @@ export class CREATE_WINDOW_BY_WINDOW_HANDLE extends BlockCodeGenerator {
     // @ts-ignore
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
-        const code = `createWindow(${v.windowHandle})`;
+        const code = `createWindowById(${v.windowHandle})`;
         return { code, order: "NONE" }
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -32,11 +32,11 @@ export class FIND_WINDOW_BY extends BlockCodeGenerator {
         }
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
-        const title = this.valueToCode(block, "TITLE", "ATOMIC");
+        const title = this.valueToCode(block, "TITLE", "NONE");
         const dropdown = this.getFieldValue(block, "DROPDOWN");
         return { title, dropdown }
     }
@@ -57,6 +57,9 @@ class WINDOW_PROPERTIES {
             case "VISIBILITY": return "isVisible";
             case "ALWAYS_ON_TOP": return "alwaysOnTop";
             case "PARENT": return "parent";
+            case "SHOW_MAXIMIZED": return "isMaximized";
+            case "SHOW_MINIMIZED": return "isMinimized";
+            case "SHOW_NORMAL": return "isNormalVisible";
             case "CHILD_WINDOWS": return "childWindows";
         }
     }
@@ -71,7 +74,7 @@ export class GET_WINDOW extends BlockCodeGenerator {
         return { code, order: "NONE" }
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -83,9 +86,9 @@ export class GET_WINDOW extends BlockCodeGenerator {
     }
     functionName(dropdown: string): string {
         switch (dropdown) {
-            case "ACTIVE": return "getActiveWindow()";
-            case "UNDER_MOUSE": return "getWindowUnderMouse()";
-            default: return "getActiveWindow()"
+            case "ACTIVE": return "activeWindow";
+            case "UNDER_MOUSE": return "windowUnderMouse";
+            default: return "activeWindow"
         }
     }
 }
@@ -99,35 +102,90 @@ export class WINDOW_GET_PROPERTY extends BlockCodeGenerator {
         return { code, order: "NONE" }
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
-        const window = this.valueToCode(block, "WINDOW", "ATOMIC");
+        const window = this.valueToCode(block, "WINDOW", "NONE");
         const dropdown = this.getFieldValue(block, "DROPDOWN");
         const propertyName = WINDOW_PROPERTIES.getPropertyName(dropdown);
         return { window, propertyName }
     }
 }
 
-export class WINDOW_SET_PROPERTY extends BlockCodeGenerator {
-    name = "window_set_property";
+export class WINDOW_SET_POINT extends BlockCodeGenerator {
+    name = "window_set_point";
     // @ts-ignore
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
-        const code = `${v.window}.${v.proeprtyName} = ${v.value};\n`;
+        const code = `${v.window}.point = ${v.value};\n`;
         return { code, order: "ATOMIC" }
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
-        const window = this.valueToCode(block, "WINDOW", "ATOMIC");
-        const dropdown = this.getFieldValue(block, "DROPDOWN");
-        const propertyName = WINDOW_PROPERTIES.getPropertyName(dropdown);
-        const value = this.valueToCode(block, "VALUE", "ATOMIC");
-        return { window, proeprtyName: propertyName, value }
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        const value = this.valueToCode(block, "VALUE", "NONE");
+        return { window, value }
+    }
+}
+
+export class WINDOW_SET_SIZE extends BlockCodeGenerator {
+    name = "window_set_size";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const v = this.getValues(block);
+        const code = `${v.window}.size = ${v.value};\n`;
+        return { code, order: "ATOMIC" }
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+    getValues(block: BlockSvg) {
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        const value = this.valueToCode(block, "VALUE", "NONE");
+        return { window, value }
+    }
+}
+
+export class WINDOW_SET_TITLE extends BlockCodeGenerator {
+    name = "window_set_title";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const v = this.getValues(block);
+        const code = `${v.window}.title = ${v.value};\n`;
+        return { code, order: "ATOMIC" }
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+    getValues(block: BlockSvg) {
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        const value = this.valueToCode(block, "VALUE", "NONE");
+        return { window, value }
+    }
+}
+
+export class WINDOW_SET_TEXT extends BlockCodeGenerator {
+    name = "window_set_text";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const v = this.getValues(block);
+        const code = `${v.window}.text = ${v.value};\n`;
+        return { code, order: "ATOMIC" }
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+    getValues(block: BlockSvg) {
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        const value = this.valueToCode(block, "VALUE", "NONE");
+        return { window, value }
     }
 }
 
@@ -140,14 +198,13 @@ export class WINDOW_SET_BOUNDS extends BlockCodeGenerator {
         return { code, order: "ATOMIC" }
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
-        const window = this.valueToCode(block, "WINDOW", "ATOMIC");
-        const point = this.valueToCode(block, "POINT", "ATOMIC");
-        const size = this.valueToCode(block, "SIZE", "ATOMIC");
-
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        const point = this.valueToCode(block, "POINT", "NONE");
+        const size = this.valueToCode(block, "SIZE", "NONE");
         return { window, point, size }
     }
 }
@@ -161,11 +218,83 @@ export class WINDOW_DUMP extends BlockCodeGenerator {
         return code;
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
-        const window = this.valueToCode(block, "WINDOW", "ATOMIC");
+        const window = this.valueToCode(block, "WINDOW", "NONE");
         return { window }
+    }
+}
+
+export class WINDOW_CLOSE extends BlockCodeGenerator {
+    name = "window_close";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const v = this.getValues(block);
+        const code = `${v.window}.close();\n`;
+        return code;
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+    getValues(block: BlockSvg) {
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        return { window }
+    }
+}
+
+export class WINDOW_SET_STATE extends BlockCodeGenerator {
+    name = "window_set_state";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const v = this.getValues(block);
+        const code = `${v.window}.state = "${v.state}";\n`;
+        return code;
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+    getValues(block: BlockSvg) {
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        const state = this.getFieldValue(block, "STATE");
+        return { window, state }
+    }
+}
+
+export class WINDOW_SET_VISIBILITY extends BlockCodeGenerator {
+    name = "window_set_visibility";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const v = this.getValues(block);
+        if (v.dropdown === "SHOW") {
+            return `${v.window}.show();\n`;
+        } else {
+            return `${v.window}.hide();\n`;
+        }
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+    getValues(block: BlockSvg) {
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        const dropdown = this.getFieldValue(block, "DROPDOWN");
+        return { window, dropdown }
+    }
+}
+
+export class WINDOW_RESTORE extends BlockCodeGenerator {
+    name = "window_restore";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const window = this.valueToCode(block, "WINDOW", "NONE");
+        return `${window}.restore();\n`
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
     }
 }

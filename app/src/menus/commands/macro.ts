@@ -212,7 +212,7 @@ export class MacroNameValidator implements ICommandTextValidator {
         if (exists) {
             return {
                 isValid: false,
-                validationMessage: "既に使用されている名前です"
+                validationMessage: "既に使用されてる名前です"
             };
         }
 

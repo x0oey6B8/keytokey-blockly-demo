@@ -4,6 +4,7 @@ import { BlockColors } from "./blockColors";
 export function defineTheme() {
     const theme = Blockly.Theme.defineTheme("myStyle", {
         name: "myStyle",
+        // base: Blockly.Themes.Classic,
         base: Blockly.Themes.Classic,
         fontStyle: {
             'family': 'Noto Sans JP',

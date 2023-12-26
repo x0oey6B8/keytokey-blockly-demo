@@ -8,8 +8,8 @@ export class FOR_OF extends BlockCodeGenerator {
         const code = `for (${v.variableName} of ${v.list}) {\n${v.statement}}\n`;
         return code;
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsComment(block);
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsFreeString(block);
     }
     getValues(block: BlockSvg) {
 

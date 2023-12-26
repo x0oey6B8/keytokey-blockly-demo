@@ -10,7 +10,7 @@ export class KEY_DOWN_UP extends BlockCodeGenerator {
         const code = `${behavior}(${key});\n`;
         return { code, order: "RAW" }
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const key = this.valueToCode(block, "KEY", "NONE");
         const behavior = this.getFieldValue(block, "BEHAVIOR").toString().toLowerCase();
         const code = `${key}キーを${(behavior == "down" ? "押す" : "離す")}\n`
@@ -26,7 +26,7 @@ export class KEY_TAP extends BlockCodeGenerator {
         const code = `tap(${v.key}, ${v.wait1}, ${v.wait2});\n`;
         return { code, order: "RAW" }
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.key}キーを押して${v.wait1}ms待つ、離して${v.wait2}ms待つ\n`
         return { code, order: "RAW" }
@@ -47,14 +47,14 @@ export class KEY_UP_ALL extends BlockCodeGenerator {
         var code = `upAllKeys({ excludedKeys: ${value_excluded_keys} });\n`;
         return code;
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         var value_excluded_keys = this.valueToCode(block, 'EXCLUDED_KEYS', "ATOMIC");
         var code = `upAllKeys({ excludedKeys: ${value_excluded_keys} });\n`
         return code;
     }
 }
 
-// キーが押されているかどうか
+// キーが押されてるかどうか
 export class KEY_IS_PRESSED extends BlockCodeGenerator {
     name = "key_is_pressed";
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
@@ -66,15 +66,15 @@ export class KEY_IS_PRESSED extends BlockCodeGenerator {
         }
         return { code, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         var dropdown_value = this.getFieldValue(block, 'DROPDOWN');
         var key = this.valueToCode(block, 'KEY', "NONE");
-        var code = `${key}が` + (dropdown_value === "PRESSED" ? "押されている" : "離されている");
+        var code = `${key}が` + (dropdown_value === "PRESSED" ? "押されてる" : "離されてる");
         return { code, order: "NONE" };
     }
 }
 
-// 物理キーが押されているかどうか
+// 物理キーが押されてるかどうか
 export class PHYSICAL_KEY_IS_PRESSED extends BlockCodeGenerator {
     name = "physical_key_is_pressed";
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
@@ -85,7 +85,7 @@ export class PHYSICAL_KEY_IS_PRESSED extends BlockCodeGenerator {
         }
         return { code, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.key}が物理的に押されて` + (v.dropdown_value === "PRESSED" ? "いる" : "いない");
         return { code, order: "NONE" };
@@ -100,7 +100,7 @@ export class PHYSICAL_KEY_IS_PRESSED extends BlockCodeGenerator {
     }
 }
 
-// 複数のキーが押されているかどうか
+// 複数のキーが押されてるかどうか
 export class KEYS_ARE_PRESSED extends BlockCodeGenerator {
     name = "keys_are_pressed";
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
@@ -122,21 +122,21 @@ export class KEYS_ARE_PRESSED extends BlockCodeGenerator {
             }
         }
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         if (v.dropdown_value === "ALL_PRESSED") {
             return {
-                code: `${v.keyArray}すべてが押されている`,
+                code: `${v.keyArray}すべてが押されてる`,
                 order: "NONE"
             }
         } else if (v.dropdown_value === "ALL_RELEASED") {
             return {
-                code: `${v.keyArray}すべてが離されている`,
+                code: `${v.keyArray}すべてが離されてる`,
                 order: "NONE"
             }
         } else {
             return {
-                code: `${v.keyArray}のうちどれかが押されている`,
+                code: `${v.keyArray}のうちどれかが押されてる`,
                 order: "NONE"
             }
         }
@@ -157,7 +157,7 @@ export class MOUSE_SET_RANDOM_OFFSET_RANGE extends BlockCodeGenerator {
         var code = `mouse.setRandomOffsetRange(${v.x}, ${v.y});\n`;
         return { code, order: "ATOMIC" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         var v = this.getValues(block);
         var code = `マウスの移動先に(${v.x}, ${v.y})の範囲でランダム性を加える\n`;
         return { code, order: "ATOMIC" };
@@ -177,7 +177,7 @@ export class MOUSE_SET_ORIGIN_POINT extends BlockCodeGenerator {
         var code = `mouse.setOriginPoint(${v.origin});\n`;
         return { code, order: "ATOMIC" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         var v = this.getValues(block);
         var code = `マウス：原点座標を(${v.origin})に設定\n`;
         return { code, order: "ATOMIC" };
@@ -214,7 +214,7 @@ export class MOUSE_MOVE extends MOUSE_MOVE_BASE {
             return `mouse.moveTo(${v.point}, "${v.speed}");\n`;
         }
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         return `マウスを${this.speedToText(v.speed)}で(${v.point})に移動\n`;
     }
@@ -237,7 +237,7 @@ export class MOUSE_RELATIVE_MOVE extends MOUSE_MOVE_BASE {
             return `mouse.relMoveTo({ x: ${v.dx}, y: ${v.dy} }, "${v.speed}");\n`;
         }
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         return `マウスを${this.speedToText(v.speed)}で、横に(${v.dx})、縦に(${v.dy})移動\n`;
     }
@@ -257,7 +257,7 @@ export class MOUSE_GET_POINT extends MOUSE_MOVE_BASE {
         var code = `mouse.getPoint()`;
         return { code, order: "NONE" };
     }
-    GenerateAsComment(): GeneratedCode {
+    GenerateAsFreeString(): GeneratedCode {
         var code = `マウスカーソルの座標`;
         return { code, order: "NONE" };
     }
@@ -282,7 +282,7 @@ export class MOUSE_SCROLL extends BlockCodeGenerator {
             return `mouse.${directionInitial}scroll(${v.delta})\n`;
         }
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const direction = this.toDisplayText(v.direction);
         return `${direction}方向に${v.delta}移動する`;
@@ -316,7 +316,7 @@ export class INPUT_TEXT extends BlockCodeGenerator {
         const code = `inputText(${v.text}, ${v.interval})`;
         return code;
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `テキスト ${v.text} を ${v.interval} 間隔で入力`;
         return code;
@@ -337,7 +337,7 @@ export class INPUT_REPLAY extends BlockCodeGenerator {
         const code = `replay(${v.path})`;
         return code;
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `replay(${v.path})`;
         return code;

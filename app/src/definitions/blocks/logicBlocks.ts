@@ -41,6 +41,7 @@ export function defineLogicBlocks() {
             this.appendDummyInput().appendField("が", "CONNECTOR1");
             this.appendValueInput("RIGHT_VALUE").setCheck(null);
             this.appendDummyInput("CONNECTOR_INPUT").appendField("", "CONNECTOR2");
+            // @ts-ignore
             this.appendDummyInput("OPERATOR_INPUT").appendField(dropDown, "operator");
             this.appendDummyInput().appendField("場合", "CASE");
             this.setInputsInline(true);

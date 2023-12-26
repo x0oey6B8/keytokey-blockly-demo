@@ -10,7 +10,7 @@ export class TEMPLATE_MATCHING_MATCH_BY_ID extends BlockCodeGenerator {
         return { code, order: "NONE" };
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -50,7 +50,7 @@ export class TEMPLATE_MATCHING_RESULT_PROPERTIES extends BlockCodeGenerator {
         return { code, order: "NONE" };
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
@@ -70,7 +70,7 @@ export class TEMPLATE_MATCHING_FOUND_IMAGE_PROPERTIES extends BlockCodeGenerator
         return { code, order: "NONE" };
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {

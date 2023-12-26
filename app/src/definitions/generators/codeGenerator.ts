@@ -22,7 +22,7 @@ export abstract class BlockCodeGenerator implements IBlockCodeGenerator {
 
     abstract name: string;
     abstract GenerateAsJavascript(block: BlockSvg): GeneratedCode;
-    abstract GenerateAsComment(block: BlockSvg): GeneratedCode;
+    abstract GenerateAsFreeString(block: BlockSvg): GeneratedCode;
 
     target: CodeGenerationTarget = "JAVASCRIPT";
 
@@ -36,7 +36,7 @@ export abstract class BlockCodeGenerator implements IBlockCodeGenerator {
         if (this.target === "JAVASCRIPT") {
             generated = this.GenerateAsJavascript(block);
         } else if (this.target === "DESCRIPTION") {
-            generated = this.GenerateAsComment(block);
+            generated = this.GenerateAsFreeString(block);
         } else {
             generated = this.GenerateAsJavascript(block);
         }

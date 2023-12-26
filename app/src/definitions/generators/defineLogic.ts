@@ -14,7 +14,7 @@ export class LOGIC_OPERATION extends BlockCodeGenerator {
             ? { code: `${v.left} && ${v.right}`, order: "NONE" }
             : { code: `${v.left} || ${v.right}`, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         console.log(v.operator, typeof v.operator);
         return v.operator == "AND"
@@ -39,7 +39,7 @@ export class LOGIC_EXPRESSION extends BlockCodeGenerator {
         const code = `${v.left} ${symbol} ${v.right}`;
         return { code, order: "NONE" };
     }
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         const code = this.generateCommentFromOperator(block);
         return { code, order: "NONE" };
     }

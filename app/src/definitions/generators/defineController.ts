@@ -8,7 +8,20 @@ export class CONTROLLER extends BlockCodeGenerator {
         return { code: "controller", order: "NONE" };
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+}
+
+export class XINPUT_CONTROLLER extends BlockCodeGenerator {
+    name = "xinput_controller";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const index = this.getFieldValue(block, "INDEX");
+        return { code: `xinput${index}`, order: "NONE" };
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
 }
@@ -25,7 +38,7 @@ export class CONTROLLER_PROPERTY extends BlockCodeGenerator {
         };
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
 
@@ -40,6 +53,8 @@ export class CONTROLLER_PROPERTY extends BlockCodeGenerator {
             case "IS_CONNECTED": return "isConnected";
             case "IS_DIRECTINPUT": return "isDirectInput";
             case "IS_XINPUT": return "isXInput";
+            case "DPAD_DIRECTION": return "dpadDirection";
+            // case "NAME": return "name";
             default: return "isConnected";
         }
     }
@@ -57,7 +72,7 @@ export class IS_CONTROLLER_PRESSED extends BlockCodeGenerator {
         };
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
 
@@ -82,7 +97,7 @@ export class CONTROLLER_STICK_PROPERTY extends BlockCodeGenerator {
         };
     }
     // @ts-ignore
-    GenerateAsComment(block: BlockSvg): GeneratedCode {
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
 
@@ -95,14 +110,47 @@ export class CONTROLLER_STICK_PROPERTY extends BlockCodeGenerator {
     }
     getPropertyName(dropdown: string) {
         switch (dropdown) {
-            case "HORIZONTAL_VALUE": return "horizontalValue";
-            case "VERTICAL_VALUE": return "verticalValue";
+            case "HORIZONTAL_VALUE": return "horizontal";
+            case "VERTICAL_VALUE": return "vertical";
             case "ANGLE": return "angle";
             case "INPUT_RATE": return "inputRate";
             case "DIRECTION": return "direction";
             case "DEADZONE": return "deadzone";
             case "OVER_DEADZONE": return "overDeadZone";
-            default: return "isConnected";
+            default: return "";
+        }
+    }
+}
+
+export class CONTROLLER_TRIGGER_PROPERTY extends BlockCodeGenerator {
+    name = "controller_trigger_property";
+    // @ts-ignore
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const v = this.getValues(block);
+        const code = `${v.controller}.${v.stick}.${v.propertyName}`;
+        return {
+            code,
+            order: "NONE"
+        };
+    }
+    // @ts-ignore
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+
+    getValues(block: BlockSvg) {
+        const controller = this.valueToCode(block, "CONTROLLER", "NONE");
+        const stick = this.getFieldValue(block, "TRIGGER") === "LEFT" ? "leftTrigger" : "rightTrigger";
+        const dropdown = this.getFieldValue(block, "PROPERTY");
+        const propertyName = this.getPropertyName(dropdown);
+        return { controller, propertyName, stick }
+    }
+    getPropertyName(dropdown: string) {
+        switch (dropdown) {
+            case "INPUT_RATE": return "inputRate";
+            case "DEADZONE": return "deadzone";
+            case "OVER_DEADZONE": return "overDeadZone";
+            default: return "";
         }
     }
 }
