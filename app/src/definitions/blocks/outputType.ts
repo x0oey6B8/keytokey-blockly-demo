@@ -5,6 +5,7 @@ export enum OutputType {
     Array = "Array",
     Keys = "Keys",
     ControllerButtons = "ControllerButtons",
+    MappingTarget = "MappingTarget",
     Size = "Size",
     Point = "Point",
     Date = "Date",

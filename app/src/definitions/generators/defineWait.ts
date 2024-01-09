@@ -10,6 +10,14 @@ export abstract class WAIT_BASE extends BlockCodeGenerator {
             default: return "ミリ秒";
         }
     }
+    unitToShortenedUnit(unit: string) {
+        switch (unit) {
+            case "SECONDS": return "sec";
+            case "MINUTES": return "min";
+            case "HOURS": return "hr";
+            default: return "ms";
+        }
+    }
     getValues(block: BlockSvg) {
         var time = this.valueToCode(block, 'WAIT_TIME', "ATOMIC");
         var unit = this.getFieldValue(block, 'UNIT');
@@ -22,7 +30,8 @@ export class WAIT extends WAIT_BASE {
     // @ts-ignore
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
-        const code = `wait(${v.time}, "${v.unit}");\n`
+        const unit = this.unitToShortenedUnit(v.unit);
+        const code = `wait(${v.time}, "${unit}");\n`
         return code;
     }
     // @ts-ignore

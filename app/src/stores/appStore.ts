@@ -45,11 +45,16 @@ export const useAppStore = defineStore("AppStore", () => {
             ]
         },
         {
-            header: "コードの確認",
+            header: "ツール",
             menuItems: [
-                new CodeGenerationMenus.CreateCodeMenuItem(),
-                new CodeGenerationMenus.CreateCodeNoCheckPointsMenuItem(),
-                new CodeGenerationMenus.CreateDecodedCodeNoCheckPointsMenuItem(),
+                {
+                    header: "Not Implemented",
+                    subHeader: "tool",
+                    condition: () => true,
+                    clicked: () => {
+                        openDropdownMenus()
+                    }
+                }
             ]
         },
         {
@@ -63,6 +68,14 @@ export const useAppStore = defineStore("AppStore", () => {
                         openDropdownMenus()
                     }
                 }
+            ]
+        },
+        {
+            header: "コードの確認",
+            menuItems: [
+                new CodeGenerationMenus.CreateCodeMenuItem(),
+                new CodeGenerationMenus.CreateCodeNoCheckPointsMenuItem(),
+                new CodeGenerationMenus.CreateDecodedCodeNoCheckPointsMenuItem(),
             ]
         },
         {
@@ -110,7 +123,8 @@ export const useAppStore = defineStore("AppStore", () => {
 
     function readImplementationFile() {
         try {
-            return fetch("/implementation.js")
+            const url = import.meta.env.DEV ? "/implementation.js" : "/keytokey-blockly-demo/root/implementation.js";
+            return fetch(url)
                 .then(async (response) => {
                     if (response.ok) {
                         implementation.value = await response.text();
@@ -170,8 +184,14 @@ export const useAppStore = defineStore("AppStore", () => {
                 session.canWriteToFile = false;
                 currentMacroFile.value = macro.listFiles()[0];
                 const content = await currentMacroFile.value.read();
-                session.setState(content.json);
-                session.canWriteToFile = true;
+                try {
+                    session.setState(content.json);
+                    session.canWriteToFile = true;
+                } catch (error) {
+                    console.log("エラー:", error);
+                    console.log("ブロックJSON:", content.json);
+                    alert("読み込みエラーが発生しました。\n詳細はダイアログを閉じたあとDevToolsのコンソールを見てください（F12で表示）");
+                }
             }
         } catch (error) {
             alert(error);

@@ -124,6 +124,7 @@ function getToolBoxXml(): string {
 
         <label text="サイズ"></label>
         <block type="size"></block>
+        <block type="get_size_property"></block>
 
         <label text="方角"></label>
         <block type="direction"></block>
@@ -1173,13 +1174,233 @@ function getToolBoxXml(): string {
 
     <category name="仮想コントローラー">
         <category name="マッピング">
+            <label text="マッピングの一時停止と再開"></label>
+            <block type="mapping_suspend_resume"></block>
+
+            <label text="簡易入力のリスト"></label>
+            <block type="mapping_input_list"></block>
+
+            <label text="手動入力のリスト"></label>
+            <block type="mapping_target"></block>
+            <block xmlns="https://developers.google.com/blockly/xml" type="lists_create_with" inline="true">
+                <mutation items="2"></mutation>
+                <value name="ADD0">
+                    <block type="mapping_target">
+                        <field name="VALUE">A</field>
+                    </block>
+                </value>
+                <value name="ADD1">
+                    <block type="mapping_target">
+                        <field name="VALUE">B</field>
+                    </block>
+                </value>
+            </block>
         </category>
+
         <category name="XInput">
+            <label text="押す・離す"></label>
+            <block type="virtual_xinput_down_up"></block>
+            <block xmlns="https://developers.google.com/blockly/xml" type="virtual_xinput_tap">
+                <field name="DEVICE_NUMBER">0</field>
+                <field name="BUTTON">A</field>
+                <value name="WAIT1">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+                <value name="WAIT2">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+            </block>
+            <block type="virtual_xinput_neutralize_dpad"></block>
+
+            <label text="スティックの操作"></label>
+            <block type="virtual_xinput_stick_angle1"></block>
+            <block xmlns="https://developers.google.com/blockly/xml" type="virtual_xinput_stick_angle2">
+                <field name="DEVICE_NUMBER">0</field>
+                <field name="STICK">leftStick</field>
+                <value name="ANGLE">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+                <value name="INPUT_RATE">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+            </block>
+            <block type="virtual_xinput_stick_value"></block>
+
+            <label text="トリガー（コントローラー）の操作"></label>
+            <block type="virtual_xinput_trigger1"></block>
+            <block xmlns="https://developers.google.com/blockly/xml" type="virtual_xinput_trigger2">
+                <field name="DEVICE_NUMBER">0</field>
+                <field name="TRIGGER">leftTrigger</field>
+                <value name="INPUT_RATE">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+            </block>
+
+            <label text="状態をリセット"></label>
+            <block type="virtual_xinput_reset"></block>
+
+            <label text="テンプレート"></label>
+            <label text="スティックを1回転させる"></label>
+            <block xmlns="https://developers.google.com/blockly/xml" type="controls_for">
+                <field name="VAR" id="vD)!J2F3=1gf2IH_T~d_">角度</field>
+                <value name="FROM">
+                    <shadow type="math_number">
+                        <field name="NUM">0</field>
+                    </shadow>
+                </value>
+                <value name="TO">
+                    <shadow type="math_number">
+                        <field name="NUM">360</field>
+                    </shadow>
+                </value>
+                <value name="BY">
+                    <shadow type="math_number">
+                        <field name="NUM">15</field>
+                    </shadow>
+                </value>
+                <statement name="DO">
+                    <block type="virtual_xinput_stick_angle2">
+                        <field name="DEVICE_NUMBER">0</field>
+                        <field name="STICK">leftStick</field>
+                        <value name="ANGLE">
+                            <block type="variables_get">
+                                <field name="VAR" id="vD)!J2F3=1gf2IH_T~d_">角度</field>
+                            </block>
+                        </value>
+                        <value name="INPUT_RATE">
+                            <block type="math_number">
+                                <field name="NUM">1</field>
+                            </block>
+                        </value>
+                        <next>
+                            <block type="highprecision_wait">
+                                <value name="WAIT_TIME">
+                                    <block type="math_number">
+                                        <field name="NUM">5</field>
+                                    </block>
+                                </value>
+                            </block>
+                        </next>
+                    </block>
+                </statement>
+            </block>
         </category>
+
+
         <category name="DualShock4">
+            <label text="押す・離す"></label>
+            <block type="virtual_dualshock4_down_up"></block>
+            <block xmlns="https://developers.google.com/blockly/xml" type="virtual_dualshock4_tap">
+                <field name="DEVICE_NUMBER">0</field>
+                <field name="BUTTON">A</field>
+                <value name="WAIT1">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+                <value name="WAIT2">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+            </block>
+            <block type="virtual_dualshock4_neutralize_dpad"></block>
+
+            <label text="スティックの操作"></label>
+            <block type="virtual_dualshock4_stick_angle1"></block>
+            <block xmlns="https://developers.google.com/blockly/xml" type="virtual_dualshock4_stick_angle2">
+                <field name="DEVICE_NUMBER">0</field>
+                <field name="STICK">leftStick</field>
+                <value name="ANGLE">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+                <value name="INPUT_RATE">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+            </block>
+            <block type="virtual_dualshock4_stick_value"></block>
+
+            <label text="トリガー（コントローラー）の操作"></label>
+            <block type="virtual_dualshock4_trigger1"></block>
+            <block xmlns="https://developers.google.com/blockly/xml" type="virtual_dualshock4_trigger2">
+                <field name="DEVICE_NUMBER">0</field>
+                <field name="TRIGGER">leftTrigger</field>
+                <value name="INPUT_RATE">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+            </block>
+
+            <label text="状態をリセット"></label>
+            <block type="virtual_dualshock4_reset"></block>
+
+            <label text="テンプレート"></label>
+            <label text="スティックを1回転させる"></label>
+            <block xmlns="https://developers.google.com/blockly/xml" type="controls_for">
+                <field name="VAR" id="vD)!J2F3=1gf2IH_T~d_">角度</field>
+                <value name="FROM">
+                    <shadow type="math_number">
+                        <field name="NUM">0</field>
+                    </shadow>
+                </value>
+                <value name="TO">
+                    <shadow type="math_number">
+                        <field name="NUM">360</field>
+                    </shadow>
+                </value>
+                <value name="BY">
+                    <shadow type="math_number">
+                        <field name="NUM">15</field>
+                    </shadow>
+                </value>
+                <statement name="DO">
+                    <block type="virtual_dualshock4_stick_angle2">
+                        <field name="DEVICE_NUMBER">0</field>
+                        <field name="STICK">leftStick</field>
+                        <value name="ANGLE">
+                            <block type="variables_get">
+                                <field name="VAR" id="vD)!J2F3=1gf2IH_T~d_">角度</field>
+                            </block>
+                        </value>
+                        <value name="INPUT_RATE">
+                            <block type="math_number">
+                                <field name="NUM">1</field>
+                            </block>
+                        </value>
+                        <next>
+                            <block type="highprecision_wait">
+                                <value name="WAIT_TIME">
+                                    <block type="math_number">
+                                        <field name="NUM">5</field>
+                                    </block>
+                                </value>
+                            </block>
+                        </next>
+                    </block>
+                </statement>
+            </block>
         </category>
+
+        <!--
         <category name="vJoy">
         </category>
+        -->
+
     </category>
 
     <category name="ウィンドウ">

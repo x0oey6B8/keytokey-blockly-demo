@@ -3,6 +3,7 @@ import { keys } from "./keys.ts";
 import { BlockColors } from "../../configurations/blockColors.ts";
 import { controllerButtons } from "./controllerButtons.ts";
 import { OutputType } from "./outputType.ts";
+import { mappingTargets } from "./mappingSources.ts";
 
 export function defineValueBlocks() {
 
@@ -74,22 +75,6 @@ export function defineValueBlocks() {
         }
     } as BlockSvg;
 
-    Blockly.Blocks['size'] = {
-        init: function () {
-            this.appendValueInput("X")
-                .setCheck("Number")
-                .appendField("横の長さ：");
-            this.appendValueInput("Y")
-                .setCheck("Number")
-                .appendField("縦の長さ：");
-            this.setInputsInline(true);
-            this.setOutput(true, OutputType.Size);
-            this.setColour(BlockColors.Size);
-            this.setTooltip("");
-            this.setHelpUrl("");
-        }
-    } as BlockSvg;
-
     Blockly.Blocks['get_point_property'] = {
         init: function () {
             this.appendValueInput("POINT")
@@ -106,6 +91,41 @@ export function defineValueBlocks() {
             this.setHelpUrl("");
         }
     } as BlockSvg;
+
+    Blockly.Blocks['size'] = {
+        init: function () {
+            this.appendValueInput("X")
+                .setCheck("Number")
+                .appendField("横の長さ：");
+            this.appendValueInput("Y")
+                .setCheck("Number")
+                .appendField("縦の長さ：");
+            this.setInputsInline(true);
+            this.setOutput(true, OutputType.Size);
+            this.setColour(BlockColors.Size);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as BlockSvg;
+
+
+    Blockly.Blocks['get_size_property'] = {
+        init: function () {
+            this.appendValueInput("SIZE")
+                .appendField("サイズ：")
+                .setCheck(OutputType.Size);
+            this.appendDummyInput()
+                .appendField("→")
+                // @ts-ignore
+                .appendField(new Blockly.FieldDropdown([["横の長さ", "width"], ["縦の長さ", "height"]]), "DROPDOWN");
+            this.setInputsInline(true);
+            this.setOutput(true, OutputType.Number);
+            this.setColour(BlockColors.Math);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as BlockSvg;
+
 
     Blockly.Blocks['window_state'] = {
         init: function () {
@@ -156,6 +176,20 @@ export function defineValueBlocks() {
             this.setOutput(true, OutputType.IMEConversionMode);
             this.setColour(BlockColors.Enum);
             this.setTooltip("IMEの変換モード");
+            this.setHelpUrl("");
+        }
+    } as BlockSvg;
+
+    Blockly.Blocks['mapping_target'] = {
+        init: function () {
+            const dropdown = new Blockly.FieldDropdown(mappingTargets);
+            this.appendDummyInput()
+                // @ts-ignore
+                .appendField(dropdown, "VALUE");
+            this.setInputsInline(true);
+            this.setOutput(true, OutputType.MappingTarget);
+            this.setColour(BlockColors.Enum);
+            this.setTooltip("");
             this.setHelpUrl("");
         }
     } as BlockSvg;

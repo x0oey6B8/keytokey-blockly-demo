@@ -2,15 +2,18 @@ import { definedCodeGenerators } from "./codeGenerator";
 import { COMMENT, COMMENT_STATEMENT } from "./defineComment";
 import { CONSOLE_CLEAR, CONSOLE_LOG } from "./defineConsole";
 import { CONTROLLER, CONTROLLER_PROPERTY, CONTROLLER_STICK_PROPERTY, CONTROLLER_TRIGGER_PROPERTY, IS_CONTROLLER_PRESSED, XINPUT_CONTROLLER } from "./defineController";
+import { VIRTUAL_DUALSHOCK4_DOWN_UP, VIRTUAL_DUALSHOCK4_NEUTRALIZE_DPAD, VIRTUAL_DUALSHOCK4_RESET, VIRTUAL_DUALSHOCK4_STICK_ANGLE1, VIRTUAL_DUALSHOCK4_STICK_ANGLE2, VIRTUAL_DUALSHOCK4_STICK_VALUE, VIRTUAL_DUALSHOCK4_TAP, VIRTUAL_DUALSHOCK4_TRIGGER1, VIRTUAL_DUALSHOCK4_TRIGGER2 } from "./defineDualShock4";
 import { GET_IME_CONVERSION_MODE, SET_IME_CONVERSION_MODE } from "./defineIME";
 import { KEY_DOWN_UP, KEY_TAP, KEY_IS_PRESSED, KEY_UP_ALL, MOUSE_SET_RANDOM_OFFSET_RANGE, MOUSE_SET_ORIGIN_POINT, MOUSE_MOVE, MOUSE_RELATIVE_MOVE, MOUSE_GET_POINT, KEYS_ARE_PRESSED, PHYSICAL_KEY_IS_PRESSED, INPUT_TEXT, MOUSE_SCROLL, INPUT_REPLAY } from "./defineInput";
 import { EMBEDDED_SINGLELINE_JAVASCRIPT, FORMTTED_JSON_STRINGIFY, EMBEDDED_MULTILINE_JAVASCRIPT, JSON_STRINGIFY } from "./defineJavascript";
 import { LOGIC_EXPRESSION, LOGIC_OPERATION } from "./defineLogic";
 import { FOR_OF } from "./defineLoop";
+import { MAPPING_INPUT_ARRAY, MAPPING_SUSPEND_RESUME } from "./defineMapping";
 import { MONITOR, MONITORS, MONITOR_DUMP, MONITOR_PROPERTY } from "./defineMonitor";
 import { TEMPLATE_MATCHING_RESULT_PROPERTIES, TEMPLATE_MATCHING_MATCH_BY_ID, TEMPLATE_MATCHING_FOUND_IMAGE_PROPERTIES } from "./defineTemplateMatching";
 import { DATE_TIME_PROPERTY, DATE_TIME_NOW, PERFORMANCE_NOW, DATE_TIME_TO_STRING } from "./defineTime";
-import { VALUE_CONTROLLER_BUTTONS, VALUE_KEYS, VALUE_POINT, VALUE_POINT_GET_PROPERTY, DIRECTION, VALUE_SIZE, IME_CONVERSION_MODE, VALUE_RANDOM_POINT } from "./defineValue";
+import { VALUE_CONTROLLER_BUTTONS, VALUE_KEYS, VALUE_POINT, VALUE_POINT_GET_PROPERTY, DIRECTION, VALUE_SIZE, MAPPING_TARGET, VALUE_RANDOM_POINT, GET_SIZE_PROPERTY, IME_CONVERSION_MODE } from "./defineValue";
+import { VIRTUAL_XINPUT_DOWN_UP, VIRTUAL_XINPUT_NEUTRALIZE_DPAD, VIRTUAL_XINPUT_RESET, VIRTUAL_XINPUT_STICK_ANGLE1, VIRTUAL_XINPUT_STICK_ANGLE2, VIRTUAL_XINPUT_STICK_VALUE, VIRTUAL_XINPUT_TAP, VIRTUAL_XINPUT_TRIGGER1, VIRTUAL_XINPUT_TRIGGER2 } from "./defineVirtualXInput";
 import { WAIT, HIGH_PRECISION_WAIT, WAIT_FOR_INPUT, WAIT_FOR_CONTROLLER } from "./defineWait";
 import { GET_WINDOW, CREATE_WINDOW_BY_WINDOW_HANDLE, WINDOW_GET_PROPERTY, WINDOW_DUMP, FIND_WINDOW_BY, WINDOW_SET_BOUNDS, WINDOW_CLOSE, WINDOW_SET_STATE, WINDOW_SET_VISIBILITY, WINDOW_SET_POINT, WINDOW_SET_SIZE, WINDOW_SET_TEXT, WINDOW_SET_TITLE, WINDOW_RESTORE } from "./defineWindow";
 import { TRIGGER_IS_PRESSED } from "./defintTrigger";
@@ -28,10 +31,12 @@ export function defineTestCodeGenerator(generator: any) {
     definedCodeGenerators.push(new VALUE_CONTROLLER_BUTTONS(generator));
     definedCodeGenerators.push(new VALUE_POINT(generator));
     definedCodeGenerators.push(new VALUE_SIZE(generator));
+    definedCodeGenerators.push(new GET_SIZE_PROPERTY(generator));
     definedCodeGenerators.push(new VALUE_POINT_GET_PROPERTY(generator));
     definedCodeGenerators.push(new VALUE_RANDOM_POINT(generator));
     definedCodeGenerators.push(new DIRECTION(generator));
     definedCodeGenerators.push(new IME_CONVERSION_MODE(generator));
+    definedCodeGenerators.push(new MAPPING_TARGET(generator));
 
     // ループ
     definedCodeGenerators.push(new FOR_OF(generator));
@@ -98,6 +103,32 @@ export function defineTestCodeGenerator(generator: any) {
     definedCodeGenerators.push(new CONTROLLER_STICK_PROPERTY(generator));
     definedCodeGenerators.push(new CONTROLLER_TRIGGER_PROPERTY(generator));
     definedCodeGenerators.push(new IS_CONTROLLER_PRESSED(generator));
+
+    // 仮想コントローラーのマッピング
+    definedCodeGenerators.push(new MAPPING_SUSPEND_RESUME(generator));
+    definedCodeGenerators.push(new MAPPING_INPUT_ARRAY(generator));
+
+    // 仮想XINPUTコントローラー
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_DOWN_UP(generator));
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_TAP(generator));
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_NEUTRALIZE_DPAD(generator));
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_STICK_VALUE(generator));
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_STICK_ANGLE1(generator));
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_STICK_ANGLE2(generator));
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_TRIGGER1(generator));
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_TRIGGER2(generator));
+    definedCodeGenerators.push(new VIRTUAL_XINPUT_RESET(generator));
+
+    // 仮想DUALSHOCK4コントローラー
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_DOWN_UP(generator));
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_TAP(generator));
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_NEUTRALIZE_DPAD(generator));
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_STICK_VALUE(generator));
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_STICK_ANGLE1(generator));
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_STICK_ANGLE2(generator));
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_TRIGGER1(generator));
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_TRIGGER2(generator));
+    definedCodeGenerators.push(new VIRTUAL_DUALSHOCK4_RESET(generator));
 
     // 時間
     definedCodeGenerators.push(new PERFORMANCE_NOW(generator));

@@ -50,6 +50,23 @@ export class VALUE_POINT extends BlockCodeGenerator {
     }
 }
 
+export class VALUE_POINT_GET_PROPERTY extends BlockCodeGenerator {
+    name = "get_point_property";
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const v = this.getValues(block);
+        const code = `${v.point}.${v.property}`;
+        return { code, order: "NONE" };
+    }
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+    getValues(block: BlockSvg) {
+        const point = this.valueToCode(block, 'POINT', "ATOMIC");
+        const property = this.getFieldValue(block, 'DROPDOWN');
+        return { point, property };
+    }
+}
+
 export class VALUE_SIZE extends BlockCodeGenerator {
     name = "size";
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
@@ -67,20 +84,20 @@ export class VALUE_SIZE extends BlockCodeGenerator {
     }
 }
 
-export class VALUE_POINT_GET_PROPERTY extends BlockCodeGenerator {
-    name = "get_point_property";
+export class GET_SIZE_PROPERTY extends BlockCodeGenerator {
+    name = "get_size_property";
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
-        const code = `${v.point}.${v.property}`;
+        const code = `${v.size}.${v.property}`;
         return { code, order: "NONE" };
     }
     GenerateAsFreeString(block: BlockSvg): GeneratedCode {
         return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
-        const point = this.valueToCode(block, 'POINT', "ATOMIC");
+        const size = this.valueToCode(block, 'SIZE', "ATOMIC");
         const property = this.getFieldValue(block, 'DROPDOWN');
-        return { point, property };
+        return { size, property };
     }
 }
 
@@ -117,6 +134,18 @@ export class DIRECTION extends BlockCodeGenerator {
 
 export class IME_CONVERSION_MODE extends BlockCodeGenerator {
     name = "ime_conversion_mode";
+    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+        const value = this.getFieldValue(block, 'VALUE');
+        const code = `"${value}"`;
+        return { code, order: "NONE" };
+    }
+    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
+        return this.GenerateAsJavascript(block);
+    }
+}
+
+export class MAPPING_TARGET extends BlockCodeGenerator {
+    name = "mapping_target";
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
         const value = this.getFieldValue(block, 'VALUE');
         const code = `"${value}"`;

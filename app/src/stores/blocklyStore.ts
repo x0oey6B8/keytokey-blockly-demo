@@ -66,7 +66,6 @@ class WorkspaceSession {
         const appStore = useAppStore();
         this.workspaceSvg.addChangeListener((e) => {
             if (e.recordUndo && this.canWriteToFile) {
-                //console.log(e);
                 const state = this.getState();
                 const code = this.createCode(StatementPrefix.CHECK_POINT);
                 appStore.currentMacroFile?.write(state, code);

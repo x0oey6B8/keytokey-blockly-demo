@@ -14,6 +14,9 @@ import { defineControllerBlocks } from "./controllerBlocks.ts";
 import { defineTimeBlock } from "./timeBlock.ts";
 import { defineMonitorBlocks } from "./monitorBlocks.ts";
 import { defineIMEBlocks } from "./imeBlocks.ts";
+import { defineMappingBlocks } from "./mappingBlock.ts";
+import { defineVirtualXInputBlock } from "./virtualXInputBlocks.ts";
+import { defineDualShock4Blocks } from "./dualShock4Blocks.ts";
 
 export function defineBlocks(): void {
 
@@ -28,6 +31,9 @@ export function defineBlocks(): void {
     defineWindowBlocks();
     defineTemplateMatchingBlocks();
     defineControllerBlocks();
+    defineMappingBlocks();
+    defineVirtualXInputBlock();
+    defineDualShock4Blocks();
     defineTimeBlock();
     defineMonitorBlocks();
     defineIMEBlocks();
