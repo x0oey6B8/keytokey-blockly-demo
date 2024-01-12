@@ -1,9 +1,10 @@
-import { Macro, host, IRequestResult } from "../../hosts/host";
+import { host, IRequestResult } from "../../hosts/host";
 import { useAppStore } from "../../stores/appStore";
 import { ICallbackArgs, ICommandTextValidationResult, CommandItem, CommandPaletteOptions, ICommandItem } from "../../models/commandPalette";
 import { ICommandTextValidator, useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { useNotificationStore } from "../../stores/notificationStore";
 import { useBlocklyStore } from "../../stores/blocklyStore";
+import { Macro } from "../../hosts/macroManager";
 
 /*
     マクロのメニューを表示するためのオプション
@@ -35,15 +36,15 @@ export class ChangeCurrentMacroCommandItem extends CommandItem {
     constructor(private macro: Macro) {
         super();
         this.header = macro.setting.name; // ダイアログのヘッダー
-        this.subHeader = this.getCategoryName();
+        this.subHeader = this.getLabelName();
     }
 
-    private getCategoryName() {
-        return this.macro.setting.category ? this.macro.setting.category : "分類なし"
+    private getLabelName() {
+        return this.macro.setting.category ? this.macro.setting.category : "ラベルなし"
     }
 
     private updateSubHeader(commandItem: ICommandItem) {
-        commandItem.subHeader = commandItem.isSelected ? "このマクロに切り替える" : this.getCategoryName();
+        commandItem.subHeader = commandItem.isSelected ? "このマクロに切り替える" : this.getLabelName();
     }
 
     onSelected = (commandItem: ICommandItem) => {
@@ -77,7 +78,7 @@ export class ChangeCurrentMacroCommandItem extends CommandItem {
 // CreateNewMacroCommandItem クラスは新しいマクロを作成するコマンドアイテムを表します。
 export class CreateNewMacroCommandItem extends CommandItem {
     // ダイアログのヘッダー
-    header = "新しいマクロを作成";
+    header = "新規作成";
     // ダイアログのサブヘッダー
     subHeader = "create new";
 
@@ -230,8 +231,8 @@ export class MacroNameValidator implements ICommandTextValidator {
 
 export class CategorizeMacroCommandItem extends CommandItem {
     // ヘッダーとサブヘッダーを設定します。
-    header = "マクロにカテゴリーを設定"; // ダイアログのヘッダー
-    subHeader = "categorize"; // ダイアログのサブヘッダー
+    header = "ラベルを設定"; // ダイアログのヘッダー
+    subHeader = "label"; // ダイアログのサブヘッダー
 
     // 表示条件を更新するコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;
@@ -244,7 +245,7 @@ export class CategorizeMacroCommandItem extends CommandItem {
     // コールバック関数。マクロの複製ダイアログを開くために使用されます。
     callback = () => {
         const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを取得します。
-        const hint = "カテゴリーを設定するマクロを選択してください"; // ヒントメッセージ
+        const hint = "ラベルを設定するマクロを選択してください"; // ヒントメッセージ
 
         // マクロを操作するコマンドアイテムを作成するためのファクトリ関数とオプションを設定します。
         const factory = (macro: Macro) => new DecidedToManipulateCommandItem(macro, macro => this.categorize(macro));
@@ -256,7 +257,6 @@ export class CategorizeMacroCommandItem extends CommandItem {
 
     // マクロの複製を行うプライベートメソッド
     private categorize = (macro: Macro) => {
-        console.log("categorize: ", macro.name); // コンソールに複製したマクロの名前を表示します。
         MacroCategorizer.categorize(macro);
     };
 }
@@ -269,8 +269,8 @@ class MacroCategorizer {
 
         // 新しいマクロを作成するコマンドアイテムを作成します。
         const commandItem = new CommandItem({
-            header: "上記のカテゴリー名に決定する",
-            subHeader: "Enterかこの項目をクリックしてカテゴリーを設定します",
+            header: "上記のラベル名に決定する",
+            subHeader: "Enterかこの項目をクリックしてラベルを設定します",
             callback: async (args) => {
                 const macroSetting = categorizationTarget.setting;
                 macroSetting.category = args.text;
@@ -288,7 +288,7 @@ class MacroCategorizer {
 
         // 新しいマクロの名前を入力するためのダイアログオプションを設定します。
         const options = new CommandPaletteOptions({
-            hint: "マクロに設定するカテゴリー名", // ヒントメッセージ
+            hint: "マクロに設定するラベル名", // ヒントメッセージ
             text: categorizationTarget.setting.category,
             closeAuto: false,
             filtering: false,
@@ -307,7 +307,7 @@ class MacroCategorizer {
 // CloneMacroCommandItem クラスをエクスポートします。これはコマンドアイテムのサブクラスです。
 export class CloneMacroCommandItem extends CommandItem {
     // ヘッダーとサブヘッダーを設定します。
-    header = "マクロを複製"; // ダイアログのヘッダー
+    header = "複製"; // ダイアログのヘッダー
     subHeader = "clone"; // ダイアログのサブヘッダー
 
     // 表示条件を更新するコールバック関数を設定します。
@@ -395,7 +395,7 @@ export class ManipulateCommandPaletteOptions extends CommandPaletteOptions {
 // DeleteMacroCommandItem クラスはコマンドアイテムのサブクラスで、マクロの削除機能を提供します。
 export class DeleteMacroCommandItem extends CommandItem {
     // ダイアログのヘッダー
-    header = "マクロを削除";
+    header = "削除";
     // ダイアログのサブヘッダー
     subHeader = "delete";
 
@@ -421,49 +421,31 @@ export class DeleteMacroCommandItem extends CommandItem {
     }
 
     // マクロの削除を行うプライベートメソッド
-    private delete = (macro: Macro) => {
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを再度取得します。
+    private delete = async (macro: Macro) => {
+        const assignCount = await host.macroManager.getAssignCount({ macroName: macro.name });
+        let questionMessage = `本当に「${macro.name}」を削除しますか？`;
+        if (assignCount > 0) {
+            questionMessage = `マクロ「${macro.name}」を削除します。\nこのマクロは${assignCount}箇所で割り当てられており、それらすべての割り当ては解除されます。\nよろしいですか？`;
+        }
 
-        // 削除確認ダイアログのオプションを設定します。
-        const options = new CommandPaletteOptions({
-            hint: `本当に「${macro.name}」を削除しますか？`, // 確認メッセージ
-            filtering: true,
-            closeAuto: false,
-            validator: {
-                validate: async function (text) {
-                    const result = {
-                        isValid: text === "y",
-                        validationMessage: text === "y" ? "" : "削除する場合は、半角で「y」と入力してください"
-                    }
-                    return result;
-                }
-            },
-            commandItems: [new CommandItem({
-                header: `「${macro.name}」を削除する`,
-                subHeader: "削除する場合は、半角で「y」と入力してください。",
-                updateCanShow: (args) => args.text === "y",
-                callback: async () => {
-                    console.log("delete: ", macro.name); // コンソールに削除したマクロの名前を表示します。
-                    await host.macroManager.delete({ macroName: macro.name }); // マクロを削除します。
-                    const appStore = useAppStore();
-                    const hasCleared = appStore.clearCurrentMacroIfItsSameWith(macro);
-                    if (hasCleared) {
-                        const blocklyStore = useBlocklyStore();
-                        blocklyStore.getCurrentWorkspaceSession()?.clearWorkspace({ ask: false, addEntryBlock: false });
-                        appStore.openMacroMenu();
-                    }
-                    const toaster = useNotificationStore();
-                    toaster.toastMessage("削除しました", {
-                        type: "error",
-                        theme: "colored",
-                    });
-                    commandPalette.close(); // コマンドパレットを閉じます。
-                }
-            })]
+        const result = confirm(questionMessage);
+        if (!result) {
+            return;
+        }
+
+        await host.macroManager.delete({ macroName: macro.name });
+        const appStore = useAppStore();
+        const hasCleared = appStore.clearCurrentMacroIfItsSameWith(macro);
+        if (hasCleared) {
+            const blocklyStore = useBlocklyStore();
+            blocklyStore.getCurrentWorkspaceSession()?.clearWorkspace({ ask: false, addEntryBlock: false });
+            appStore.openMacroMenu();
+        }
+        const toaster = useNotificationStore();
+        toaster.toastMessage("削除しました", {
+            type: "error",
+            theme: "colored",
         });
-
-        // コマンドパレットを開きます。
-        commandPalette.open(options);
     };
 }
 
@@ -475,7 +457,7 @@ export class DeleteMacroCommandItem extends CommandItem {
 // RenameMacroCommandItem クラスはコマンドアイテムのサブクラスで、マクロの名前変更機能を提供します。
 export class RenameMacroCommandItem extends CommandItem {
     // ダイアログのヘッダー
-    header = "マクロの名前を変更";
+    header = "名前変更";
     // ダイアログのサブヘッダー
     subHeader = "rename";
 

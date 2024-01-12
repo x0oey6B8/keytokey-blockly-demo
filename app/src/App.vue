@@ -7,7 +7,7 @@ import Tab from "./components/Tab.vue";
 import Setting from "./components/icons/Setting.vue"
 import Plus from "./components/icons/Plus.vue"
 import Menu from "./components/icons/Menu.vue"
-import { useAppStore } from "./stores/appStore";
+import { SourceCodeWriter, useAppStore } from "./stores/appStore";
 import { useBlocklyStore } from "./stores/blocklyStore";
 import { useEditorStore } from "./stores/editorStore";
 import { useCommandPaletteStore } from "./stores/commandPaletteStore";
@@ -36,7 +36,7 @@ useMagicKeys({
 
 onMounted(async () => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
-    blockly.registerNewWorkspaceSession(container);
+    blockly.registerNewWorkspaceSession(container, SourceCodeWriter.Default);
     window.addEventListener("resize", resize);
     resize();
     await appStore.readImplementationFile();

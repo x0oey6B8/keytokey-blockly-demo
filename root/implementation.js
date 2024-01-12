@@ -120,9 +120,15 @@ class Wait {
 
     calcTime = (ms_time, unit) => {
         switch (unit) {
-            case "SECONDS": return ms_time * 1000;
-            case "MINUTES": return ms_time * 1000 * 60;
-            case "HOURS": return ms_time * 1000 * 60 * 60;
+            case "SECONDS":
+            case "sec":
+                return ms_time * 1000;
+            case "MINUTES":
+            case "min":
+                return ms_time * 1000 * 60;
+            case "HOURS":
+            case "hr":
+                return ms_time * 1000 * 60 * 60;
             default: return ms_time;
         }
     }
@@ -808,7 +814,7 @@ class Monitor {
         const array = [];
         const p = this.point;
         const s = this.size;
-        array.push(`デバイス名：9'${this.deviceName}'`);
+        array.push(`デバイス名：'${this.deviceName}'`);
         array.push(`座標：{ x: ${p.x}, y: ${p.y} }`);
         array.push(`サイズ： { width: ${s.width}, height: ${s.height} }`);
         array.push(`メインモニター？：${this.isMain}`);
@@ -833,9 +839,336 @@ class IME {
     static get conversionMode() {
         return _globals.IME.ConversionMode.ToString();
     }
-
     static set conversionMode(newMode) {
         _globals.IME.ConversionMode = newMode.toClrIMEConversionMode();
+    }
+}
+
+class Mapping {
+
+    suspend(targetDevice, inputs) {
+        this._setState(targetDevice, inputs, false);
+    }
+
+    resume(targetDevice, inputs) {
+        this._setState(targetDevice, inputs, true);
+    }
+
+    _setState(targetDevice, inputs, newState) {
+        const type = host.typeOf(clr.KeyToKey.Enums.MappingSources);
+        const mappingSources = inputs.map(name => toEnum(type, name)).toClrArray(clr.KeyToKey.Enums.MappingSources);
+        switch (targetDevice) {
+            case "XINPUT0":
+                _globals.VirtualXInput.SetMappingState(0, mappingSources, newState);
+                break;
+            case "XINPUT1":
+                _globals.VirtualXInput.SetMappingState(1, mappingSources, newState);
+                break;
+            case "XINPUT2":
+                _globals.VirtualXInput.SetMappingState(2, mappingSources, newState);
+                break;
+            case "XINPUT3":
+                _globals.VirtualXInput.SetMappingState(3, mappingSources, newState);
+                break;
+            case "XINPUT4":
+                _globals.VirtualXInput.SetMappingState(0, mappingSources, newState);
+                break;
+        }
+    }
+}
+
+class VirtualXInputWrapper {
+
+    _clrVirtualXInput;
+    _leftTriggerWrapper;
+    _rightTriggerWrapper;
+    _leftStickWrapper;
+    _rightStickWrapper;
+
+    constructor(clrVirtualXInput) {
+        this._clrVirtualXInput = clrVirtualXInput;
+        this._leftStickWrapper = new VirtualXInputStickWrapper(clrVirtualXInput.LeftStick);
+        this._rightStickWrapper = new VirtualXInputStickWrapper(clrVirtualXInput.RightStick);
+        this._leftTriggerWrapper = new VirtualXInputTriggerWrapper(clrVirtualXInput.LeftTrigger);
+        this._rightTriggerWrapper = new VirtualXInputTriggerWrapper(clrVirtualXInput.RightTrigger);
+    }
+
+    /**
+     * @returns {VirtualXInputTriggerWrapper} 左トリガー
+     */
+    get leftTrigger() {
+        return this._leftTriggerWrapper;
+    }
+
+    /**
+     * @returns {VirtualXInputTriggerWrapper} 右トリガー
+     */
+    get rightTrigger() {
+        return this._rightTriggerWrapper;
+    }
+
+    /**
+     * @returns {VirtualXInputStickWrapper} 左スティック
+     */
+    get leftStick() {
+        return this._leftStickWrapper;
+    }
+
+    /**
+     * @returns {VirtualXInputStickWrapper} 右スティック
+     */
+    get rightStick() {
+        return this._rightStickWrapper;
+    }
+
+    /**
+     * @param {string} buttonName
+     */
+    down(buttonName) {
+        const button = this.getButton(buttonName);
+        button.Down(0);
+    }
+
+    /**
+     * @param {string} buttonName
+     */
+    up(buttonName) {
+        const button = this.getButton(buttonName);
+        button.Up(0);
+    }
+
+    /**
+     * @param {string} buttonName
+     * @param {number} wait1
+     * @param {number} wait2
+     */
+    tap(buttonName, wait1, wait2) {
+        const button = this.getButton(buttonName);
+        button.Tap(wait1, wait2);
+    }
+
+    neutralizeDPad() {
+        this._clrVirtualXInput.SetDPad(false, false, false, false);
+    }
+
+    reset() {
+        this._clrVirtualXInput.Reset();
+    }
+
+    getButton(buttonName) {
+        switch (buttonName) {
+            case "A": return this._clrVirtualXInput.A;
+            case "B": return this._clrVirtualXInput.B;
+            case "X": return this._clrVirtualXInput.X;
+            case "Y": return this._clrVirtualXInput.Y;
+            case "Start": return this._clrVirtualXInput.Start;
+            case "Back": return this._clrVirtualXInput.Back;
+            case "LB": return this._clrVirtualXInput.LB;
+            case "RB": return this._clrVirtualXInput.RB;
+            case "LT": return this._clrVirtualXInput.LeftTrigger;
+            case "RT": return this._clrVirtualXInput.RightTrigger;
+            case "LeftStickPush": return this._clrVirtualXInput.LeftStickPush;
+            case "RightStickPush": return this._clrVirtualXInput.RightStickPush;
+            case "DPadUp": return this._clrVirtualXInput.DPadUp;
+            case "DPadUpRight": return this._clrVirtualXInput.DPadUpRight;
+            case "DPadRight": return this._clrVirtualXInput.DPadRight;
+            case "DPadDownRight": return this._clrVirtualXInput.DPadDownRight;
+            case "DPadDown": return this._clrVirtualXInput.DPadDown;
+            case "DPadDownLeft": return this._clrVirtualXInput.DPadDownLeft;
+            case "DPadLeft": return this._clrVirtualXInput.DPadLeft;
+            case "DPadUpLeft": return this._clrVirtualXInput.DPadUpLeft;
+            default:
+                throw new Error(`"${buttonName}" is invalid button name.`);
+        }
+    }
+}
+
+class VirtualXInputStickWrapper {
+
+    _clrVirtualXInputStick;
+
+    constructor(clrVirtualXInputStick) {
+        this._clrVirtualXInputStick = clrVirtualXInputStick;
+    }
+
+    /**
+     * @param {number} angleValue
+     * @param {number} inputRate
+     */
+    angle(angleValue, inputRate) {
+        const i = _globals.Clamp(0.0, 1.0, inputRate);
+        this._clrVirtualXInputStick.SetValueByAngle(angleValue, i);
+    }
+
+    /**
+    * @param {{x: number, y: number}} newPoint
+    */
+    set point(newPoint) {
+        this._clrVirtualXInputStick.SetValue(newPoint.x, newPoint.y * -1);
+    }
+}
+
+class VirtualXInputTriggerWrapper {
+    _clrVirtualXInputTrigger;
+
+    constructor(clrVirtualXInputTrigger) {
+        this._clrVirtualXInputTrigger = clrVirtualXInputTrigger;
+    }
+
+    /**
+     * @param {number} inputRate
+     */
+    set value(inputRate) {
+        const i = _globals.Clamp(0.0, 1.0, inputRate);
+        this._clrVirtualXInputTrigger.SetValue(i);
+    }
+}
+
+class VirtualDualShock4Wrapper {
+    _clrVirtualDualShock4;
+    _leftTriggerWrapper;
+    _rightTriggerWrapper;
+    _leftStickWrapper;
+    _rightStickWrapper;
+
+    constructor(clrVirtualXInput) {
+        this._clrVirtualDualShock4 = clrVirtualXInput;
+        this._leftStickWrapper = new VirtualDualShock4StickWrapper(clrVirtualXInput.LeftStick);
+        this._rightStickWrapper = new VirtualDualShock4StickWrapper(clrVirtualXInput.RightStick);
+        this._leftTriggerWrapper = new VirtualDualShock4TriggerWrapper(clrVirtualXInput.L2);
+        this._rightTriggerWrapper = new VirtualDualShock4TriggerWrapper(clrVirtualXInput.R2);
+    }
+
+    /**
+     * @returns {VirtualXInputTriggerWrapper} 左トリガー
+     */
+    get leftTrigger() {
+        return this._leftTriggerWrapper;
+    }
+
+    /**
+     * @returns {VirtualXInputTriggerWrapper} 右トリガー
+     */
+    get rightTrigger() {
+        return this._rightTriggerWrapper;
+    }
+
+    /**
+     * @returns {VirtualXInputStickWrapper} 左スティック
+     */
+    get leftStick() {
+        return this._leftStickWrapper;
+    }
+
+    /**
+     * @returns {VirtualXInputStickWrapper} 右スティック
+     */
+    get rightStick() {
+        return this._rightStickWrapper;
+    }
+
+    /**
+     * @param {string} buttonName
+     */
+    down(buttonName) {
+        const button = this.getButton(buttonName);
+        button.Down(0);
+    }
+
+    /**
+     * @param {string} buttonName
+     */
+    up(buttonName) {
+        const button = this.getButton(buttonName);
+        button.Up(0);
+    }
+
+    neutralizeDPad() {
+        this._clrVirtualDualShock4.NeutralizeDPad();
+    }
+
+    /**
+     * @param {string} buttonName
+     * @param {number} wait1
+     * @param {number} wait2
+     */
+    tap(buttonName, wait1, wait2) {
+        const button = this.getButton(buttonName);
+        button.Tap(wait1, wait2);
+    }
+
+    reset() {
+        this._clrVirtualDualShock4.Reset();
+    }
+
+    getButton(buttonName) {
+        switch (buttonName) {
+            case "A": return this._clrVirtualDualShock4.Cross;
+            case "B": return this._clrVirtualDualShock4.Circle;
+            case "X": return this._clrVirtualDualShock4.Square;
+            case "Y": return this._clrVirtualDualShock4.Triangle;
+            case "Start": return this._clrVirtualDualShock4.Options;
+            case "Back": return this._clrVirtualDualShock4.Share;
+            case "LB": return this._clrVirtualDualShock4.L1;
+            case "RB": return this._clrVirtualDualShock4.R1;
+            case "LT": return this._clrVirtualDualShock4.L2;
+            case "RT": return this._clrVirtualDualShock4.R2;
+            case "LeftStickPush": return this._clrVirtualDualShock4.L3;
+            case "RightStickPush": return this._clrVirtualDualShock4.R3;
+            case "PSButton": return this._clrVirtualDualShock4.PSButton;
+            case "Touchpad": return this._clrVirtualDualShock4.Touchpad;
+            case "DPadUp": return this._clrVirtualDualShock4.DPadUp;
+            case "DPadUpRight": return this._clrVirtualDualShock4.DPadUpRight;
+            case "DPadRight": return this._clrVirtualDualShock4.DPadRight;
+            case "DPadDownRight": return this._clrVirtualDualShock4.DPadDownRight;
+            case "DPadDown": return this._clrVirtualDualShock4.DPadDown;
+            case "DPadDownLeft": return this._clrVirtualDualShock4.DPadDownLeft;
+            case "DPadLeft": return this._clrVirtualDualShock4.DPadLeft;
+            case "DPadUpLeft": return this._clrVirtualDualShock4.DPadUpLeft;
+            default:
+                throw new Error(`"${buttonName}" is invalid button name.`);
+        }
+    }
+}
+
+class VirtualDualShock4StickWrapper {
+
+    _clrDualShock4Stick;
+
+    constructor(_clrDualShock4Stick) {
+        this._clrDualShock4Stick = _clrDualShock4Stick;
+    }
+
+    /**
+     * @param {number} angleValue
+     * @param {number} inputRate
+     */
+    angle(angleValue, inputRate) {
+        const i = _globals.Clamp(0.0, 1.0, inputRate);
+        this._clrDualShock4Stick.SetValueByAngle(i, angleValue);
+    }
+
+    /**
+    * @param {{x: number, y: number}} newPoint
+    */
+    set point(newPoint) {
+        this._clrDualShock4Stick.SetValue(newPoint.x, newPoint.y * -1);
+    }
+}
+
+class VirtualDualShock4TriggerWrapper {
+    _clrDualShock4Trigger;
+
+    constructor(_clrDualShock4Trigger) {
+        this._clrDualShock4Trigger = _clrDualShock4Trigger;
+    }
+
+    /**
+     * @param {number} inputRate
+     */
+    set value(inputRate) {
+        const i = _globals.Clamp(0.0, 1.0, inputRate);
+        this._clrDualShock4Trigger.SetValue(i);
     }
 }
 
@@ -852,7 +1185,13 @@ function initializeGlobalThis() {
     globalThis.xinput1 = new Controller(_globals.Controller.GetXInputController(1));
     globalThis.xinput2 = new Controller(_globals.Controller.GetXInputController(2));
     globalThis.xinput3 = new Controller(_globals.Controller.GetXInputController(3));
+    globalThis.virtualXInput0 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(0));
+    globalThis.virtualXInput1 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(1));
+    globalThis.virtualXInput2 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(2));
+    globalThis.virtualXInput3 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(3));
+    globalThis.dualShock4 = new VirtualDualShock4Wrapper(_globals.DualShock4);
     globalThis.templateMatching = new TemplateMatching();
+    globalThis.mapping = new Mapping();
 
     // ユーティリティ
     Array.prototype.toClrArray = Utilities.Default.toClrArray;

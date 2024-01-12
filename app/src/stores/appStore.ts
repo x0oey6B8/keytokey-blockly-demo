@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { Macro, MacroFile, host } from "../hosts/host";
+import { host } from "../hosts/host";
 import * as MacroMenus from "../menus/commands/macro"
 import * as FindMenus from "../menus/dropdown/find"
 import * as WorkspaceMenus from "../menus/dropdown/workspace"
@@ -9,8 +9,9 @@ import { ITab } from "../models/tab";
 import { DropDownCommandPaletteOptions, DropDownMenuToCommandItems, IAppDropDownMenu } from "../models/dropdown";
 import { useCommandPaletteStore } from "./commandPaletteStore";
 import { ref } from "vue";
-import { useBlocklyStore } from "./blocklyStore";
+import { ISourceCode, ISourceCodeWriter, useBlocklyStore } from "./blocklyStore";
 import { useEditorStore } from "./editorStore";
+import { Macro, MacroFile } from "../hosts/macroManager";
 
 export const useAppStore = defineStore("AppStore", () => {
 
@@ -41,7 +42,7 @@ export const useAppStore = defineStore("AppStore", () => {
                 new WorkspaceMenus.CopyWorkspaceAsXmlMenuItem(),
                 new WorkspaceMenus.CopyWorkspaceAsJsonMenuItem(),
                 new WorkspaceMenus.ClearWorkspaceMenuItem(),
-                new WorkspaceMenus.ClearSpecificBlockByIdMenuItem()
+                new WorkspaceMenus.ClearSpecificBlockByIdMenuItem(),
             ]
         },
         {
@@ -51,8 +52,8 @@ export const useAppStore = defineStore("AppStore", () => {
                     header: "Not Implemented",
                     subHeader: "tool",
                     condition: () => true,
-                    clicked: () => {
-                        openDropdownMenus()
+                    clicked: async () => {
+                        alert(await host.profile.getName());
                     }
                 }
             ]
@@ -60,6 +61,14 @@ export const useAppStore = defineStore("AppStore", () => {
         {
             header: "デバッグ",
             menuItems: [
+                {
+                    header: "ブロックからコードを再生成",
+                    subHeader: "debug",
+                    condition: () => true,
+                    clicked: () => {
+                        openDropdownMenus()
+                    }
+                },
                 {
                     header: "デバッグを開始",
                     subHeader: "debug",
@@ -101,7 +110,10 @@ export const useAppStore = defineStore("AppStore", () => {
                     header: "テスト",
                     subHeader: "dev",
                     condition: () => true,
-                    clicked: () => { },
+                    clicked: async () => {
+                        console.log(await host.templateMatchingSettings.listAll());
+
+                    },
                 }
             ]
         })
@@ -238,3 +250,15 @@ export const useAppStore = defineStore("AppStore", () => {
         openMacroMenu()
     }
 })
+
+export class SourceCodeWriter implements ISourceCodeWriter {
+
+    static Default: SourceCodeWriter = new SourceCodeWriter();
+
+    write(sourceCode: ISourceCode): void {
+        const app = useAppStore();
+        const json = sourceCode.json;
+        const javascript = sourceCode.javascript;
+        app.currentMacroFile?.write(json, javascript);
+    }
+}

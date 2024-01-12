@@ -1,7 +1,5 @@
 import Blockly, { BlockSvg } from "blockly";
-import { keys } from "./keys.ts";
 import { BlockColors } from "../../configurations/blockColors.ts";
-import { controllerButtons } from "./controllerButtons.ts";
 import { OutputType } from "./outputType.ts";
 
 export function defineMappingBlocks() {
@@ -41,6 +39,7 @@ export function defineMappingBlocks() {
             this.setHelpUrl("");
 
         },
+        // @ts-ignore
         onchange: function (e: Blockly.Events.Abstract) {
             const dropdown = this.getFieldValue("BEHAVIOR");
             const field = this.getField("LABEL3");
@@ -61,6 +60,7 @@ export function defineMappingBlocks() {
                 ["すべて", "ALL"]
             ] as Blockly.MenuGenerator
             this.appendDummyInput()
+                // @ts-ignore
                 .appendField(new Blockly.FieldDropdown(menuItems), "DROPDOWN");
             this.setInputsInline(true);
             this.setOutput(true, OutputType.Array);

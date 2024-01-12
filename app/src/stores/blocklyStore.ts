@@ -34,8 +34,8 @@ export const useBlocklyStore = defineStore("blockly", () => {
         getCurrentWorkspaceSession
     };
 
-    function registerNewWorkspaceSession(container: HTMLElement) {
-        workspaceSession = new WorkspaceSession(container, true, generator);
+    function registerNewWorkspaceSession(container: HTMLElement, sourceCodeWriter: ISourceCodeWriter) {
+        workspaceSession = new WorkspaceSession(container, true, generator, sourceCodeWriter);
     }
 
     function getCurrentWorkspaceSession() {
@@ -55,20 +55,18 @@ class WorkspaceSession {
     javascriptGenerator: any;
     canWriteToFile: boolean = false;
 
-    constructor(container: HTMLElement, isMainWorkspace: boolean, javascriptGenerator: any) {
+    constructor(container: HTMLElement, isMainWorkspace: boolean, javascriptGenerator: any, private sourceCodeWriter: ISourceCodeWriter) {
         this.javascriptGenerator = javascriptGenerator;
         this.isMainWorkspace = isMainWorkspace;
         this.workspaceSvg = Blockly.inject(container, options);
         this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
         this.workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
-
-        const appStore = useAppStore();
         this.workspaceSvg.addChangeListener((e) => {
             if (e.recordUndo && this.canWriteToFile) {
-                const state = this.getState();
-                const code = this.createCode(StatementPrefix.CHECK_POINT);
-                appStore.currentMacroFile?.write(state, code);
+                const json = this.getState();
+                const javascript = this.createCode(StatementPrefix.CHECK_POINT);
+                this.sourceCodeWriter.write({ json, javascript });
             }
         });
     }
@@ -271,20 +269,9 @@ class WorkspaceSession {
         const s = performance.now();
         setStatementPrefix(this.javascriptGenerator, prefix);
         const generatedCode = this.javascriptGenerator.workspaceToCode(this.workspaceSvg);
-        const indentedCode = this.insertIndentation(generatedCode);
         //ここから実行：_E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C()
-        const entryFunction = "    _E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C();"
-        const codes = [
-            "(() => {",
-            indentedCode,
-            entryFunction,
-            "",
-            "})();"
-        ]
-        let code = codes.join("\n");
-        //code = this.replacePlaceHolderToId(code);
         console.log(performance.now() - s);
-        return code;
+        return generatedCode;
     }
 
     replacePlaceHolderToId(input: string): string {
@@ -318,21 +305,6 @@ class WorkspaceSession {
             }
         });
         return decodedStr;
-    }
-
-    private insertIndentation(text: string) {
-        // 改行文字で文字列を分割し、配列に格納する
-        var lines = text.split('\n');
-
-        // 各行の先頭に半角スペース4つを挿入する
-        for (var i = 0; i < lines.length; i++) {
-            lines[i] = '    ' + lines[i];
-        }
-
-        // 改行文字を用いて配列の要素を結合し、新しい文字列を生成する
-        var indentedText = lines.join('\n');
-
-        return indentedText;
     }
 
     getEntryProcedureBlock() {
@@ -381,4 +353,13 @@ class WorkspaceSession {
 export interface IWorkspaceClearOptions {
     ask: boolean,
     addEntryBlock: boolean,
+}
+
+export interface ISourceCodeWriter {
+    write(sourceCode: ISourceCode): void;
+}
+
+export interface ISourceCode {
+    json: string,
+    javascript: string,
 }
