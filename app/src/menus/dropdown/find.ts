@@ -49,24 +49,3 @@ export class FindProcedureBlockFromListMenuItem implements IDropDownMenuItem {
         }
     };
 }
-
-export class ReplayMenuItem implements IDropDownMenuItem {
-    header = "フォーカス";
-    subHeader = "find";
-    condition = () => true;
-    clicked = () => {
-        const blocklyStore = useBlocklyStore();
-        const workspaceSession = blocklyStore.getCurrentWorkspaceSession()
-        if (workspaceSession) {
-            const blocks = workspaceSession.getAllBlocks();
-            let i = 0;
-            const id = window.setInterval(() => {
-                if (i > blocks.length) {
-                    console.log(id);
-                    window.clearInterval(id);
-                }
-                workspaceSession.centerTo(blocks[i++]);
-            }, 50)
-        }
-    };
-}

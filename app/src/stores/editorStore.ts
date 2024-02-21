@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { Ref, ref } from "vue";
-import { IModalState } from "../components/Modal.vue";
+import { IModalState } from "../models/modal";
 
 export const useEditorStore = defineStore("editorStore", () => {
     let textValue = ref("");

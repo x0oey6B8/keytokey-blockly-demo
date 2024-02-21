@@ -1,37 +1,60 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
 import ModalEditor from "./components/ModalEditor.vue";
+import ModalMacroSettings from "./components/ModalMacroSettings.vue";
 import ModalCommandPalette from "./components/ModalCommandPalette.vue";
 import DropdownMenu from "./components/DropdownMenu.vue";
-import Tab from "./components/Tab.vue";
-import Setting from "./components/icons/Setting.vue"
-import Plus from "./components/icons/Plus.vue"
-import Menu from "./components/icons/Menu.vue"
+import CloseableTab from "./components/CloseableTab.vue";
+import ShortcutGuide from "./components/ShortcutGuide.vue";
+import { onMounted, onUpdated, ref, watch } from "vue";
 import { SourceCodeWriter, useAppStore } from "./stores/appStore";
 import { useBlocklyStore } from "./stores/blocklyStore";
 import { useEditorStore } from "./stores/editorStore";
 import { useCommandPaletteStore } from "./stores/commandPaletteStore";
-import { useMagicKeys, useMouse } from "@vueuse/core";
+import { useMagicKeys } from "@vueuse/core";
+import { useSortable } from "@vueuse/integrations/useSortable";
+import { useMacroSettingsStore } from "./stores/useMacroSettingsStore";
+import { useQuasar } from "quasar";
+import { useTabStore } from "./stores/tabStore";
+import { useEditingMacro } from "./stores/editingMacro";
+import { resize } from "./helpers/ui/resize"
 
 const appStore = useAppStore();
+const editing = useEditingMacro();
+const tabStore = useTabStore();
 const blockly = useBlocklyStore();
 const editor = useEditorStore();
 const commandPalette = useCommandPaletteStore();
-// const overflow = ref(false);
+const macroSettingsStore = useMacroSettingsStore();
+const quaser = useQuasar();
+quaser.dark.set(true);
 
-const { x, y } = useMouse();
+
+const tabs = ref(null);
+useSortable(tabs, tabStore.items, {
+    animation: 150,
+    onChange: () => { }
+});
+
 useMagicKeys({
     passive: false,
     onEventFired(e) {
-        if (e.ctrlKey && e.key === 'm' && e.type === "keydown") {
+        if (e.ctrlKey && e.key === 'p' && e.type === "keydown") {
             appStore.openDropdownMenus();
             e.preventDefault();
         }
-        else if (e.ctrlKey && e.key === 'p' && e.type === "keydown"){
+        else if (e.ctrlKey && e.key === 'm' && e.type === "keydown"){
             appStore.openMacroMenu();
             e.preventDefault();
         }
+        else if (e.ctrlKey && e.key === 'Tab' && e.type === "keydown") {
+            tabStore.selectNextTab();
+            e.preventDefault();
+        }
     }
+});
+
+watch(tabStore.items, () => {
+    resize();
 });
 
 onMounted(async () => {
@@ -41,52 +64,74 @@ onMounted(async () => {
     resize();
     await appStore.readImplementationFile();
     appStore.openMacroMenu();
-    blockly.getCurrentWorkspaceSession()?.setInitialScrollPosition();
+    //blockly.getCurrentWorkspaceSession()?.setInitialScrollPosition();
 });
 
-function resize() {
-    const firstRow = document.querySelector(".first-row-container") as HTMLElement;
-    const height = firstRow.clientHeight;
-    const blocklyDiv = document.getElementById('blocklyDiv') as HTMLElement;
-    blocklyDiv.style.height = (window.innerHeight - height - 1) + 'px';
-    blockly.getCurrentWorkspaceSession()?.resizeWorkspaceSvg();
-
-    // const overlay = document.getElementById("overlay") as HTMLElement;
-    // overlay.style.width = blocklyDiv.clientWidth + "px";
-    // overlay.style.height = blocklyDiv.clientHeight + "px";
-    // overflow.value = window.innerWidth < firstRow.clientWidth;
-}
+onUpdated(() => {
+    resize();
+});
 </script>
 
 <template>
-    <div class="grid-container">
-        <div class="first-row-container">
-            <div class="tab-container">
-                <span v-if="appStore.currentMacro == undefined"
-                    style="margin: 0px 0px 6px 12px; font-size: 14px; color: #777;">
-                    マクロが選択されていません{{ x }},{{ y }}
-                </span>
-                <Tab :tabs="appStore.tabs"></Tab>
-                <div class="icon-container">
-                    <Plus class="icon" :disabled="true"></Plus>
-                    <span class="separator">|</span>
-                    <Setting class="icon" :disabled="true"></Setting>
+    <div class="columns">
+        <!-- ワークスペースの上に表示するコンテンツ -->
+        <div id="first-row" class="row first-row">
+            <!-- タブとタブ横のボタンを表示するコンテンツ -->
+            <div id="first-row-left" class="col flex no-wrap content-start v-touch-pan.mouse.horizontal">
+                <div class="flex no-wrap">
+                    <q-tabs
+                        id="tabs"
+                        draggable
+                        outside-arrows
+                        v-model="tabStore.selectedTab" 
+                        indicator-color="green" 
+                        class="tabs text-white full-height">
+                        <!-- マクロが選択されてないときに表示するタブ -->
+                        <q-tab class="tab" name="no-macro-selected" label="マクロが選択されていません" no-caps v-if="!editing.hasMacro()">
+                            <q-tooltip>右側にある「マクロ一覧」からマクロを選択してください</q-tooltip>
+                        </q-tab>
+                        <!-- タブ -->
+                        <div ref="tabs" class="flex no-wrap">
+                            <CloseableTab 
+                                v-for="tab in tabStore.items" 
+                                :key="tab.id" 
+                                :id="tab.id"
+                                :header="tab.header"
+                                :icon-name="tab.iconName"
+                                :icon-color="tab.iconColor"
+                                :can-close-button-show="tab.canCloseButtonShow"
+                                :is-active="tabStore.selectedTab === tab.id"
+                                @close="tabStore.closeTab(tab)">
+                            </CloseableTab>
+                        </div>
+                    </q-tabs>
+                </div>
+                <!-- タブ横ボタン -->
+                <div id="tab-side-content" class="flex no-wrap" v-if="editing.hasMacro()">
+                    <div>
+                        <q-btn flat icon="add" size="sm" class="side-button q-px-md full-height" @click="appStore.openMenuToAddFile"/>
+                        <q-tooltip>イベントを追加</q-tooltip>
+                    </div>
+                    <q-separator vertical inset class="" />
+                    <div>
+                        <q-btn flat icon="settings" size="sm" class="side-button q-px-md full-height" @click="macroSettingsStore.modalState.isShowing = true"/>
+                        <q-tooltip>マクロの設定</q-tooltip>
+                    </div>
                 </div>
             </div>
-            <div class="button-container">
-                <button 
-                    id="button" 
-                    @click="appStore.openMacroMenu()" 
-                    title="Ctrl+P">
-                    <Menu class="icon" style="margin: 0"></Menu>
-                    <span style="margin-bottom: 3px;">マクロ一覧</span>
-                </button>
-                <button class="dropdown-menus-button" @click="appStore.openDropdownMenus()">
-                    <Menu class="icon" style="margin: 0"></Menu>
-                    <span style="margin-bottom: 3px;">メニュー</span>
-                </button>
+            <div id="first-row-right" class="flex">
+                <div>
+                    <q-btn 
+                        color="green-6" label="マクロ一覧" 
+                        class="full-height override-button-icon-margin font-size-12 q-my-none"
+                        @click="appStore.openMacroMenu()" />
+                </div>
+                <!-- ウィンドウの幅が小さいときに表示するメニューボタン -->
+                <q-btn 
+                    color="bg-dark" icon="menu" label="メニュー" 
+                    class="open-menu-button full-height override-button-icon-margin font-size-12"
+                    @click="appStore.openDropdownMenus()" />
                 <!-- ドロップダウンメニュー -->
-                <!-- :class="{'hidden-overflow': overflow}" -->
                 <div class="dropdown-menus">
                     <div class="menu" v-for="menu in appStore.appDropDownMenus" :key="menu.header">
                         <DropdownMenu :items="menu.menuItems">
@@ -98,20 +143,8 @@ function resize() {
                 </div>
             </div>
         </div>
-        <div style="position: relative; background-color: transparent;">
-            <!-- <div id="overlay" style="background-color: transparent; z-index: 3; position: absolute; pointer-events: none;">
-                <div style="display: flex; justify-content: end;" background-color="transparent">
-                    <div class="side-menu-container">
-                        <Menu class="icon side-menu-toggle" style="margin: 0"></Menu>
-                        <div class="side-menu">
-                            <button id="button" style="height: 35px;" @click="appStore.openMacroMenu()">
-                                <Menu class="icon" style="margin: 0"></Menu>
-                                <span style="margin-bottom: 3px;">マクロ一覧</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
+        <!-- ワークスペースとツールボックス -->
+        <div class="row">
             <div id="blocklyArea"></div>
             <div id="blocklyDiv" style="position: absolute;"></div>
         </div>
@@ -127,108 +160,65 @@ function resize() {
             :text-validator="commandPalette.textValidator"
             :close-auto="commandPalette.closeAuto">
         </ModalCommandPalette>
+        <ModalMacroSettings></ModalMacroSettings>
+        <ShortcutGuide></ShortcutGuide>
     </Teleport>
 </template>
 
 <style>
 
-
-/* .side-menu-container {
-    margin-right: 175px;
-    margin-top: 5px;
-    pointer-events: auto;
-    position: relative;
+:root {
+    --tab-height: 35px;
 }
 
-.side-menu {
-    height: 35px; 
-    padding: 7px;
-    border-radius: 8px;
-    background-color: #2A2A2A;
-    position: absolute;
-    left: -130px;
-    top: 5px;
+.first-row {
+    background: var(--bg-color-app);
 }
 
-.side-menu-toggle {
-    position: absolute;
-    left: -155px;
-    top: 280px;
-    padding: 5px;
-    background-color: #2A2A2A;
-    border-radius: 5px 0 0 5px;
+/* .q-scrollarea__bar--h, .q-scrollarea__thumb--h{
+    bottom: 0px !important;
+    height: 3px;
 } */
 
-.icon-container {
-    display: flex;
-    align-items: end;
-    padding: 3px;
+.tabs {
+    max-height: var(--tab-height) !important;
 }
 
-.icon {
-    width: 20px;
-    height: 20px;
-    margin: 0 8px;
-    fill: #E7E7E7;
-    /* fill: #424242; */
-    user-select: none;
+.tab {
+    max-height: var(--tab-height) !important;
 }
 
-.icon:hover:not([disabled]) {
-    opacity: 0.7;
-    cursor: pointer;
+.q-tab {
+    min-height: var(--tab-height) !important;
+    max-height: var(--tab-height) !important;
 }
 
-.icon[disabled] {
-    cursor: default;
-    fill: #424242;
+.q-tab--inactive {
+    min-height: var(--tab-height) !important;
 }
 
-.separator {
-    color: #9C9C9C;
-    /* color: #424242; */
-    margin: 0 3px;
-    user-select: none;
+.q-tab__label {
+    line-height: 0 !important;
+    font-size: var(--font-size-12) !important;
 }
+
+.q-tabs {
+    min-height: var(--tab-height) !important;
+    max-height: var(--tab-height) !important;
+}
+
+.q-tabs__arrows--outside {
+    min-height: var(--tab-height) !important;
+}
+
+.q-tabs__content {
+    justify-content: start !important;
+}
+
 
 #blocklyDiv {
-    /* height: 100%; */
     width: 100%;
     border: none;
-}
-
-.grid-container {
-    display: grid;
-    grid-template-rows: auto 1fr;
-}
-
-.first-row-container {
-    display: flex;
-    justify-content: space-between;
-    /* align-items: center; */
-    height: 35px;
-}
-
-.text-container {
-    flex: 1;
-    color: #C7C7C7;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* margin: 3px 0; */
-    user-select: none;
-}
-
-.text {
-    font-family: initial;
-    font-size: 13px;
-}
-
-.button-container {
-    display: flex;
-    /* background-color: #252525; */
-    padding: 0px 0px;
 }
 
 button {
@@ -239,40 +229,24 @@ button {
     border-radius: 3px;
     font-size: 12px;
     font-family: Noto Sans Jp;
-    color: #e9e9e9;
+    color: var(--font-color);
     box-shadow: 2;
     padding: 7px 10px;
     white-space: nowrap;
+    transition: opacity 0.5s;
 }
 
 button:hover {
-    background-color: #323232;
+    background-color: var(--hover-color);
     cursor: pointer;
 }
 
-#button {
-    background-color: #43A047;
-    user-select: none;
-    padding: 0 12px;
-    box-shadow: #9C9C9C;
-}
-
-#button:hover {
-    opacity: 0.7;
-}
-
-.disabled-button {
-    pointer-events: none;
-    opacity: 0.5;
-    cursor: not-allowed;
-}
 .dropdown-menus {
-    /* overflow-x: hidden; */
     display: flex;
 }
 
-.dropdown-menus-button {
-    display: none;
+.open-menu-button {
+    display: none !important;
 }
 
 @media (width <= 1200px) {
@@ -280,21 +254,13 @@ button:hover {
         display: none;
     }
 
-    .dropdown-menus-button {
-        display: flex;
+    .open-menu-button {
+        display: flex !important;
     }
 }
 
-.hidden-overflow {
-    display: none;
-}
 .dropdown-header {
     user-select: none;
+    font-size: 12px;
 }
-
-.tab-container {
-    display: flex;
-    align-items: end;
-}
-
 </style>

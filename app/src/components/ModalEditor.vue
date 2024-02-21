@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import Modal, { IModalState } from "./Modal.vue"
+import Modal from "./Modal.vue"
 import Editor from "./Editor.vue";
+import { IModalState } from "../models/modal";
 
 const props = defineProps<{ modalState: IModalState }>();
 </script>

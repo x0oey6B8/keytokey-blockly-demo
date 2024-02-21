@@ -2,6 +2,7 @@ import { StatementPrefix } from "../../definitions/generators/defineGenerator";
 import { IDropDownMenuItem } from "../../models/dropdown";
 import { useAppStore } from "../../stores/appStore";
 import { useBlocklyStore } from "../../stores/blocklyStore";
+import { useEditingMacro } from "../../stores/editingMacro";
 import { useEditorStore } from "../../stores/editorStore";
 
 export class CreateCodeMenuItem implements IDropDownMenuItem {
@@ -9,7 +10,13 @@ export class CreateCodeMenuItem implements IDropDownMenuItem {
     subHeader = "code";
     condition = () => true;
     clicked = () => {
-        this.createCode(StatementPrefix.CHECK_POINT)
+        const editingMacro = useEditingMacro();
+        if (!editingMacro.macro) {
+            return;
+        }
+        const isLoggerEnabled = editingMacro.macro.setting.debug.logger.isEnabled;
+        const prefix = isLoggerEnabled ? StatementPrefix.CHECK_POINT : StatementPrefix.NONE;
+        this.createCode(prefix);
     };
     createCode = (prefix: StatementPrefix = StatementPrefix.NONE) => {
         const blocklyStore = useBlocklyStore();
@@ -19,16 +26,6 @@ export class CreateCodeMenuItem implements IDropDownMenuItem {
             const editorStore = useEditorStore();
             editorStore.setCode(code, "javascript", true);
         }
-    }
-}
-
-export class CreateCodeNoCheckPointsMenuItem extends CreateCodeMenuItem {
-    constructor() {
-        super();
-        this.header = "実行用コード（チェックポイントなし）"
-    }
-    clicked = () => {
-        this.createCode(StatementPrefix.NONE);
     }
 }
 

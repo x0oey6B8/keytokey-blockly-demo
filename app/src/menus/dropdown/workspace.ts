@@ -8,16 +8,16 @@ import { useEditorStore } from "../../stores/editorStore";
 import { useNotificationStore } from "../../stores/notificationStore";
 
 export class SetEntryBlockDefaultPosition implements IDropDownMenuItem {
-    header = "「ここから実行」ブロックを初期位置に設定";
+    header = "選択中のブロックを初期位置に設定";
     subHeader = "workspace";
     condition = () => true;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
         const session = blocklyStore.getCurrentWorkspaceSession();
         if (session) {
-            const entryBlock = session.getEntryProcedureBlock();
-            if (entryBlock) {
-                session.moveTo(entryBlock, 16, -17);
+            const block = session.getSelectedBlock();
+            if (block) {
+                session.moveTo(block, 16, -17);
             }
         }
     };
@@ -76,6 +76,7 @@ export class CopyWorkspaceAsJsonMenuItem implements IDropDownMenuItem {
     header = "内容をテキストとしてコピー（JSON)";
     subHeader = "workspace";
     condition = () => true;
+    canVisible = () => import.meta.env.DEV;
     clicked = () => {
         const blocklyStore = useBlocklyStore();
         const workspaceSession = blocklyStore.getCurrentWorkspaceSession()

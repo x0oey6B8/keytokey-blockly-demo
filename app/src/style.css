@@ -8,6 +8,33 @@
     src: url('./assets/NotoSansMono-Regular.ttf');
 }
 
+/*
+    変数
+*/
+:root {
+    --font-color: #e7e7e7;
+    --bg-color-app: #212121;
+    --secondary-bg-color: #434343;
+    --border-color: #474747;
+    --hover-color: #42424260;
+    --selected-color: #70666640;
+    --bg-menu: #383838;
+    --bg-menu-hover: #717171;
+    --font-size-12: 12px;
+    --font-size-14: 14px;
+    --font-size-16: 16px;
+}
+
+/* リセット */
+
+hr {
+    height: 0;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+
 html,
 body {
     height: 100%;
@@ -17,12 +44,75 @@ body {
     /* font-family: 'IBM Plex Sans JP'; */
     font-family: 'Noto Sans JP';
     font-weight: normal;
+    font-size: var(--font-size-14) !important;
+    color: var(--font-color)
 }
+
+.font-size-12 {
+    font-size: var(--font-size-12) !important;
+}
+
+.font-size-14 {
+    font-size: var(--font-size-14) !important;
+}
+
+.font-size-16 {
+    font-size: var(--font-size-16) !important;
+}
+
+.bg-menu {
+    background: var(--bg-menu) !important;
+}
+
+.bg-menu-hover {
+    background: var(--bg-menu-hover) !important;
+}
+
+.fit-content {
+    width: fit-content !important;
+}
+
+.line-height {
+    line-height: 1.215em !important;
+}
+
+.rounded {
+    border-radius: 7px !important;
+}
+
+/*
+    Quasar
+*/
+
+.override-button-icon-margin .q-icon.on-left {
+    margin-right: 4px !important;
+}
+
+.q-tooltip--style {
+    font-size: 12px;
+}
+
+.q-item {
+    min-height: 35px;
+    border-radius: 7px !important;
+}
+
+.q-menu--dark {
+    box-shadow: 0 0 3px 1px rgba(0, 0, 0, .3) !important;
+}
+
+.q-dark {
+    background: var(--bg-menu) !important;
+    box-shadow: none;
+}
+
+/* 
+    Blockly関係
+*/
 
 /* ツールボックスカテゴリのスタイル */
 .blocklyTreeRow {
-    padding-bottom: 7px !important;
-    /* border-left: none !important; */
+    height: 28px;
 }
 
 /* ツールボックスの文字 */
@@ -94,12 +184,21 @@ body {
     stroke-width: 2;
 }
 
+/* コンテキストメニュー */
 .blocklyContextMenu {
-    background-color: #383838 !important;
+    background-color: var(--bg-menu) !important;
 }
 
 .blocklyMenuItemContent {
     color: #E7E7E7;
+}
+
+.blocklyWidgetDiv .blocklyMenu {
+    padding: 0 !important;
+}
+
+.blocklyWidgetDiv .blocklyMenu {
+    border: none !important;
 }
 
 .blocklyDisabled .blocklyEditableText text {
@@ -109,7 +208,7 @@ body {
 /* Change the hover background color */
 .blocklyContextMenu .goog-menuitem-highlight,
 .blocklyContextMenu .goog-menuitem-hover {
-    background-color: #717171 !important;
+    background-color: var(--bg-menu-hover) !important;
 }
 
 /* Change the text color of disabled menu items */

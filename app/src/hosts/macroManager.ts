@@ -1,4 +1,6 @@
+import { fileTemplateGroups } from "../definitions/files/fileTemplates";
 import { IRequestResult, hasHost, host } from "./host";
+import { v4 as uuidv4 } from 'uuid';
 
 export class MacroManager implements IMacroManager {
 
@@ -57,11 +59,27 @@ export class MacroManager implements IMacroManager {
         }
         const json = await this.hostObjects.macroManager.List();
         const settings: IMacroSetting[] = JSON.parse(json);
+        console.log(settings);
         return settings.map(setting => new Macro(setting));
     }
 
+    addFile = async (request: IAddFileRequest) => {
+        const json = await this.hostObjects.macroManager.AddFile(JSON.stringify(request));
+        const result: IRequestResult = JSON.parse(json);
+        return result;
+    }
+
+    removeFile = async (request: IRemoveFileRequest) => {
+        const json = await this.hostObjects.macroManager.RemoveFile(JSON.stringify(request));
+        const result: IRequestResult = JSON.parse(json);
+        return result;
+    }
+
     write = async (request: IWriteRequest) => {
-        return await this.hostObjects.macroManager.WriteFile(JSON.stringify(request));
+        console.log("write", request);
+        const json = await this.hostObjects.macroManager.WriteFile(JSON.stringify(request));
+        const result: IRequestResult = JSON.parse(json);
+        return result;
     }
 
     find = async (request: IFindMacroRequest) => {
@@ -71,8 +89,10 @@ export class MacroManager implements IMacroManager {
     }
 
     read = async (file: IFileInfo): Promise<IMacroFileContent> => {
+        console.log("read", file);
         const json = await this.hostObjects.macroManager.ReadFile(JSON.stringify(file));
-        const content: IMacroFileContent = JSON.parse(json);
+        const result: IRequestResult = JSON.parse(json);
+        const content: IMacroFileContent = JSON.parse(result.json);
         return content;
     }
 }
@@ -111,10 +131,6 @@ export class MacroManagerPseudo implements IMacroManager {
         return this.macroStorage.settings.map(setting => new Macro(setting));
     }
 
-    write = async (request: IWriteRequest) => {
-        return await this.macroStorage.write(request);
-    }
-
     find = async (request: IFindMacroRequest) => {
         const setting = await this.macroStorage.find(request);
         if (!setting) {
@@ -123,8 +139,39 @@ export class MacroManagerPseudo implements IMacroManager {
         return new Macro(setting);
     }
 
+    addFile = async (request: IAddFileRequest) => {
+        const hasError = await this.macroStorage.addFile(request);
+        const result: IRequestResult = {
+            hasError,
+            errorMessage: "",
+            json: ""
+        };
+        return result;
+    }
+
+    removeFile = async (request: IRemoveFileRequest) => {
+        const hasError = await this.macroStorage.removeFile(request);
+        const result: IRequestResult = {
+            hasError,
+            errorMessage: "",
+            json: ""
+        };
+        return result;
+    }
+
     read = async (file: IFileInfo): Promise<IMacroFileContent> => {
-        return await this.macroStorage.read(file);
+        const json = await this.macroStorage.read(file);
+        return json;
+    }
+
+    write = async (request: IWriteRequest) => {
+        const hasError = await this.macroStorage.write(request);
+        const result: IRequestResult = {
+            hasError,
+            errorMessage: "",
+            json: ""
+        };
+        return result;
     }
 
     setImplementation = async (): Promise<IRequestResult> => {
@@ -177,21 +224,27 @@ export class LocalMacroStorage {
     async create(request: IMacroCreationRequest): Promise<IRequestResult> {
         this.settings.push({
             name: request.macroName,
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             category: "",
             files: [
                 {
-                    id: crypto.randomUUID(),
-                    name: "main",
-                    type: "ENTRY"
+                    id: uuidv4(),
+                    name: request.fileName,
+                    type: request.type
                 }
-            ]
+            ],
+            debug: {
+                logger: {
+                    isEnabled: false
+                }
+            },
+            preload: true
         });
         this.fileContents.push({
-            javascriptCode: "",
-            json: "[]",
-            path: this.createPath(request.macroName, "main")
-        })
+            javascriptCode: request.javascript,
+            json: request.json,
+            path: this.createPath(request.macroName, request.fileName)
+        });
         this.save();
         return this.noProblem();
     }
@@ -212,8 +265,22 @@ export class LocalMacroStorage {
     async clone(request: IMacroCloneRequest): Promise<IRequestResult> {
         const index = this.settings.findIndex(macroSetting => macroSetting.name === request.sourceMacroName);
         if (index > -1) {
-            const setting = JSON.parse(JSON.stringify(this.settings[index]));
+            // マクロ設定の複製
+            const setting: IMacroSetting = JSON.parse(JSON.stringify(this.settings[index]));
+            setting.name = request.newMacroName;
+            setting.id = uuidv4();
+            setting.files.forEach(file => file.id = uuidv4());
             this.settings.push(setting);
+
+            // ファイル設定の複製
+            const oldPrefix = request.sourceMacroName + "/";
+            const contents = this.fileContents.filter(content => content.path.startsWith(oldPrefix));
+            const newPrefix = request.newMacroName + "/";
+            for (const content of contents) {
+                const clonedContent: ILocalMacroFileContent = JSON.parse(JSON.stringify(content));
+                clonedContent.path = clonedContent.path.replace(oldPrefix, newPrefix);
+                this.fileContents.push(clonedContent);
+            }
             this.save();
         }
         return this.noProblem();
@@ -221,20 +288,28 @@ export class LocalMacroStorage {
 
     async delete(request: IMacroDeletionRequest): Promise<IRequestResult> {
         this.settings = this.settings.filter(macroSetting => macroSetting.name !== request.macroName);
+        this.fileContents = this.fileContents.filter(content => !content.path.startsWith(request.macroName));
         this.save();
         return this.noProblem();
     }
 
     async rename(request: IMacroRenameRequest): Promise<IRequestResult> {
-        const index = this.settings.findIndex(macroSetting => macroSetting.name === request.sourceMacroName);
-        if (index > -1) {
-            this.settings[index].name = request.newMacroName;
+        const setting = this.settings.find(macroSetting => macroSetting.name === request.sourceMacroName);
+        if (setting) {
+            setting.name = request.newMacroName;
+            const oldPrefix = request.sourceMacroName + "/";
+            const newPrefix = request.newMacroName + "/";
+            const contents = this.fileContents.filter(content => content.path.startsWith(oldPrefix));
+            for (const content of contents) {
+                content.path = content.path.replace(oldPrefix, newPrefix);
+            }
             this.save();
         }
         return this.noProblem();
     }
 
     async write(request: IWriteRequest) {
+        console.log(request);
         const file = this.findFile(request.macroName, request.fileName);
         file.javascriptCode = request.javascript;
         file.json = request.json;
@@ -242,13 +317,53 @@ export class LocalMacroStorage {
         return true;
     }
 
+    async addFile(request: IAddFileRequest) {
+        const macroName = request.macroName;
+        const fileName = request.fileName;
+        const macroSetting = await this.find({ macroName: macroName });
+        if (macroSetting) {
+            const filePath = this.createPath(macroName, fileName);
+            const fileExists = this.fileExists(macroName, fileName);
+            if (!fileExists) {
+                this.fileContents.push({
+                    javascriptCode: request.javascript,
+                    json: request.json,
+                    path: filePath
+                });
+            }
+        }
+        this.save();
+        return false;
+    }
+
+    async removeFile(request: IRemoveFileRequest) {
+        const macroName = request.macroName;
+        const macroSetting = await this.find({ macroName: macroName });
+        if (macroSetting) {
+            const fileName = request.fileName;
+            const filePath = this.createPath(macroName, fileName);
+            const fileExists = this.fileExists(macroName, fileName);
+            if (fileExists) {
+                this.fileContents = this.fileContents.filter(content => content.path !== filePath);
+                this.save();
+            }
+        }
+        return true;
+    }
+
     async read(request: IFileInfo): Promise<IMacroFileContent> {
-        const file = this.findFile(request.macroName, request.fileName);
+        const result = this.findFile(request.macroName, request.fileName);
         return {
             name: request.fileName,
-            javascriptCode: file.javascriptCode,
-            json: file.json
+            javascriptCode: result.javascriptCode,
+            json: result.json
         }
+    }
+
+    fileExists(macroName: string, fileName: string) {
+        const filePath = this.createPath(macroName, fileName);
+        const exists = this.fileContents.some(content => content.path.toLowerCase() === filePath.toLowerCase());
+        return exists;
     }
 
     private findFile(macroName: string, fileName: string): ILocalMacroFileContent {
@@ -283,6 +398,19 @@ export class Macro {
     constructor(public setting: IMacroSetting) {
     }
 
+    async delete() {
+        return await host.macroManager.delete({
+            macroName: this.setting.name,
+        })
+    }
+
+    async renameTo(newName: string) {
+        return await host.macroManager.rename({
+            newMacroName: newName,
+            sourceMacroName: this.setting.name
+        })
+    }
+
     listFiles(): MacroFile[] {
         const files: MacroFile[] = [];
         for (const file of this.setting.files) {
@@ -290,27 +418,77 @@ export class Macro {
         }
         return files;
     }
+
+    async removeFile(file: MacroFile) {
+        const request: IRemoveFileRequest = {
+            fileName: file.setting.name,
+            macroName: file.macro.setting.name,
+            type: file.setting.type
+        };
+        const result = await host.macroManager.removeFile(request);
+        if (!result.hasError) {
+            return;
+        }
+        const i = this.setting.files.findIndex(f => f.id === file.setting.id);
+        this.setting.files.splice(i, 1);
+        this.applySetting();
+    }
+
+    fileExists(type: FileType): boolean {
+        return this.setting.files.some(file => file.type === type);
+    }
+
+    async applySetting() {
+        return await host.macroManager.updateSetting(this.setting);
+    }
 }
 
 export class MacroFile {
-    constructor(public macro: Macro, public fileSetting: IMacroFileSetting) {
+
+    canWrite: boolean = false;
+
+    constructor(public macro: Macro, public setting: IMacroFileSetting) {
     }
 
     async read(): Promise<IMacroFileContent> {
         const file = await host.macroManager.read({
             macroName: this.macro.setting.name,
-            fileName: this.fileSetting.name
+            fileName: this.setting.name,
+            type: this.setting.type
         });
         return file;
     }
 
     async write(json: string, javascriptCode: string) {
+
+        if (!this.canWrite) {
+            return;
+        }
+
         await host.macroManager.write({
             macroName: this.macro.setting.name,
-            fileName: this.fileSetting.name,
+            fileName: this.setting.name,
+            type: this.setting.type,
             json: json,
-            javascript: javascriptCode
+            javascript: javascriptCode,
         })
+    }
+
+    getDisplayName() {
+        if (this.setting.type === "MAIN") {
+            return this.macro.setting.name;
+        }
+
+        const template = fileTemplateGroups
+            .map(group => group.templates)
+            .reduce((total, current) => total.concat(current), [])
+            .find(template => template.type === this.setting.type);
+
+        if (template) {
+            return template.header;
+        }
+
+        return this.setting.name;
     }
 }
 
@@ -324,12 +502,13 @@ export interface IMacroManager {
     rename: (request: IMacroRenameRequest) => Promise<IRequestResult>;
     list: () => Promise<Macro[]>;
     find: (request: IFindMacroRequest) => Promise<Macro>;
-    write: (request: IWriteRequest) => Promise<boolean>;
+    addFile: (request: IAddFileRequest) => Promise<IRequestResult>;
+    removeFile: (request: IRemoveFileRequest) => Promise<IRequestResult>
+    write: (request: IWriteRequest) => Promise<IRequestResult>;
     read: (file: IFileInfo) => Promise<IMacroFileContent>;
 }
 
-export interface IMacroCreationRequest {
-    macroName: string;
+export interface IMacroCreationRequest extends IWriteRequest {
 }
 
 export interface IMacroSettingUpdateRequest {
@@ -358,6 +537,12 @@ export interface IMacroRenameRequest {
     sourceMacroName: string;
 }
 
+export interface IAddFileRequest extends IWriteRequest {
+}
+
+export interface IRemoveFileRequest extends IFileInfo {
+}
+
 export interface IFindMacroRequest {
     macroName: string;
 }
@@ -365,6 +550,7 @@ export interface IFindMacroRequest {
 export interface IFileInfo {
     macroName: string;
     fileName: string;
+    type: FileType;
 }
 
 export interface IWriteRequest extends IFileInfo {
@@ -381,17 +567,27 @@ export interface IMacroSetting {
     name: string;
     category: string;
     files: IMacroFileSetting[];
+    debug: IDebugSetting;
+    preload: boolean;
+}
+
+export interface IDebugSetting {
+    logger: IDebugLogger;
+}
+
+export interface IDebugLogger {
+    isEnabled: boolean;
 }
 
 export interface IMacroFileSetting {
     id: string;
     name: string;
-    type: ExecutionType;
+    type: FileType;
 }
 
-export type ExecutionType =
+export type FileType =
     "UNKNOWN"
-    | "ENTRY"
+    | "MAIN"
     | "EVENT_MACRO_ENDED"
     | "EVENT_KEY_PRESSED"
     | "EVENT_KEY_RELEASED"
@@ -403,4 +599,20 @@ export interface IMacroFileContent {
     name: string;
     json: string;
     javascriptCode: string;
+}
+
+export class FileTypeToFileNameConverter {
+    static convert = (fileType: FileType) => {
+        switch (fileType) {
+            case "MAIN": return "main"
+            case "EVENT_MACRO_ENDED": return "end"
+            case "EVENT_KEY_PRESSED": return "pressed"
+            case "EVENT_KEY_RELEASED": return "released"
+            case "EVENT_MOUSE_MOVED": return "mouse_moved"
+            case "EVENT_TRIGGER_PRESSED": return "trigger_pressed"
+            case "EVENT_TRIGGER_RELEASED": return "trigger_released"
+            default:
+                return "";
+        }
+    }
 }

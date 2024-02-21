@@ -297,13 +297,15 @@ function updateSelectedIndex() {
 <style lang="css" scoped>
     .command {
         width: auto;
-        padding: 3px 8px;
-        height: 20px;
+        padding: 3px 8px !important;
+        height: 26px;
         background-color: #212121;
         border: solid 1px rgb(28, 107, 211);
         border-radius: 2px;
         outline: none;
         color: #E7E7E7;
+        font-family: default;
+        font-weight: default;
     }
 
     .command::-webkit-input-placeholder {
@@ -375,11 +377,11 @@ function updateSelectedIndex() {
     }
 
     .selected {
-        background-color: #70666640;
+        background-color: var(--selected-color);
     }
 
     .command-item:hover {
-        background-color: #42424260;
+        background-color: var(--hover-color);
         cursor: pointer;
     }
 

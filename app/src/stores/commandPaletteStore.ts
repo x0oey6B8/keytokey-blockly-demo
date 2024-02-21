@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
-import { IModalState } from "../components/Modal.vue";
 import { ref } from "vue";
 import { ICommandTextValidationResult, ICommandItem, ICommandPaletteOptions, DefaultTextValidator } from "../models/commandPalette";
+import { IModalState } from "../models/modal";
 
 export interface ICommandTextValidator {
     validate(text: string): Promise<ICommandTextValidationResult>;

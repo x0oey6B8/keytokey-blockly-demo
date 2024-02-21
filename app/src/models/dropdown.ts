@@ -4,7 +4,8 @@ export interface IDropDownMenuItem {
     header: string,
     subHeader: string,
     condition: () => boolean,
-    clicked: () => void
+    clicked: () => void,
+    canVisible?: () => boolean,
 }
 
 export interface IAppDropDownMenu {

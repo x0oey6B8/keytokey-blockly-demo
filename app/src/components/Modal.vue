@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { IModalState } from '../models/modal';
+
 
 const props = defineProps<Props>();
 
@@ -10,12 +12,6 @@ function close() {
 
 export interface Props {
     state: IModalState;
-}
-
-export interface IModalState {
-    isShowing: boolean;
-    lock: boolean;
-    stateChanged: () => void; 
 }
 
 </script>

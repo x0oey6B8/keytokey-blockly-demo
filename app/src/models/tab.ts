@@ -1,6 +1,7 @@
 export interface ITab {
     id: string,
-    name: string,
-    isActive: boolean,
-    isEnabled: boolean,
+    header: string,
+    canCloseButtonShow: boolean,
+    iconName?: string;
+    iconColor?: string;
 }

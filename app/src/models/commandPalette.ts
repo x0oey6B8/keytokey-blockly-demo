@@ -1,4 +1,5 @@
 import { ICommandTextValidator } from "../stores/commandPaletteStore";
+import { v4 as uuidv4 } from 'uuid';
 
 export type ElementType = "COMMAND" | "SEPARATOR" | "LABEL";
 
@@ -30,7 +31,7 @@ export interface ICommandTextValidationResult {
 }
 
 export class CommandItem implements ICommandItem {
-    readonly id: string = crypto.randomUUID();
+    readonly id: string = uuidv4();
     canShow: boolean = true;
     isSelected: boolean = false;
     header: string = "";

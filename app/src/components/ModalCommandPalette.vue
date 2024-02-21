@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import Modal, { IModalState } from "./Modal.vue"
+import Modal from "./Modal.vue"
 import CommandPalette from "./CommandPalette.vue"
 import { ICommandItem, ICommandTextValidationResult } from "../models/commandPalette";
+import { IModalState } from "../models/modal";
 
 const props = defineProps<{
     modalState: IModalState,

@@ -1,13 +1,4 @@
-﻿class Debug {
-
-    static Default = new Debug();
-
-    checkPoint(blockId) {
-        //console.log(`${blockId}`);
-    }
-}
-
-class Utilities {
+﻿class Utilities {
 
     static Default = new Utilities();
 
@@ -143,6 +134,20 @@ class Wait {
     }
 }
 
+class Events {
+    static listen(eventName, handle) {
+        switch (eventName) {
+            case "end":
+                _globals.Ended.connect(function (_, args) {
+                    handle(args);
+                });
+                return;
+            case "":
+                return;
+        }
+    }
+}
+
 
 class Window {
 
@@ -215,8 +220,47 @@ class Trigger {
     isPressed() {
         return _globals.Trigger.IsPressed;
     }
+
     isNotPressed() {
         return !_globals.Trigger.IsPressed;
+    }
+
+    get isPressed() {
+        return _globals.Trigger.IsPressed;
+    }
+
+    get isNotPressed() {
+        return !_globals.Trigger.IsPressed;
+    }
+
+    get isKey() {
+        return _globals.Trigger.IsKeyboard;
+    }
+
+    get isMouse() {
+        return _globals.Trigger.IsMouse;
+    }
+
+    get isKeyOrMouse() {
+        return _globals.Trigger.IsKeyOrMouse;
+    }
+
+    get isController() {
+        return _globals.Trigger.IsController;
+    }
+
+    get asKey() {
+        if (!this.isKeyOrMouse) {
+            throw new Error("キーボード、もしくはマウスがトリガーとして使用されていないため値を取得することができません。");
+        }
+        return _globals.Trigger.Value.ToString();
+    }
+
+    get asController() {
+        if (!this.isController) {
+            throw new Error("コントローラーがトリガーとして使用されていないため値を取得することができません。");
+        }
+        return _globals.Trigger.Value.ToString();
     }
 }
 
@@ -1202,9 +1246,6 @@ function initializeGlobalThis() {
     globalThis.newBounds = Utilities.Default.newBounds;
     globalThis.newPoint = Utilities.Default.newPoint;
     globalThis.newSize = Utilities.Default.newSize;
-
-    // デバッグ
-    globalThis.checkPoint = Debug.Default.checkPoint;
 
     // キーボード
     globalThis.down = Keyboard.Default.down;

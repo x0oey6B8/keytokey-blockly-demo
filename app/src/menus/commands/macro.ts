@@ -1,41 +1,70 @@
 import { host, IRequestResult } from "../../hosts/host";
 import { useAppStore } from "../../stores/appStore";
-import { ICallbackArgs, ICommandTextValidationResult, CommandItem, CommandPaletteOptions, ICommandItem } from "../../models/commandPalette";
+import { ICallbackArgs, ICommandTextValidationResult, CommandItem, CommandPaletteOptions, ICommandItem, Label, Separator } from "../../models/commandPalette";
 import { ICommandTextValidator, useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { useNotificationStore } from "../../stores/notificationStore";
-import { useBlocklyStore } from "../../stores/blocklyStore";
-import { Macro } from "../../hosts/macroManager";
+import { FileTypeToFileNameConverter, IAddFileRequest, IMacroFileSetting, Macro, MacroFile } from "../../hosts/macroManager";
+import { IFileTemplate } from "../../models/fileTemplate";
+import { useEditingMacro } from "../../stores/editingMacro";
+import { useTabStore } from "../../stores/tabStore";
+import { fileTemplateGroups } from "../../definitions/files/fileTemplates";
+import { v4 as uuidv4 } from "uuid"
 
 /*
     マクロのメニューを表示するためのオプション
 */
 
-// MacroMenuCommandPaletteOptions クラスはマクロメニューのコマンドパレットオプションを表します。
 export class MacroMenuCommandPaletteOptions extends CommandPaletteOptions {
-    // コンストラクター。マクロの設定を受け取り、オプションを初期化します。
-    constructor(settings: Macro[], init?: Partial<CommandPaletteOptions>) {
-        super(init); // 親クラスのコンストラクターを呼び出します。
-        this.hint = settings.length < 1 ? "「新しいマクロを作成」からマクロを作成してください" : ""; // ヒントメッセージを設定します。
+    constructor(init?: Partial<CommandPaletteOptions>) {
+        super(init);
+        // this.hint = settings.length < 1 ? "「新規作成」からマクロを作成してください" : "";
+        // this.commandItems = [new DecidedToCreateMacroCommandItem("CreateNew")];
+    }
 
-        // コマンドアイテムを設定（新しいマクロを作成するコマンドアイテムを含む）
-        this.commandItems = [new DecidedToCreateMacroCommandItem("CreateNew")];
+    public static async create() {
+        // マクロの設定取得
+        let macros = await host.macroManager.list();
+        if (!macros) {
+            macros = []
+        }
+
+        // メニューのリスト作成
+        const updateCanShow = () => macros.length > 0;
+        const commandItems: ICommandItem[] = [
+            new Label({ header: "マクロの操作", groupTag: "Macro" }),
+            new Separator({ groupTag: "Macro", canShow: true }),
+            new CreateNewMacroCommandItem(new CreateNewMacroCommandOptions(macros)),
+            new CloneMacroCommandItem(macros),
+            new DeleteMacroCommandItem(macros),
+            new RenameMacroCommandItem(macros),
+            new CategorizeMacroCommandItem(macros),
+            new Label({ header: "マクロの切り替え", groupTag: "ChangeMacro", updateCanShow }),
+            new Separator({ groupTag: "ChangeMacro", updateCanShow }),
+        ];
+
+        // マクロのメニュー作成
+        const macroCommandItems = macros.map(setting => new ChangeCurrentMacroCommandItem(setting));
+        commandItems.push(...macroCommandItems);
+
+        // コマンド表示
+        const options = new MacroMenuCommandPaletteOptions();
+        options.commandItems = commandItems;
+        options.hint = macros.length < 1 ? "「新規作成」からマクロを作成してください" : "";
+        //this.commandItems = [new DecidedToCreateMacroCommandItem("CreateNew")];
+        return options;
     }
 }
-
-
 
 /*
     マクロの切り替え
 */
 
-// ChangeCurrentMacroCommandItem クラスは現在のマクロを切り替えるコマンドアイテムを表します。
 export class ChangeCurrentMacroCommandItem extends CommandItem {
-    groupTag?: string | undefined = "ChangeMacro"; // グループタグを設定
+    groupTag?: string | undefined = "ChangeMacro";
 
-    // コンストラクター。マクロを受け取り、ヘッダーとサブヘッダーを設定します。
     constructor(private macro: Macro) {
         super();
-        this.header = macro.setting.name; // ダイアログのヘッダー
+        this.header = macro.setting.name;
         this.subHeader = this.getLabelName();
     }
 
@@ -43,30 +72,9 @@ export class ChangeCurrentMacroCommandItem extends CommandItem {
         return this.macro.setting.category ? this.macro.setting.category : "ラベルなし"
     }
 
-    private updateSubHeader(commandItem: ICommandItem) {
-        commandItem.subHeader = commandItem.isSelected ? "このマクロに切り替える" : this.getLabelName();
-    }
-
-    onSelected = (commandItem: ICommandItem) => {
-        this.updateSubHeader(commandItem);
-    }
-
-    onUnselected = (commandItem: ICommandItem) => {
-        this.updateSubHeader(commandItem);
-    }
-
-    onMouseEnter = (commandItem: ICommandItem) => {
-        commandItem.subHeader = "このマクロに切り替える";
-    }
-
-    onMouseLeave = (commandItem: ICommandItem) => {
-        this.updateSubHeader(commandItem);
-    }
-
-    // コールバック関数。アプリケーションストアを使用して現在のマクロを切り替えます。
     callback = () => {
-        const appStore = useAppStore(); // アプリケーションストアを取得します。
-        appStore.setNewMacro(this.macro); // 新しいマクロを設定します。
+        const appStore = useAppStore();
+        appStore.setNewMacro(this.macro);
     };
 }
 
@@ -75,80 +83,63 @@ export class ChangeCurrentMacroCommandItem extends CommandItem {
     マクロの作成
 */
 
-// CreateNewMacroCommandItem クラスは新しいマクロを作成するコマンドアイテムを表します。
 export class CreateNewMacroCommandItem extends CommandItem {
-    // ダイアログのヘッダー
     header = "新規作成";
-    // ダイアログのサブヘッダー
     subHeader = "create new";
 
-    // コールバック関数。新しいマクロの作成ダイアログを開きます。
     callback = async (_: ICallbackArgs) => {
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを取得します。
-        commandPalette.open(this.commandOptions); // ダイアログを開きます。
+        const commandPalette = useCommandPaletteStore();
+        commandPalette.open(this.commandOptions);
     };
 
-    // コンストラクター。作成オプションを受け取ります。
     constructor(private commandOptions: CreateNewMacroCommandOptions) {
-        super({ groupTag: "Macro" }); // 親クラスのコンストラクターを呼び出します。
+        super({ groupTag: "Macro" });
     }
 }
 
-// CreateNewMacroCommandOptions クラスは新しいマクロの作成オプションを表します。
 export class CreateNewMacroCommandOptions extends CommandPaletteOptions {
-    // ヒントメッセージ
     hint = "新しく作るマクロの名前（Enterで決定）";
-    // フィルタリングを無効に設定
     filtering = false;
-    // 自動で閉じないように設定
     closeAuto = false;
 
-    // コンストラクター。既存のマクロの配列を受け取ります。
     constructor(macros: Macro[]) {
-        super({}); // 親クラスのコンストラクターを呼び出します。
-
-        // バリデーション用の MacroNameValidator インスタンスを作成
+        super({});
         this.validator = new MacroNameValidator(macros);
-        // コマンドアイテムを設定
         this.commandItems = [new DecidedToCreateMacroCommandItem("CreateNew")];
     }
 }
 
-// MacroCreationType はマクロの作成タイプを表す型です。
-// "CreateNew" は新しいマクロを作成することを示し、"Clone" はマクロの複製を表します。
 export type MacroCreationType = "CreateNew" | "Clone";
 
 
 
-// DecidedToCreateMacroCommandItem クラスはマクロの作成または複製コマンドアイテムを表します。
 export class DecidedToCreateMacroCommandItem extends CommandItem {
-    // ダイアログのヘッダー
     header = "上記の名前に決定する";
-    // ダイアログのサブヘッダー
     subHeader = "Enterかこの項目をクリックしてマクロを作成します";
-    // ソースマクロの名前を初期化
     sourceMacroName: string = "";
 
-    // コンストラクター。マクロ作成タイプを受け取ります。
     constructor(private creationType: MacroCreationType) {
         super();
     }
 
-    // コールバック関数。マクロの作成または複製を行います。
     callback = async (args: ICallbackArgs) => {
         let result: IRequestResult;
 
-        // マクロ作成タイプに応じて処理を分岐
         if (this.creationType === "CreateNew") {
-            // 新しいマクロを作成
-            result = await host.macroManager.create({ macroName: args.text });
+            const template = fileTemplateGroups[0].templates[0];
+            console.log(template);
+            result = await host.macroManager.create({
+                type: "MAIN",
+                macroName: args.text,
+                fileName: FileTypeToFileNameConverter.convert("MAIN"),
+                javascript: template.javascript,
+                json: template.json,
+            });
         } else {
-            // マクロを複製
             result = await host.macroManager.clone({ sourceMacroName: this.sourceMacroName, newMacroName: args.text });
         }
 
         if (result.hasError) {
-            // エラーがある場合、バリデーション結果を設定して処理を中断
             args.setValidationResult({
                 isValid: false,
                 validationMessage: result.errorMessage
@@ -156,34 +147,28 @@ export class DecidedToCreateMacroCommandItem extends CommandItem {
             return;
         }
 
-        // 新しいマクロを取得し、アプリケーションストアに設定
         const macro = await host.macroManager.find({ macroName: args.text });
         const appStore = useAppStore();
         appStore.setNewMacro(macro);
 
         const commandPalette = useCommandPaletteStore();
-        commandPalette.close(); // コマンドパレットを閉じる
+        commandPalette.close();
         return;
     }
 }
 
-// MacroNameValidator クラスはマクロ名のバリデーションを行います。
 export class MacroNameValidator implements ICommandTextValidator {
     constructor(private macros: Macro[]) { }
 
-    // バリデーションを行う validate メソッド
     validate = (text: string) => this.test(text);
 
-    // テキストのバリデーションを行う test メソッド
     async test(text: string): Promise<ICommandTextValidationResult> {
         if (!text) {
-            // テキストが空の場合、バリデーションエラー
             return {
                 isValid: false,
                 validationMessage: ""
             };
         }
-        // マクロ名に無効な文字が含まれているかチェック
         const isValidText = await host.pathUtils.isValidPathChars(text);
         if (!isValidText) {
             return {
@@ -193,7 +178,6 @@ export class MacroNameValidator implements ICommandTextValidator {
         }
 
         if (text.replace(/^[\s　]+$/, "") === "") {
-            // マクロ名が空白文字のみの場合、バリデーションエラー
             return {
                 isValid: false,
                 validationMessage: "マクロの名前を空文字のみにできません"
@@ -201,15 +185,13 @@ export class MacroNameValidator implements ICommandTextValidator {
         }
 
         if (!this.macros) {
-            // this.macros が未定義の場合、バリデーションエラー
             return {
                 isValid: false,
                 validationMessage: "system error: this.macros is undefined."
             };
         }
 
-        // 同じ名前のマクロが既に存在するかチェック
-        const exists = this.macros.some(macro => macro.setting.name === text);
+        const exists = this.macros.some(macro => macro.setting.name.toLowerCase() === text.toLowerCase());
         if (exists) {
             return {
                 isValid: false,
@@ -217,7 +199,6 @@ export class MacroNameValidator implements ICommandTextValidator {
             };
         }
 
-        // バリデーションが成功した場合
         return {
             isValid: true,
             validationMessage: ""
@@ -230,32 +211,25 @@ export class MacroNameValidator implements ICommandTextValidator {
 */
 
 export class CategorizeMacroCommandItem extends CommandItem {
-    // ヘッダーとサブヘッダーを設定します。
-    header = "ラベルを設定"; // ダイアログのヘッダー
-    subHeader = "label"; // ダイアログのサブヘッダー
+    header = "ラベルを設定";
+    subHeader = "label";
 
-    // 表示条件を更新するコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;
 
-    // コンストラクター。マクロの配列を受け取ります。
     constructor(private macros: Macro[]) {
-        super({ groupTag: "Macro" }); // 親クラスのコンストラクターを呼び出します。
+        super({ groupTag: "Macro" });
     }
 
-    // コールバック関数。マクロの複製ダイアログを開くために使用されます。
     callback = () => {
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを取得します。
-        const hint = "ラベルを設定するマクロを選択してください"; // ヒントメッセージ
+        const commandPalette = useCommandPaletteStore();
+        const hint = "ラベルを設定するマクロを選択してください";
 
-        // マクロを操作するコマンドアイテムを作成するためのファクトリ関数とオプションを設定します。
         const factory = (macro: Macro) => new DecidedToManipulateCommandItem(macro, macro => this.categorize(macro));
         const commandOptions = new ManipulateCommandPaletteOptions(this.macros, hint, factory);
 
-        // コマンドパレットを開きます。
         commandPalette.open(commandOptions);
     }
 
-    // マクロの複製を行うプライベートメソッド
     private categorize = (macro: Macro) => {
         MacroCategorizer.categorize(macro);
     };
@@ -263,18 +237,14 @@ export class CategorizeMacroCommandItem extends CommandItem {
 
 
 class MacroCategorizer {
-    static categorize(categorizationTarget: Macro) {
-        // コマンドパレットストアを取得します。
+    static categorize(targetMacro: Macro) {
         const commandPalette = useCommandPaletteStore();
-
-        // 新しいマクロを作成するコマンドアイテムを作成します。
         const commandItem = new CommandItem({
             header: "上記のラベル名に決定する",
             subHeader: "Enterかこの項目をクリックしてラベルを設定します",
             callback: async (args) => {
-                const macroSetting = categorizationTarget.setting;
-                macroSetting.category = args.text;
-                const result = await host.macroManager.updateSetting(macroSetting);
+                targetMacro.setting.category = args.text;
+                const result = await targetMacro.applySetting();
                 if (result.hasError) {
                     args.setValidationResult({
                         isValid: false,
@@ -285,17 +255,14 @@ class MacroCategorizer {
                 commandPalette.close();
             }
         })
-
-        // 新しいマクロの名前を入力するためのダイアログオプションを設定します。
         const options = new CommandPaletteOptions({
-            hint: "マクロに設定するラベル名", // ヒントメッセージ
-            text: categorizationTarget.setting.category,
+            text: targetMacro.setting.category,
+            commandItems: [commandItem],
             closeAuto: false,
             filtering: false,
-            commandItems: [commandItem] // コマンドアイテムを設定
         });
 
-        commandPalette.open(options); // コマンドパレットを開きます。
+        commandPalette.open(options);
     }
 }
 
@@ -304,52 +271,37 @@ class MacroCategorizer {
     マクロの複製
 */
 
-// CloneMacroCommandItem クラスをエクスポートします。これはコマンドアイテムのサブクラスです。
 export class CloneMacroCommandItem extends CommandItem {
-    // ヘッダーとサブヘッダーを設定します。
-    header = "複製"; // ダイアログのヘッダー
-    subHeader = "clone"; // ダイアログのサブヘッダー
+    header = "複製";
+    subHeader = "clone";
 
-    // 表示条件を更新するコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;
 
-    // コンストラクター。マクロの配列を受け取ります。
     constructor(private macros: Macro[]) {
-        super({ groupTag: "Macro" }); // 親クラスのコンストラクターを呼び出します。
+        super({ groupTag: "Macro" });
     }
 
-    // コールバック関数。マクロの複製ダイアログを開くために使用されます。
     callback = () => {
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを取得します。
-        const hint = "複製するマクロを選択してください"; // ヒントメッセージ
+        const commandPalette = useCommandPaletteStore();
+        const hint = "複製するマクロを選択してください";
 
-        // マクロを操作するコマンドアイテムを作成するためのファクトリ関数とオプションを設定します。
         const factory = (macro: Macro) => new DecidedToManipulateCommandItem(macro, macro => this.clone(macro));
         const commandOptions = new ManipulateCommandPaletteOptions(this.macros, hint, factory);
 
-        // コマンドパレットを開きます。
         commandPalette.open(commandOptions);
     }
 
-    // マクロの複製を行うプライベートメソッド
     private clone = (macro: Macro) => {
-        console.log("clone: ", macro.name); // コンソールに複製したマクロの名前を表示します。
-
-        // 新しいマクロを作成するコマンドアイテムを作成します。
         const commandItem = new DecidedToCreateMacroCommandItem("Clone");
         commandItem.sourceMacroName = macro.name;
-
-        // 新しいマクロの名前を入力するためのダイアログオプションを設定します。
         const options = new CommandPaletteOptions({
-            validator: new MacroNameValidator(this.macros), // 名前の妥当性を検証するためのバリデータ
-            hint: "新しく作成するマクロの名前", // ヒントメッセージ
             closeAuto: false,
             filtering: false,
-            commandItems: [commandItem] // コマンドアイテムを設定
+            validator: new MacroNameValidator(this.macros),
+            commandItems: [commandItem]
         });
-
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを取得します。
-        commandPalette.open(options); // コマンドパレットを開きます。
+        const commandPalette = useCommandPaletteStore();
+        commandPalette.open(options);
     };
 }
 
@@ -358,32 +310,26 @@ export class CloneMacroCommandItem extends CommandItem {
     マクロの操作共通コマンド
 */
 
-// DecidedToManipulateCommandItem クラスはマクロの操作に共通のコマンドアイテムを表します。
 export class DecidedToManipulateCommandItem extends CommandItem {
     constructor(macro: Macro, callback: (macro: Macro) => void) {
         super();
 
-        // ヘッダーをマクロの設定名に設定します。
         this.header = macro.setting.name;
 
         if (macro.setting.category) {
             this.subHeader = macro.setting.category;
         }
 
-        // メニューをクリック、Enterを押した際に実行するコールバックの設定
         this.callback = () => callback(macro);
     }
 }
 
-// ManipulateCommandPaletteOptions クラスはマクロの操作コマンドパレットのオプションを表します。
 export class ManipulateCommandPaletteOptions extends CommandPaletteOptions {
     constructor(macros: Macro[], hint: string, factory: (macro: Macro) => ICommandItem) {
         super();
 
-        // ヒントメッセージを設定します。
         this.hint = hint;
 
-        // マクロの配列からコマンドアイテムの配列を生成します。
         this.commandItems = macros.map(macro => factory(macro));
     }
 }
@@ -392,56 +338,54 @@ export class ManipulateCommandPaletteOptions extends CommandPaletteOptions {
     マクロの削除
 */
 
-// DeleteMacroCommandItem クラスはコマンドアイテムのサブクラスで、マクロの削除機能を提供します。
 export class DeleteMacroCommandItem extends CommandItem {
-    // ダイアログのヘッダー
     header = "削除";
-    // ダイアログのサブヘッダー
     subHeader = "delete";
 
-    // 表示条件を更新するためのコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;
 
-    // コンストラクター。マクロの配列を受け取ります。
     constructor(private macros: Macro[]) {
-        super({ groupTag: "Macro" }); // 親クラスのコンストラクターを呼び出します。
+        super({ groupTag: "Macro" });
     }
 
-    // コールバック関数。マクロの削除ダイアログを開くために使用されます。
     callback = () => {
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを取得します。
-        const hint = "削除するマクロを選択してください"; // ヒントメッセージ
+        const commandPalette = useCommandPaletteStore();
+        const hint = "削除するマクロを選択してください";
 
-        // マクロを操作するコマンドアイテムを作成するためのファクトリ関数とオプションを設定します。
         const factory = (macro: Macro) => new DecidedToManipulateCommandItem(macro, macro => this.delete(macro));
         const commandOptions = new ManipulateCommandPaletteOptions(this.macros, hint, factory);
 
-        // コマンドパレットを開きます。
         commandPalette.open(commandOptions);
     }
 
-    // マクロの削除を行うプライベートメソッド
     private delete = async (macro: Macro) => {
         const assignCount = await host.macroManager.getAssignCount({ macroName: macro.name });
-        let questionMessage = `本当に「${macro.name}」を削除しますか？`;
+        let questionMessage = `「${macro.name}」を削除してもよろしいですか？`;
         if (assignCount > 0) {
             questionMessage = `マクロ「${macro.name}」を削除します。\nこのマクロは${assignCount}箇所で割り当てられており、それらすべての割り当ては解除されます。\nよろしいですか？`;
         }
 
-        const result = confirm(questionMessage);
-        if (!result) {
+        if (!confirm(questionMessage)) {
             return;
         }
 
-        await host.macroManager.delete({ macroName: macro.name });
-        const appStore = useAppStore();
-        const hasCleared = appStore.clearCurrentMacroIfItsSameWith(macro);
-        if (hasCleared) {
-            const blocklyStore = useBlocklyStore();
-            blocklyStore.getCurrentWorkspaceSession()?.clearWorkspace({ ask: false, addEntryBlock: false });
-            appStore.openMacroMenu();
-        }
         const toaster = useNotificationStore();
+        const result = await macro.delete();
+        if (result.hasError) {
+            toaster.toastMessage(result.errorMessage, {
+                type: "error",
+                theme: "colored",
+            });
+            return;
+        }
+        const appStore = useAppStore();
+        const editing = useEditingMacro();
+        if (!editing.macro) {
+            return;
+        }
+        if (editing.macro.name === macro.name) {
+            appStore.clear();
+        }
         toaster.toastMessage("削除しました", {
             type: "error",
             theme: "colored",
@@ -454,58 +398,42 @@ export class DeleteMacroCommandItem extends CommandItem {
     マクロの名前変更
 */
 
-// RenameMacroCommandItem クラスはコマンドアイテムのサブクラスで、マクロの名前変更機能を提供します。
 export class RenameMacroCommandItem extends CommandItem {
-    // ダイアログのヘッダー
     header = "名前変更";
-    // ダイアログのサブヘッダー
     subHeader = "rename";
 
-    // 表示条件を更新するためのコールバック関数を設定します。
     updateCanShow = () => this.macros.length > 0;
 
-    // コンストラクター。マクロの配列を受け取ります。
     constructor(private macros: Macro[]) {
-        super({ groupTag: "Macro" }); // 親クラスのコンストラクターを呼び出します。
+        super({ groupTag: "Macro" });
     }
 
-    // コールバック関数。マクロの名前変更ダイアログを開くために使用されます。
     callback = () => {
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを取得します。
-        const hint = "名前を変更するマクロを選択してください"; // ヒントメッセージ
+        const commandPalette = useCommandPaletteStore();
+        const hint = "名前を変更するマクロを選択してください";
 
-        // マクロを操作するコマンドアイテムを作成するためのファクトリ関数とオプションを設定します。
         const factory = (macro: Macro) => new DecidedToManipulateCommandItem(macro, macro => this.rename(macro));
         const commandOptions = new ManipulateCommandPaletteOptions(this.macros, hint, factory);
 
-        // コマンドパレットを開きます。
         commandPalette.open(commandOptions);
     }
 
-    // マクロの名前変更を行うプライベートメソッド
     private rename = (macro: Macro) => {
-        console.log("rename: ", macro.name); // コンソールにマクロの名前を表示します。
-        const commandPalette = useCommandPaletteStore(); // コマンドパレットストアを再度取得します。
+        console.log("rename: ", macro.name);
+        const commandPalette = useCommandPaletteStore();
 
-        // 名前変更ダイアログのオプションを設定します。
         const options = new CommandPaletteOptions({
             closeAuto: false,
             filtering: false,
             hint: "新しい名前",
             text: macro.name,
-            validator: new RenameValidator(macro, this.macros), // 名前の妥当性を検証するためのバリデータ
+            validator: new RenameValidator(macro, this.macros),
             commandItems: [new CommandItem({
                 header: "上記の名前に変更する",
                 subHeader: "Enterかこの項目をクリックしてマクロの名前を変更します。",
                 callback: async (args) => {
                     const newMacroName = args.text;
-
-                    // マクロの名前を変更するための処理を実行し、結果を処理します。
-                    const result = await host.macroManager.rename({
-                        sourceMacroName: macro.name,
-                        newMacroName: args.text
-                    });
-
+                    const result = await macro.renameTo(newMacroName);
                     if (result.hasError) {
                         args.setValidationResult({
                             isValid: false,
@@ -514,42 +442,95 @@ export class RenameMacroCommandItem extends CommandItem {
                         return;
                     }
 
-                    // コマンドパレットを閉じます。
                     const commandPalette = useCommandPaletteStore();
                     commandPalette.close();
 
-                    // アプリケーションストアを使用して、新しいマクロを設定します。
-                    const appStore = useAppStore();
-                    const newMacro = await host.macroManager.find({ macroName: newMacroName });
-                    if (appStore.currentMacro?.name === macro.name) {
+                    const editing = useEditingMacro();
+                    if (editing.macro?.name === macro.name) {
+                        const appStore = useAppStore();
+                        const newMacro = await host.macroManager.find({ macroName: newMacroName });
                         appStore.setNewMacro(newMacro);
                     }
                 }
             })]
         });
 
-        // コマンドパレットを開きます。
         commandPalette.open(options);
     };
 }
 
 class RenameValidator extends MacroNameValidator {
-    // コンストラクター。マクロとマクロの配列を受け取ります。
     constructor(private macro: Macro, macros: Macro[]) {
-        super(macros); // 親クラスのコンストラクターを呼び出します。
+        super(macros);
     }
 
-    // バリデーションを行う validate メソッド
     validate = async (text: string) => {
-        // 入力されたテキストがマクロの名前と一致する場合
-        if (text === this.macro.name) {
+        if (text.toLowerCase() === this.macro.name.toLowerCase()) {
             return {
-                isValid: false, // バリデーションエラー
-                validationMessage: "" // エラーメッセージは空
+                isValid: false,
+                validationMessage: ""
             };
         } else {
-            // 親クラスのテストメソッドを呼び出してバリデーションを実行
             return super.test(text);
         }
     };
+}
+
+export class AddFileCommandPaletteOptions extends CommandPaletteOptions {
+    constructor() {
+        super();
+        this.hint = "追加するイベントを選択してください";
+        for (const group of fileTemplateGroups) {
+            if (group.name === "MAIN") {
+                continue;
+            }
+            this.commandItems.push(new Label({ header: group.name, groupTag: group.name }));
+            this.commandItems.push(new Separator({ groupTag: group.name }));
+            for (const template of group.templates) {
+                this.commandItems.push(new CommandItem({
+                    header: template.header,
+                    subHeader: template.subHeader,
+                    groupTag: group.name,
+                    callback: () => this.add(template)
+                }));
+            }
+        }
+    }
+
+    add = async (template: IFileTemplate) => {
+
+        const tabStore = useTabStore();
+        const toaster = useNotificationStore();
+        const editing = useEditingMacro();
+        if (!editing.macro) {
+            return;
+        }
+
+        const macro = editing.macro;
+        const exists = macro.fileExists(template.type);
+        if (exists) {
+            toaster.toastMessage("イベントは既に追加されています。", { type: "error", theme: "colored" });
+            return;
+        }
+        const request: IAddFileRequest = {
+            macroName: macro.setting.name,
+            fileName: FileTypeToFileNameConverter.convert(template.type),
+            type: template.type,
+            javascript: template.javascript,
+            json: template.json,
+        };
+        const result = await host.macroManager.addFile(request);
+        if (result.hasError) {
+            toaster.toastMessage(result.errorMessage, { type: "error", theme: "colored", });
+            return;
+        }
+        const file: IMacroFileSetting = {
+            id: uuidv4(),
+            name: request.fileName,
+            type: request.type
+        };
+        macro.setting.files.push(file)
+        macro.applySetting();
+        tabStore.addTab(new MacroFile(macro, file));
+    }
 }

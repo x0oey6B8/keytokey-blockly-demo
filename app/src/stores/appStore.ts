@@ -1,148 +1,53 @@
 import { defineStore } from "pinia";
 import { host } from "../hosts/host";
 import * as MacroMenus from "../menus/commands/macro"
-import * as FindMenus from "../menus/dropdown/find"
-import * as WorkspaceMenus from "../menus/dropdown/workspace"
-import * as CodeGenerationMenus from "../menus/dropdown/codeGeneration"
-import { ICommandItem, Label, Separator } from "../models/commandPalette";
-import { ITab } from "../models/tab";
-import { DropDownCommandPaletteOptions, DropDownMenuToCommandItems, IAppDropDownMenu } from "../models/dropdown";
+import { DropDownCommandPaletteOptions, DropDownMenuToCommandItems } from "../models/dropdown";
 import { useCommandPaletteStore } from "./commandPaletteStore";
 import { ref } from "vue";
 import { ISourceCode, ISourceCodeWriter, useBlocklyStore } from "./blocklyStore";
 import { useEditorStore } from "./editorStore";
-import { Macro, MacroFile } from "../hosts/macroManager";
+import { Macro } from "../hosts/macroManager";
+import { dropdownMenus } from "../menus/dropdown/dropdown";
+import { useTabStore } from "./tabStore";
+import { useEditingMacro } from "./editingMacro";
+import { MacroMenuCommandPaletteOptions } from "../menus/commands/macro";
+import { resize } from "../helpers/ui/resize";
+import { ModalStateFactory } from "../models/modal";
 
 export const useAppStore = defineStore("AppStore", () => {
-
-    const currentMacro = ref<Macro>();
-    const currentMacroFile = ref<MacroFile>();
-    const tabs = ref<ITab[]>([]);
     const implementation = ref("");
-
+    const editingMacro = useEditingMacro();
     const blocklyStore = useBlocklyStore();
     const commandStore = useCommandPaletteStore();
-    const appDropDownMenus: IAppDropDownMenu[] = [
-        {
-            header: "探す",
-            menuItems: [
-                new FindMenus.FindEntryProcedureBlockMenuItem(),
-                new FindMenus.FindBlockByIdMenuItem(),
-                new FindMenus.FindProcedureBlockFromListMenuItem(),
-                new FindMenus.ReplayMenuItem(),
-            ]
-        },
-        {
-            header: "ワークスペース",
-            menuItems: [
-                new WorkspaceMenus.SetEntryBlockDefaultPosition(),
-                new WorkspaceMenus.SwitchToolboxPositionMenuItem(),
-                // new WorkspaceMenus.MakeWorkspaceReadOnlyMenuItem(),
-                // new WorkspaceMenus.MakeWorkspaceEditableMenuItem(),
-                new WorkspaceMenus.CopyWorkspaceAsXmlMenuItem(),
-                new WorkspaceMenus.CopyWorkspaceAsJsonMenuItem(),
-                new WorkspaceMenus.ClearWorkspaceMenuItem(),
-                new WorkspaceMenus.ClearSpecificBlockByIdMenuItem(),
-            ]
-        },
-        {
-            header: "ツール",
-            menuItems: [
-                {
-                    header: "Not Implemented",
-                    subHeader: "tool",
-                    condition: () => true,
-                    clicked: async () => {
-                        alert(await host.profile.getName());
-                    }
-                }
-            ]
-        },
-        {
-            header: "デバッグ",
-            menuItems: [
-                {
-                    header: "ブロックからコードを再生成",
-                    subHeader: "debug",
-                    condition: () => true,
-                    clicked: () => {
-                        openDropdownMenus()
-                    }
-                },
-                {
-                    header: "デバッグを開始",
-                    subHeader: "debug",
-                    condition: () => true,
-                    clicked: () => {
-                        openDropdownMenus()
-                    }
-                }
-            ]
-        },
-        {
-            header: "コードの確認",
-            menuItems: [
-                new CodeGenerationMenus.CreateCodeMenuItem(),
-                new CodeGenerationMenus.CreateCodeNoCheckPointsMenuItem(),
-                new CodeGenerationMenus.CreateDecodedCodeNoCheckPointsMenuItem(),
-            ]
-        },
-        {
-            header: "ヘルプ",
-            menuItems: [
-                {
-                    header: "使用方法",
-                    subHeader: "help",
-                    condition: () => true,
-                    clicked: () => {
-                        openDropdownMenus()
-                    }
-                }
-            ]
-        },
-    ];
-
-    if (import.meta.env.DEV) {
-        appDropDownMenus.push({
-            header: "開発用",
-            menuItems: [
-                {
-                    header: "テスト",
-                    subHeader: "dev",
-                    condition: () => true,
-                    clicked: async () => {
-                        console.log(await host.templateMatchingSettings.listAll());
-
-                    },
-                }
-            ]
-        })
-    }
+    const editorStore = useEditorStore();
+    const tabStore = useTabStore();
+    const appDropDownMenus = dropdownMenus;
+    const shortcutPage = ModalStateFactory.create();
 
     return {
         appDropDownMenus,
-        currentMacro,
-        currentMacroFile,
-        tabs,
         implementation,
+        shortcutPage,
         openMacroMenu,
         openDropdownMenus,
+        openMenuToAddFile,
         setNewMacro,
-        clearCurrentMacroIfItsSameWith,
+        loadBlocks,
         clear,
         readImplementationFile
     };
 
     function readImplementationFile() {
         try {
-            const url = import.meta.env.DEV ? "/implementation.js" : "/keytokey-blockly-demo/root/implementation.js";
+            const url = import.meta.env.BASE_URL + "implementation.js";
+            console.log(url);
             return fetch(url)
                 .then(async (response) => {
                     if (response.ok) {
                         implementation.value = await response.text();
                         host.macroManager.setImplementation({
                             code: implementation.value
-                        })
+                        });
                     }
                 })
                 .catch(() => "");
@@ -156,98 +61,53 @@ export const useAppStore = defineStore("AppStore", () => {
         commandStore.open(commandPaletteOptions);
     }
 
-    function clearCurrentMacroIfItsSameWith(macro: Macro): boolean {
-        if (currentMacro.value?.name === macro.name) {
-            clearCurrentMacro()
-            return true;
-        }
-        return false;
+    async function openMacroMenu() {
+        const options = await MacroMenuCommandPaletteOptions.create();
+        commandStore.open(options);
     }
 
-    function clearCurrentMacro() {
-        currentMacro.value = undefined;
-        currentMacroFile.value = undefined;
-        tabs.value.length = 0;
+    function openMenuToAddFile() {
+        commandStore.open(new MacroMenus.AddFileCommandPaletteOptions);
+    }
+
+    function clear() {
+        editorStore.modalState.isShowing = false;
+        blocklyStore.getCurrentWorkspaceSession()?.clearWorkspace({ ask: false });
+        editingMacro.clear();
+        tabStore.clear();
+        openMacroMenu()
     }
 
     async function setNewMacro(macro: Macro) {
-        currentMacro.value = undefined;
-        currentMacroFile.value = undefined;
-
         try {
-            currentMacro.value = macro;
-            tabs.value.length = 0;
-            tabs.value.push(...[
-                {
-                    id: crypto.randomUUID(),
-                    name: macro.setting.name,
-                    isActive: true,
-                    isEnabled: true
-                },
-                // {
-                //     id: crypto.randomUUID(),
-                //     name: "設定",
-                //     isActive: false,
-                //     isEnabled: false
-                // }
-            ]);
-            const session = blocklyStore.getCurrentWorkspaceSession();
-            if (session) {
-                session.canWriteToFile = false;
-                currentMacroFile.value = macro.listFiles()[0];
-                const content = await currentMacroFile.value.read();
-                try {
-                    session.setState(content.json);
-                    session.canWriteToFile = true;
-                } catch (error) {
-                    console.log("エラー:", error);
-                    console.log("ブロックJSON:", content.json);
-                    alert("読み込みエラーが発生しました。\n詳細はダイアログを閉じたあとDevToolsのコンソールを見てください（F12で表示）");
-                }
+            editingMacro.setMacro(macro);
+            if (editingMacro.file) {
+                editingMacro.file.canWrite = false;
             }
+            tabStore.refreshTabs();
+            resize();
         } catch (error) {
             alert(error);
         }
     }
 
-    async function openMacroMenu() {
-        // マクロの設定取得
-        let macros = await host.macroManager.list();
-        if (!macros) {
-            macros = []
+    async function loadBlocks() {
+        if (!editingMacro.file) {
+            return;
         }
-
-        // メニューのリスト作成
-        const updateCanShow = () => macros.length > 0;
-        const commandItems: ICommandItem[] = [
-            new Label({ header: "マクロの操作", groupTag: "Macro" }),
-            new Separator({ groupTag: "Macro", canShow: true }),
-            new MacroMenus.CreateNewMacroCommandItem(new MacroMenus.CreateNewMacroCommandOptions(macros)),
-            new MacroMenus.CloneMacroCommandItem(macros),
-            new MacroMenus.DeleteMacroCommandItem(macros),
-            new MacroMenus.RenameMacroCommandItem(macros),
-            new MacroMenus.CategorizeMacroCommandItem(macros),
-            new Label({ header: "マクロの切り替え", groupTag: "ChangeMacro", updateCanShow }),
-            new Separator({ groupTag: "ChangeMacro", updateCanShow }),
-        ];
-
-        // マクロのメニュー作成
-        const macroCommandItems = macros.map(setting => new MacroMenus.ChangeCurrentMacroCommandItem(setting));
-        commandItems.push(...macroCommandItems);
-
-        // コマンド表示
-        const macroMenuCommandOptions = new MacroMenus.MacroMenuCommandPaletteOptions(macros);
-        macroMenuCommandOptions.commandItems = commandItems;
-        commandStore.open(macroMenuCommandOptions);
-    }
-
-    function clear() {
-        const editorStore = useEditorStore();
-        editorStore.modalState.isShowing = false;
-        clearCurrentMacro();
-        const blockly = useBlocklyStore();
-        blockly.getCurrentWorkspaceSession()?.clearWorkspace({ ask: false, addEntryBlock: false });
-        openMacroMenu()
+        const session = blocklyStore.getCurrentWorkspaceSession();
+        if (session) {
+            try {
+                editingMacro.file.canWrite = false;
+                const content = await editingMacro.file.read();
+                session.setState(content.json);
+                editingMacro.file.canWrite = true;
+            } catch (error) {
+                console.log("エラー:", error);
+                console.log(editingMacro.file, editingMacro.file);
+                alert("読み込みエラーが発生しました。\n詳細はダイアログを閉じたあとDevToolsのコンソールを見てください（F12で表示）");
+            }
+        }
     }
 })
 
@@ -256,9 +116,9 @@ export class SourceCodeWriter implements ISourceCodeWriter {
     static Default: SourceCodeWriter = new SourceCodeWriter();
 
     write(sourceCode: ISourceCode): void {
-        const app = useAppStore();
+        const editing = useEditingMacro();
         const json = sourceCode.json;
         const javascript = sourceCode.javascript;
-        app.currentMacroFile?.write(json, javascript);
+        editing.file?.write(json, javascript);
     }
 }

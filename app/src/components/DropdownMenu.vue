@@ -57,6 +57,11 @@ function clicked(item: IDropDownMenuItem) {
     isMenuOpen.value = false;
 }
 
+function canVisible(item: IDropDownMenuItem): boolean {
+    return !item.canVisible || item.canVisible();
+}
+
+
 export interface Props {
     items: IDropDownMenuItem[]
 }
@@ -71,12 +76,14 @@ export interface Props {
             <ChevronDown class="svg"></ChevronDown>
         </button>
         <div class="dropdown-content" v-if="isMenuOpen" ref="dropdownContent">
+            <div v-for="item in items">
             <a 
-            v-for="item in items"
+            v-if="canVisible(item)"
             @click="clicked(item)" 
             :class="{ 'disabled-link': !item.condition() }">
                 {{ item.header }}
             </a>
+            </div>
         </div>
     </div>
 </template>

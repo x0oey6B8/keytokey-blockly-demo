@@ -52,20 +52,6 @@ export function defineInputBlocks() {
         }
     };
 
-
-
-    Blockly.Blocks["trigger_is_pressed"] = {
-        init: function () {
-            this.appendDummyInput().appendField("トリガーが")
-                .appendField(new Blockly.FieldDropdown([["押されてる", "PRESSED"], ["離されてる", "RELEASED"]]), "DROPDOWN")
-            this.setOutput(true, "Boolean");
-            this.setColour(BlockColors.Logic);
-            this.setTooltip("トリガーの入力状態を取得します。");
-            this.setHelpUrl("");
-        },
-    };
-
-
     Blockly.Blocks['down_up'] = {
         init: function () {
             this.appendValueInput("KEY")

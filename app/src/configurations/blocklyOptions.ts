@@ -59,15 +59,11 @@ function getToolBoxXml(): string {
     <category name="値" colour="250">
 
         <label text="キーボード／マウス"></label>
-        <button text="値を検索して追加" callbackKey="addKeyValue"></button>
-        <button text="値をキー／マウス入力で追加" callbackKey="addKeyValue"></button>
         <block type="keys">
             <field name="VALUE">A</field>
         </block>
         
         <label text="コントローラーのボタンやスティック"></label>
-        <button text="値を検索して追加" callbackKey="addKeyValue"></button>
-        <button text="値をキー／マウス入力で追加" callbackKey="addKeyValue"></button>
         <block type="controller_buttons">
             <field name="VALUE">A</field>
         </block>
@@ -153,6 +149,9 @@ function getToolBoxXml(): string {
     <category name="変数（KeyToKey）" categorystyle="variable_category">
     </category>
 
+    <category name="イベント関連" categorystyle="variable_category">
+        <block type="event_macro_ended"></block>
+    </category>
 
     <category name="関数" categorystyle="procedure_category" custom="PROCEDURE"></category>
 
@@ -508,8 +507,18 @@ function getToolBoxXml(): string {
 
 
     <category name="トリガー">
-        <label text="マクロの実行トリガー"></label>
+        <label text="トリガーの状態取得"></label>
         <block type="trigger_is_pressed"></block>
+
+        <label text="トリガーの値を取得"></label>
+        <block type="trigger_as_key"></block>
+        <block type="trigger_as_controller"></block>
+
+        <label text="トリガーの種類取得"></label>
+        <block type="trigger_is_keyboard"></block>
+        <block type="trigger_is_mouse"></block>
+        <block type="trigger_is_keyboard_or_mouse"></block>
+        <block type="trigger_is_controller"></block>
 
         <label text="テンプレート"></label>
         <label text="トリガーが押されている間ループ"></label>
@@ -1565,6 +1574,13 @@ function getToolBoxXml(): string {
  
     <category name="コンソール">
         <block type="console_log"></block>
+        <block xmlns="https://developers.google.com/blockly/xml" type="console_log">
+            <value name="VALUE">
+                <block type="text">
+                    <field name="TEXT">コンソールに出力したいテキスト</field>
+                </block>
+            </value>
+        </block>
         <block type="console_clear"></block>
     </category>
 

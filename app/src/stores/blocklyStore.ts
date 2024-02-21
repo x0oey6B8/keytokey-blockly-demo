@@ -8,7 +8,6 @@ import { defineBlocks } from "../definitions/blocks/defineBlocks";
 import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
 import { overwriteMessages } from "../definitions/message/overwrite"
-import { useAppStore } from "./appStore";
 import { defineTestCodeGenerator } from "../definitions/generators/defineCodeGenerator";
 import { definedCodeGenerators } from "../definitions/generators/codeGenerator";
 //import formatXml from "xml-formatter"
@@ -53,21 +52,21 @@ class WorkspaceSession {
     workspaceSvg: WorkspaceSvg
     isMainWorkspace: boolean;
     javascriptGenerator: any;
-    canWriteToFile: boolean = false;
 
     constructor(container: HTMLElement, isMainWorkspace: boolean, javascriptGenerator: any, private sourceCodeWriter: ISourceCodeWriter) {
         this.javascriptGenerator = javascriptGenerator;
         this.isMainWorkspace = isMainWorkspace;
         this.workspaceSvg = Blockly.inject(container, options);
         this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
-        this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
+        // this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
         this.workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
         this.workspaceSvg.addChangeListener((e) => {
-            if (e.recordUndo && this.canWriteToFile) {
-                const json = this.getState();
-                const javascript = this.createCode(StatementPrefix.CHECK_POINT);
-                this.sourceCodeWriter.write({ json, javascript });
-            }
+            //if (e.recordUndo) {
+            console.log(e);
+            const json = this.getState();
+            const javascript = this.createCode(StatementPrefix.CHECK_POINT);
+            this.sourceCodeWriter.write({ json, javascript });
+            //}
         });
     }
 
@@ -136,10 +135,7 @@ class WorkspaceSession {
         Blockly.svgResize(this.workspaceSvg as Blockly.WorkspaceSvg);
     }
 
-    clearWorkspace(options: IWorkspaceClearOptions = {
-        ask: true,
-        addEntryBlock: true
-    }) {
+    clearWorkspace(options: IWorkspaceClearOptions = { ask: true, }) {
         if (options.ask) {
             const result = confirm("ワークスペースの内容をリセットします。\nよろしいですか？");
             if (result) {
@@ -147,9 +143,6 @@ class WorkspaceSession {
             }
         } else {
             this.workspaceSvg.clear();
-        }
-        if (options.addEntryBlock) {
-            this.addEntryProcedureBlock();
         }
     }
 
@@ -274,13 +267,6 @@ class WorkspaceSession {
         return generatedCode;
     }
 
-    replacePlaceHolderToId(input: string): string {
-        const appStore = useAppStore();
-        return input
-            .split("/*MACRO_ID_PLACE_HOLDER*/").join(`'${appStore.currentMacro?.setting.id}'`)
-            .split("/*FILE_ID_PLACE_HOLDER*/").join(`'${appStore.currentMacroFile?.fileSetting?.id}'`)
-    }
-
     createDecodedCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
         const code = this.createCode(prefix);
         const decodedCode = this.decode(code);
@@ -312,24 +298,6 @@ class WorkspaceSession {
         return anyEntryBlocks.length > 0 ? anyEntryBlocks[0] : null;
     }
 
-    addEntryProcedureBlock() {
-        const entryBlock = this.getEntryProcedureBlock();
-        if (!entryBlock) {
-            const entryBlockXml = `
-            <xml>
-                <block type="procedures_defnoreturn" deletable="false">
-                    <field name="NAME" editable="false">ここから実行</field>
-                </block>
-            </xml>
-            `
-            this.pasteBlock(entryBlockXml);
-            const entryBlock = this.getEntryProcedureBlock();
-            if (entryBlock) {
-                this.moveTo(entryBlock, 16, -17);
-            }
-        }
-    }
-
     getState() {
         const workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
         if (!workspace) {
@@ -343,16 +311,16 @@ class WorkspaceSession {
         const workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
         if (workspace) {
             const state = JSON.parse(json);
+            Blockly.Events.disable();
             Blockly.serialization.workspaces.load(state, workspace);
-            this.addEntryProcedureBlock();
             this.setInitialScrollPosition();
+            Blockly.Events.enable();
         }
     }
 }
 
 export interface IWorkspaceClearOptions {
     ask: boolean,
-    addEntryBlock: boolean,
 }
 
 export interface ISourceCodeWriter {
