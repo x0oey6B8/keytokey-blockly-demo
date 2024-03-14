@@ -1,12 +1,16 @@
 import { IHistory, IHistorySession } from "../../hosts/debug";
 import { CommandItem, CommandPaletteOptions } from "../../models/commandPalette";
 import { useBlocklyStore } from "../../stores/blocklyStore";
-import { wait } from "../../utilities/wait";
+import { useReplayStore } from "../../stores/replayStore";
 
 export class SessionSelectionCommandOptions extends CommandPaletteOptions {
     constructor(history: IHistory) {
         super();
-        this.commandItems = history.sessions.reverse().map(session => new SessionSelectionCommandItem(session));
+        this.commandItems = history
+            .sessions
+            .filter(session => session.loggedBlockIds.length > 0)
+            .reverse()
+            .map(session => new SessionSelectionCommandItem(session));
         this.hint = "再生したい履歴を選択してください";
     }
 }
@@ -27,13 +31,17 @@ class SessionSelectionCommandItem extends CommandItem {
             const blocklyStore = useBlocklyStore();
             const workspaceSession = blocklyStore.getCurrentWorkspaceSession();
             if (workspaceSession) {
-                for (const id of session.loggedBlockIds.reverse()) {
-                    const block = workspaceSession.workspaceSvg.getBlockById(id);
-                    if (block) {
-                        workspaceSession.centerTo(block);
-                    }
-                    await wait(750);
-                }
+                const ids = session.loggedBlockIds.reverse();
+                const replayStore = useReplayStore();
+                replayStore.beginReplayMode(ids);
+
+                // for (const id of session.loggedBlockIds.reverse()) {
+                //     const block = workspaceSession.workspaceSvg.getBlockById(id);
+                //     if (block) {
+                //         workspaceSession.centerTo(block);
+                //     }
+                //     await wait(750);
+                // }
             }
         }
     }

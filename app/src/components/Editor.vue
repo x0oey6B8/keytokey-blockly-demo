@@ -60,7 +60,7 @@ onMounted(async () => {
         resolve(null);
     }));
 
-    const container = document.getElementById('container') as HTMLElement;
+    const container = document.getElementById('editor') as HTMLElement;
     const editor = monaco.editor.create(container, {
         model: monaco.editor.createModel(store.textValue, store.language),
         language: store.language,
@@ -86,15 +86,9 @@ onMounted(async () => {
             verticalSliderSize: 0,
             verticalScrollbarSize: 0,
             verticalHasArrows: false,
-
         },
         theme: "custom-theme",
     })
-
-    // @ts-ignore
-    editor.onDidChangeConfiguration(e => {
-        //console.log(e.hasChanged);
-    });
 
     editor.onDidChangeModelContent(() => {
         const newValue = editor.getValue();
@@ -106,21 +100,24 @@ onMounted(async () => {
     };
 
     remeasureFontsWhenItsReady();
-    //console.log((editor as any)._themeService._theme);
-    
+
+    const highlights = store.getHighlights();
+    if (highlights.length > 0) {
+        editor.createDecorationsCollection(highlights);
+    }
 })
 </script>
 
 <template>
-    <div class="background">
-        <div class="sub-background" :class="{ mtkf: store.willMakeInvalidIdentifierTextWhite }">
-            <div id="container" style="width: 99%; height: 99%; margin: auto;"></div>
+    <div class="editor-entire">
+        <div class="editor-container" :class="{ mtkf: store.willMakeInvalidIdentifierTextWhite }">
+            <div id="editor" style="width: 99%; height: 99%; margin: auto;"></div>
         </div>
     </div>
 </template>
 
 <style>
-.background {
+.editor-entire {
     border-radius: 5px;
     padding: 5px;
     width: 100%;
@@ -131,7 +128,7 @@ onMounted(async () => {
     justify-content: center;
 }
 
-.sub-background {
+.editor-container {
     background-color: #212121;
     border-radius: 5px;
     width: 100%;
@@ -145,4 +142,11 @@ onMounted(async () => {
     color: #bdbebe !important;
 }
 
+.mtk12 {
+    color: #bdbebe !important;
+}
+
+.editor-highlight-line {
+    background: rgba(255, 255, 0, 0.1) !important;
+}
 </style>

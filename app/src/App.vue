@@ -3,8 +3,12 @@ import ModalEditor from "./components/ModalEditor.vue";
 import ModalMacroSettings from "./components/ModalMacroSettings.vue";
 import ModalCommandPalette from "./components/ModalCommandPalette.vue";
 import DropdownMenu from "./components/DropdownMenu.vue";
-import CloseableTab from "./components/CloseableTab.vue";
-import ShortcutGuide from "./components/ShortcutGuide.vue";
+import Tab from "./components/Tab.vue";
+import ModalShortcutGuide from "./components/ModalShortcutGuide.vue";
+import ModalTabSwitcher from "./components/ModalTabSwitcher.vue";
+import ModalParameterEditor from "./components/ModalParameterEditor.vue";
+import ReplayMenu from "./components/ReplayMenu.vue";
+import ReplayInfo from "./components/ReplayInfo.vue";
 import { onMounted, onUpdated, ref, watch } from "vue";
 import { SourceCodeWriter, useAppStore } from "./stores/appStore";
 import { useBlocklyStore } from "./stores/blocklyStore";
@@ -12,19 +16,22 @@ import { useEditorStore } from "./stores/editorStore";
 import { useCommandPaletteStore } from "./stores/commandPaletteStore";
 import { useMagicKeys } from "@vueuse/core";
 import { useSortable } from "@vueuse/integrations/useSortable";
-import { useMacroSettingsStore } from "./stores/useMacroSettingsStore";
 import { useQuasar } from "quasar";
 import { useTabStore } from "./stores/tabStore";
 import { useEditingMacro } from "./stores/editingMacro";
 import { resize } from "./helpers/ui/resize"
+import { useTabSwitcherStore } from "./stores/tabSwitcherStore";
+import { useReplayStore } from "./stores/replayStore";
+import { StatementPrefix } from "./definitions/generators/defineGenerator";
 
 const appStore = useAppStore();
 const editing = useEditingMacro();
 const tabStore = useTabStore();
+const tabSwitcher = useTabSwitcherStore();
 const blockly = useBlocklyStore();
 const editor = useEditorStore();
+const replayStore = useReplayStore();
 const commandPalette = useCommandPaletteStore();
-const macroSettingsStore = useMacroSettingsStore();
 const quaser = useQuasar();
 quaser.dark.set(true);
 
@@ -38,17 +45,40 @@ useSortable(tabs, tabStore.items, {
 useMagicKeys({
     passive: false,
     onEventFired(e) {
-        if (e.ctrlKey && e.key === 'p' && e.type === "keydown") {
-            appStore.openDropdownMenus();
-            e.preventDefault();
+        if (replayStore.isReplaying) {
+            return;
         }
-        else if (e.ctrlKey && e.key === 'm' && e.type === "keydown"){
-            appStore.openMacroMenu();
-            e.preventDefault();
+
+        if (e.type === "keyup") {
+            if (e.key === "Control") {
+                if (tabSwitcher.modal.isShowing) {
+                    tabSwitcher.changeToCurrentIndexTab();
+                    return;
+                }
+            }
         }
-        else if (e.ctrlKey && e.key === 'Tab' && e.type === "keydown") {
-            tabStore.selectNextTab();
-            e.preventDefault();
+
+        if (e.type === "keydown") {
+            if (e.ctrlKey) {
+                switch (e.key) {
+                    case "Tab":
+                        tabSwitcher.oepnOrIncrement();
+                        e.preventDefault();
+                        break;
+                    case "p":
+                        appStore.openDropdownMenus();
+                        e.preventDefault();
+                        break;
+                    case "m":
+                        appStore.openMacroMenu();
+                        e.preventDefault();
+                        break;
+                    case "d":
+                        blockly.getCurrentWorkspaceSession()?.cloneSelectedBlock();
+                        e.preventDefault();
+                        break;
+                }
+            }
         }
     }
 });
@@ -57,17 +87,47 @@ watch(tabStore.items, () => {
     resize();
 });
 
+
 onMounted(async () => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
-    blockly.registerNewWorkspaceSession(container, SourceCodeWriter.Default);
+    blockly.registerNewWorkspaceSession(container, async (event, session) => {
+        console.log("[event]", event);
+
+        // @ts-ignore
+        if (event.type === "bubble_open" && !event.isOpen) {
+            if (editing.macro?.hasParameterChanged) {
+                console.log("check assigns!");
+            }
+        }
+
+        if (event.isUiEvent) {
+            return;
+        }
+
+        const macro = editing.macro;
+        if (!macro) {
+            return;
+        }
+
+        const parameters = session.getParametersOfEntryBlock();
+        macro.setParameters(parameters);
+
+        const logger = editing.macro?.setting?.debug?.logger;
+        if (logger) {
+            const prefix = logger.enabled ? StatementPrefix.CHECK_POINT : StatementPrefix.NONE;
+            const javascript = session.createCode(prefix);
+            const json = session.getState();
+            SourceCodeWriter.Default.write({ javascript, json });
+        }
+    });
     window.addEventListener("resize", resize);
     resize();
     await appStore.readImplementationFile();
     appStore.openMacroMenu();
-    //blockly.getCurrentWorkspaceSession()?.setInitialScrollPosition();
 });
 
 onUpdated(() => {
+    blockly.getCurrentWorkspaceSession()?.resizeWorkspaceSvg();
     resize();
 });
 </script>
@@ -75,78 +135,79 @@ onUpdated(() => {
 <template>
     <div class="columns">
         <!-- ワークスペースの上に表示するコンテンツ -->
-        <div id="first-row" class="row first-row">
-            <!-- タブとタブ横のボタンを表示するコンテンツ -->
-            <div id="first-row-left" class="col flex no-wrap content-start v-touch-pan.mouse.horizontal">
-                <div class="flex no-wrap">
-                    <q-tabs
-                        id="tabs"
-                        draggable
-                        outside-arrows
-                        v-model="tabStore.selectedTab" 
-                        indicator-color="green" 
-                        class="tabs text-white full-height">
-                        <!-- マクロが選択されてないときに表示するタブ -->
-                        <q-tab class="tab" name="no-macro-selected" label="マクロが選択されていません" no-caps v-if="!editing.hasMacro()">
-                            <q-tooltip>右側にある「マクロ一覧」からマクロを選択してください</q-tooltip>
-                        </q-tab>
-                        <!-- タブ -->
-                        <div ref="tabs" class="flex no-wrap">
-                            <CloseableTab 
-                                v-for="tab in tabStore.items" 
-                                :key="tab.id" 
-                                :id="tab.id"
-                                :header="tab.header"
-                                :icon-name="tab.iconName"
-                                :icon-color="tab.iconColor"
-                                :can-close-button-show="tab.canCloseButtonShow"
-                                :is-active="tabStore.selectedTab === tab.id"
-                                @close="tabStore.closeTab(tab)">
-                            </CloseableTab>
+        <div id="top-row" style="height: 35px;">
+            <div class="absolute-top-left full-width">
+                <div class="row">
+                    <!-- タブとタブ横のボタンを表示するコンテンツ -->
+                    <div class="col flex no-wrap">
+                        <div class="flex no-wrap">
+                            <q-tabs
+                                id="tabs"
+                                draggable
+                                outside-arrows
+                                v-model="tabStore.selectedTab" 
+                                indicator-color="green" 
+                                class="tabs text-white full-height">
+                                <!-- マクロが選択されてないときに表示するタブ -->
+                                <q-tab class="tab" name="no-macro-selected" label="マクロが選択されていません" no-caps v-if="!editing.hasMacro()">
+                                    <q-tooltip>右側にある「マクロ一覧」からマクロを選択してください</q-tooltip>
+                                </q-tab>
+                                <!-- タブ -->
+                                <div ref="tabs" class="flex no-wrap">
+                                    <Tab 
+                                        v-for="tab in tabStore.items" 
+                                        :key="tab.id" 
+                                        :id="tab.id"
+                                        :header="tab.header"
+                                        :icon-name="tab.iconName"
+                                        :icon-color="tab.iconColor"
+                                        :can-close-button-show="tab.canCloseButtonShow"
+                                        :is-active="tabStore.selectedTab === tab.id"
+                                        @close="tabStore.closeTab(tab)">
+                                    </Tab>
+                                </div>
+                            </q-tabs>
+                            <!-- タブ横ボタン -->
+                            <div id="tab-side-content" class="flex no-wrap" v-if="editing.hasMacro()">
+                                <div>
+                                    <q-btn flat icon="add" size="sm" class="side-button q-px-md full-height" @click="appStore.openMenuToAddFile"/>
+                                    <q-tooltip>イベントを追加</q-tooltip>
+                                </div>
+                                <q-separator vertical inset class="" />
+                                <div>
+                                    <q-btn flat icon="settings" size="sm" class="side-button q-px-md full-height" @click="appStore.openMacroSetting"/>
+                                    <q-tooltip>マクロの設定</q-tooltip>
+                                </div>
+                                <div>
+                                    <q-btn flat icon="menu" size="sm" class="open-menu-button side-button q-px-md full-height" @click="appStore.openDropdownMenus"/>
+                                    <q-tooltip>メニュー</q-tooltip>
+                                </div>
+                            </div>
                         </div>
-                    </q-tabs>
-                </div>
-                <!-- タブ横ボタン -->
-                <div id="tab-side-content" class="flex no-wrap" v-if="editing.hasMacro()">
-                    <div>
-                        <q-btn flat icon="add" size="sm" class="side-button q-px-md full-height" @click="appStore.openMenuToAddFile"/>
-                        <q-tooltip>イベントを追加</q-tooltip>
                     </div>
-                    <q-separator vertical inset class="" />
-                    <div>
-                        <q-btn flat icon="settings" size="sm" class="side-button q-px-md full-height" @click="macroSettingsStore.modalState.isShowing = true"/>
-                        <q-tooltip>マクロの設定</q-tooltip>
-                    </div>
-                </div>
-            </div>
-            <div id="first-row-right" class="flex">
-                <div>
-                    <q-btn 
-                        color="green-6" label="マクロ一覧" 
-                        class="full-height override-button-icon-margin font-size-12 q-my-none"
-                        @click="appStore.openMacroMenu()" />
-                </div>
-                <!-- ウィンドウの幅が小さいときに表示するメニューボタン -->
-                <q-btn 
-                    color="bg-dark" icon="menu" label="メニュー" 
-                    class="open-menu-button full-height override-button-icon-margin font-size-12"
-                    @click="appStore.openDropdownMenus()" />
-                <!-- ドロップダウンメニュー -->
-                <div class="dropdown-menus">
-                    <div class="menu" v-for="menu in appStore.appDropDownMenus" :key="menu.header">
-                        <DropdownMenu :items="menu.menuItems">
-                            <template #button>
-                                <div class="dropdown-header">{{ menu.header }}</div>
-                            </template>
-                        </DropdownMenu>
+                    <div id="menus" class="flex">
+                        <q-btn 
+                            color="green-6" label="マクロ一覧" 
+                            class="full-height override-button-icon-margin font-size-12 q-my-none"
+                            @click="appStore.openMacroMenu()" />
+                        <!-- ドロップダウンメニュー -->
+                        <div class="menu" v-for="menu in appStore.appDropDownMenus" :key="menu.header">
+                            <DropdownMenu :items="menu.menuItems">
+                                <template #button>
+                                    <div class="dropdown-header">{{ menu.header }}</div>
+                                </template>
+                            </DropdownMenu>
+                        </div>
                     </div>
                 </div>
+                <ReplayMenu class="absolute-top-left"></ReplayMenu>
             </div>
         </div>
         <!-- ワークスペースとツールボックス -->
-        <div class="row">
+        <div id="blockly-space" class="full-height full-width">
             <div id="blocklyArea"></div>
             <div id="blocklyDiv" style="position: absolute;"></div>
+            <ReplayInfo></ReplayInfo>
         </div>
     </div>
     <Teleport to="body">
@@ -161,7 +222,9 @@ onUpdated(() => {
             :close-auto="commandPalette.closeAuto">
         </ModalCommandPalette>
         <ModalMacroSettings></ModalMacroSettings>
-        <ShortcutGuide></ShortcutGuide>
+        <ModalShortcutGuide></ModalShortcutGuide>
+        <ModalTabSwitcher></ModalTabSwitcher>
+        <ModalParameterEditor></ModalParameterEditor>
     </Teleport>
 </template>
 
@@ -171,16 +234,11 @@ onUpdated(() => {
     --tab-height: 35px;
 }
 
-.first-row {
+#top-row {
     background: var(--bg-color-app);
 }
 
-/* .q-scrollarea__bar--h, .q-scrollarea__thumb--h{
-    bottom: 0px !important;
-    height: 3px;
-} */
-
-.tabs {
+#tabs {
     max-height: var(--tab-height) !important;
 }
 
@@ -199,7 +257,7 @@ onUpdated(() => {
 
 .q-tab__label {
     line-height: 0 !important;
-    font-size: var(--font-size-12) !important;
+    font-size: 12px !important;
 }
 
 .q-tabs {
@@ -250,7 +308,7 @@ button:hover {
 }
 
 @media (width <= 1200px) {
-    .dropdown-menus {
+    .menu {
         display: none;
     }
 

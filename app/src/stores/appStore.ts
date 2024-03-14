@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { host } from "../hosts/host";
 import * as MacroMenus from "../menus/commands/macro"
 import { DropDownCommandPaletteOptions, DropDownMenuToCommandItems } from "../models/dropdown";
 import { useCommandPaletteStore } from "./commandPaletteStore";
@@ -13,14 +12,20 @@ import { useEditingMacro } from "./editingMacro";
 import { MacroMenuCommandPaletteOptions } from "../menus/commands/macro";
 import { resize } from "../helpers/ui/resize";
 import { ModalStateFactory } from "../models/modal";
+import { useMacroSettingsStore } from "./macroSettingsStore";
+import { useNotificationStore } from "./notificationStore";
+import { useParameterEditorStore } from "./parameterEditor";
 
 export const useAppStore = defineStore("AppStore", () => {
     const implementation = ref("");
+    const toaster = useNotificationStore();
     const editingMacro = useEditingMacro();
     const blocklyStore = useBlocklyStore();
     const commandStore = useCommandPaletteStore();
     const editorStore = useEditorStore();
     const tabStore = useTabStore();
+    const macroSetting = useMacroSettingsStore();
+    const parameterEditor = useParameterEditorStore();
     const appDropDownMenus = dropdownMenus;
     const shortcutPage = ModalStateFactory.create();
 
@@ -31,6 +36,8 @@ export const useAppStore = defineStore("AppStore", () => {
         openMacroMenu,
         openDropdownMenus,
         openMenuToAddFile,
+        openMacroSetting,
+        openParameterEditor,
         setNewMacro,
         loadBlocks,
         clear,
@@ -45,9 +52,6 @@ export const useAppStore = defineStore("AppStore", () => {
                 .then(async (response) => {
                     if (response.ok) {
                         implementation.value = await response.text();
-                        host.macroManager.setImplementation({
-                            code: implementation.value
-                        });
                     }
                 })
                 .catch(() => "");
@@ -66,8 +70,29 @@ export const useAppStore = defineStore("AppStore", () => {
         commandStore.open(options);
     }
 
+    async function openMacroSetting() {
+        if (!editingMacro.macro) {
+            toaster.error("マクロが選択されていません");
+            return;
+        }
+        macroSetting.modalState.isShowing = true;
+    }
+
     function openMenuToAddFile() {
+        if (!editingMacro.macro) {
+            toaster.error("マクロが選択されていません");
+            return;
+        }
         commandStore.open(new MacroMenus.AddFileCommandPaletteOptions);
+    }
+
+    function openParameterEditor() {
+        if (!editingMacro.macro) {
+            toaster.error("マクロが選択されていません");
+            return;
+        }
+        parameterEditor.modal.isShowing = true;
+
     }
 
     function clear() {
@@ -117,8 +142,12 @@ export class SourceCodeWriter implements ISourceCodeWriter {
 
     write(sourceCode: ISourceCode): void {
         const editing = useEditingMacro();
+        const appStore = useAppStore();
         const json = sourceCode.json;
         const javascript = sourceCode.javascript;
-        editing.file?.write(json, javascript);
+        editing.file?.deboucedWrite(json, javascript);
+        if (editing.macro?.debouncedSetImplementation) {
+            editing.macro?.debouncedSetImplementation({ code: appStore.implementation });
+        }
     }
 }

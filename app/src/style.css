@@ -52,6 +52,10 @@ body {
     font-size: var(--font-size-12) !important;
 }
 
+.font-size-13 {
+    font-size: 13px !important;
+}
+
 .font-size-14 {
     font-size: var(--font-size-14) !important;
 }
@@ -106,6 +110,10 @@ body {
     box-shadow: none;
 }
 
+.q-tooltip--style {
+    background: var(--border-color);
+    border: solid 1px var(--border-color);
+}
 /* 
     Blockly関係
 */

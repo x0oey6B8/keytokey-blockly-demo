@@ -18,17 +18,33 @@ export function defineInputBlocks() {
         }
     };
 
-    Blockly.Blocks['physical_key_is_pressed'] = {
+    Blockly.Blocks['key_is_hardware_pressed'] = {
         init: function () {
             this.appendValueInput("KEY")
                 .setCheck("Keys");
             this.appendDummyInput()
-                .appendField("が物理的に")
+                .appendField("がハードウェア的に")
                 .appendField(new Blockly.FieldDropdown([["押されてる", "PRESSED"], ["押されてない", "RELEASED"]]), "DROPDOWN")
             this.setInputsInline(true);
             this.setOutput(true, "Boolean");
             this.setColour(BlockColors.Logic);
             this.setTooltip("物理キーの入力状態を取得します。");
+            this.setHelpUrl("");
+        }
+    };
+
+    // 使ってない
+    Blockly.Blocks['key_is_software_pressed'] = {
+        init: function () {
+            this.appendValueInput("KEY")
+                .setCheck("Keys");
+            this.appendDummyInput()
+                .appendField("がソフトウェア的に")
+                .appendField(new Blockly.FieldDropdown([["押されてる", "PRESSED"], ["押されてない", "RELEASED"]]), "DROPDOWN")
+            this.setInputsInline(true);
+            this.setOutput(true, "Boolean");
+            this.setColour(BlockColors.Logic);
+            this.setTooltip("キーの入力状態を取得します。");
             this.setHelpUrl("");
         }
     };

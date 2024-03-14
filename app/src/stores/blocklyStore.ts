@@ -13,8 +13,14 @@ import { definedCodeGenerators } from "../definitions/generators/codeGenerator";
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
+    /*
+        消してはいけない
+    */
     const generator = javascriptGenerator;
-    console.log(generator); // 消さないで：何故かは知らないけど出力するとgeneratorがundefinedにならない
+    console.log(generator);
+    /*
+        消さない
+    */
 
     let workspaceSession: WorkspaceSession | undefined = undefined;
 
@@ -27,14 +33,17 @@ export const useBlocklyStore = defineStore("blockly", () => {
     overwriteMessages();
     registerGlobalFunctions();
 
+    WorkspaceSession.javascriptGenerator = generator;
+
     return {
         generator,
         registerNewWorkspaceSession,
         getCurrentWorkspaceSession
     };
 
-    function registerNewWorkspaceSession(container: HTMLElement, sourceCodeWriter: ISourceCodeWriter) {
-        workspaceSession = new WorkspaceSession(container, true, generator, sourceCodeWriter);
+    function registerNewWorkspaceSession(container: HTMLElement, onChange: BlocklyOnChange) {
+        console.log(typeof onChange);
+        workspaceSession = new WorkspaceSession(container, true, onChange);
     }
 
     function getCurrentWorkspaceSession() {
@@ -46,32 +55,37 @@ export const useBlocklyStore = defineStore("blockly", () => {
     }
 });
 
-class WorkspaceSession {
+export type BlocklyOnChange = (e: Blockly.Events.Abstract, session: WorkspaceSession) => void;
 
+export class WorkspaceSession {
+
+    static javascriptGenerator: any;
     workspace: Blockly.Workspace | null;
     workspaceSvg: WorkspaceSvg
     isMainWorkspace: boolean;
-    javascriptGenerator: any;
+    isToolboxShowing = true;
 
-    constructor(container: HTMLElement, isMainWorkspace: boolean, javascriptGenerator: any, private sourceCodeWriter: ISourceCodeWriter) {
-        this.javascriptGenerator = javascriptGenerator;
+    constructor(container: HTMLElement, isMainWorkspace: boolean, private onChange: BlocklyOnChange) {
         this.isMainWorkspace = isMainWorkspace;
         this.workspaceSvg = Blockly.inject(container, options);
         this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
-        // this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
         this.workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
-        this.workspaceSvg.addChangeListener((e) => {
-            //if (e.recordUndo) {
-            console.log(e);
-            const json = this.getState();
-            const javascript = this.createCode(StatementPrefix.CHECK_POINT);
-            this.sourceCodeWriter.write({ json, javascript });
-            //}
-        });
+        this.workspaceSvg.addChangeListener((e) => this.onChange(e, this));
+        // this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
     }
 
     setInitialScrollPosition() {
         this.workspaceSvg.scroll(0, 0);
+    }
+
+    toggleToolboxVisiblity() {
+        this.setToolboxVisiblity(!this.isToolboxShowing);
+    }
+
+    setToolboxVisiblity(visibility: boolean) {
+        const toolbox = this.workspaceSvg.getToolbox();
+        toolbox?.setVisible(this.isToolboxShowing = visibility);
+        this.resizeWorkspaceSvg();
     }
 
     addKeyValue() {
@@ -124,6 +138,22 @@ class WorkspaceSession {
             const name = block.getFieldValue("NAME");
             return { block, name }
         })
+    }
+
+    hasEntryBlock() {
+        const entryBlock = this.getProcedureBlocksByName().find(data => data.name === "_E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C");
+        return entryBlock !== undefined;
+    }
+
+    getParametersOfEntryBlock() {
+        const block = this.getEntryProcedureBlock();
+        if (!block) {
+            return [];
+        }
+
+        const parameters = block?.getVars();
+        const names: string[] = JSON.parse(JSON.stringify(parameters));
+        return names;
     }
 
     isProcedureBlock(block: BlockSvg) {
@@ -216,20 +246,10 @@ class WorkspaceSession {
             return;
         }
 
-        // 接続
-        const nextBlock = selectedBlock.getNextBlock(); // 元のブロックの次のブロックを取得
-
-        // 新しいブロックと元のブロックの接続を行う前に、それぞれの接続が存在するかを確認
-        const newBlockPrevConnection = newBlock.previousConnection;
-        const selectedBlockNextConnection = selectedBlock.nextConnection;
-
-        if (nextBlock && newBlockPrevConnection && selectedBlockNextConnection) {
-            // 接続を解除せずに接続を行う
-            newBlockPrevConnection.connect(nextBlock.previousConnection);
-            selectedBlockNextConnection.connect(newBlockPrevConnection);
-        } else if (selectedBlockNextConnection && newBlockPrevConnection) {
-            // 元のブロックに次のブロックがない場合の接続
-            selectedBlockNextConnection.connect(newBlockPrevConnection);
+        if (selectedBlock.nextConnection && newBlock.previousConnection) {
+            selectedBlock.nextConnection.connect(newBlock.previousConnection);
+        } else {
+            this.centerTo(newBlock);
         }
     }
 
@@ -259,11 +279,9 @@ class WorkspaceSession {
     }
 
     createCode(prefix: StatementPrefix = StatementPrefix.NONE): string {
-        const s = performance.now();
-        setStatementPrefix(this.javascriptGenerator, prefix);
-        const generatedCode = this.javascriptGenerator.workspaceToCode(this.workspaceSvg);
+        setStatementPrefix(javascriptGenerator, prefix);
+        const generatedCode = javascriptGenerator.workspaceToCode(this.workspaceSvg);
         //ここから実行：_E3_81_93_E3_81_93_E3_81_8B_E3_82_89_E5_AE_9F_E8_A1_8C()
-        console.log(performance.now() - s);
         return generatedCode;
     }
 

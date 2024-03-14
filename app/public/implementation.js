@@ -28,31 +28,6 @@
             y: _globals.Random(y_from, y_to),
         }
     }
-
-    toClrArray(type) {
-        var clrArray = host.newArr(type, this.length);
-        for (let index = 0; index < this.length; index++) {
-            const element = this[index];
-            clrArray[index] = element;
-        }
-        return clrArray;
-    }
-
-    toClrKeys() {
-        return toKeys(this.toString());
-    }
-
-    toClrControllerButtons() {
-        const type = host.typeOf(clr.KeyToKey.Enums.ControllerButtons);
-        const v = toEnum(type, this.toString());
-        return v;
-    }
-
-    toClrIMEConversionMode() {
-        const type = host.typeOf(clr.KeyToKey.Enums.IMEConversionModes);
-        const v = toEnum(type, this.toString());
-        return v;
-    }
 }
 
 class Bounds {
@@ -79,7 +54,7 @@ class Bounds {
         return this._clrBounds.Height;
     }
 
-    get source() {
+    get clrBounds() {
         return this._clrBounds;
     }
 }
@@ -300,16 +275,6 @@ class Keyboard {
             const excludedKeys = v.excludedKeys.map(name => name.toClrKeys()).toClrArray(clr.KeyToKey.Enums.Keys);
             _globals.Key.UpAll(excludedKeys);
         }
-    }
-
-    isPressed = () => {
-        const key = this.toString().toClrKeys();
-        return _globals.Key.Find(key).IsPressed;
-    }
-
-    isPressedPhysically = () => {
-        const key = this.toString().toClrKeys();
-        return _globals.Key.Find(key).IsPressedPhysically;
     }
 }
 
@@ -1219,65 +1184,87 @@ class VirtualDualShock4TriggerWrapper {
 /*
     初期化
 */
-function initializeGlobalThis() {
 
-    // プロパティ
-    globalThis.trigger = new Trigger();
-    globalThis.mouse = new Mouse();
-    globalThis.controller = new Controller(_globals.Controller);
-    globalThis.xinput0 = new Controller(_globals.Controller.GetXInputController(0));
-    globalThis.xinput1 = new Controller(_globals.Controller.GetXInputController(1));
-    globalThis.xinput2 = new Controller(_globals.Controller.GetXInputController(2));
-    globalThis.xinput3 = new Controller(_globals.Controller.GetXInputController(3));
-    globalThis.virtualXInput0 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(0));
-    globalThis.virtualXInput1 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(1));
-    globalThis.virtualXInput2 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(2));
-    globalThis.virtualXInput3 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(3));
-    globalThis.dualShock4 = new VirtualDualShock4Wrapper(_globals.DualShock4);
-    globalThis.templateMatching = new TemplateMatching();
-    globalThis.mapping = new Mapping();
+// プロパティ
+globalThis.trigger = new Trigger();
+globalThis.mouse = new Mouse();
+globalThis.controller = new Controller(_globals.Controller);
+globalThis.xinput0 = new Controller(_globals.Controller.GetXInputController(0));
+globalThis.xinput1 = new Controller(_globals.Controller.GetXInputController(1));
+globalThis.xinput2 = new Controller(_globals.Controller.GetXInputController(2));
+globalThis.xinput3 = new Controller(_globals.Controller.GetXInputController(3));
+globalThis.virtualXInput0 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(0));
+globalThis.virtualXInput1 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(1));
+globalThis.virtualXInput2 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(2));
+globalThis.virtualXInput3 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(3));
+globalThis.dualShock4 = new VirtualDualShock4Wrapper(_globals.DualShock4);
+globalThis.templateMatching = new TemplateMatching();
+globalThis.mapping = new Mapping();
 
-    // ユーティリティ
-    Array.prototype.toClrArray = Utilities.Default.toClrArray;
-    String.prototype.toClrKeys = Utilities.Default.toClrKeys;
-    String.prototype.toClrControllerButtons = Utilities.Default.toClrControllerButtons;
-    String.prototype.toClrIMEConversionMode = Utilities.Default.toClrIMEConversionMode;
-    globalThis.randomPoint = Utilities.Default.randomPoint;
-    globalThis.newBounds = Utilities.Default.newBounds;
-    globalThis.newPoint = Utilities.Default.newPoint;
-    globalThis.newSize = Utilities.Default.newSize;
-
-    // キーボード
-    globalThis.down = Keyboard.Default.down;
-    globalThis.up = Keyboard.Default.up;
-    globalThis.tap = Keyboard.Default.tap;
-    globalThis.inputText = Keyboard.Default.inputText;
-    globalThis.replay = Keyboard.Default.replay;
-    globalThis.upAllKeys = Keyboard.Default.upAllKeys;
-    String.prototype.isPressed = Keyboard.Default.isPressed;
-    String.prototype.isPressedPhysically = Keyboard.Default.isPressedPhysically;
-
-    // 待機
-    globalThis.wait = Wait.Default.wait;
-    globalThis.h_wait = Wait.Default.h_wait;
-    globalThis.waitForInput = Wait.Default.waitForInput;
-    globalThis.waitForController = Wait.Default.waitForController;
-
-    // ウィンドウ
-    globalThis.activeWindow = Window.Default.activeWindow;
-    globalThis.windowUnderMouse = Window.Default.windowUnderMouse;
-    globalThis.createWindowById = Window.Default.createWindowById;
-    globalThis.findWindow = Window.Default.findWindow;
-
-    // コントローラー
-    globalThis.getController = Controller.getController;
-    globalThis.findController = Controller.findController;
-
-    // 時間
-
-    // モニター
-    globalThis.getMainMonitor = Monitor.getMainMonitor;
-    globalThis.getAllMonitors = Monitor.getAllMonitors;
+// ユーティリティ
+globalThis.randomPoint = Utilities.Default.randomPoint;
+globalThis.newBounds = Utilities.Default.newBounds;
+globalThis.newPoint = Utilities.Default.newPoint;
+globalThis.newSize = Utilities.Default.newSize;
+Array.prototype.toClrArray = function (type) {
+    var clrArray = host.newArr(type, this.length);
+    for (let index = 0; index < this.length; index++) {
+        const element = this[index];
+        clrArray[index] = element;
+    }
+    return clrArray;
+}
+String.prototype.toClrKeys = function () {
+    const keyName = this.toString();
+    return toKeys(keyName);
+};
+String.prototype.toClrControllerButtons = function () {
+    const type = host.typeOf(clr.KeyToKey.Enums.ControllerButtons);
+    const v = toEnum(type, this.toString());
+    return v;
+}
+String.prototype.toClrIMEConversionMode = function () {
+    const type = host.typeOf(clr.KeyToKey.Enums.IMEConversionModes);
+    const v = toEnum(type, this.toString());
+    return v;
 }
 
-initializeGlobalThis();
+// キーボード
+globalThis.down = Keyboard.Default.down;
+globalThis.up = Keyboard.Default.up;
+globalThis.tap = Keyboard.Default.tap;
+globalThis.inputText = Keyboard.Default.inputText;
+globalThis.replay = Keyboard.Default.replay;
+globalThis.upAllKeys = Keyboard.Default.upAllKeys;
+String.prototype.isPressed = function () {
+    const keyName = this.toString();
+    const key = toKeys(keyName);
+    return _globals.Key.Find(key).IsPressed;
+}
+String.prototype.isHardwarePressed = function () {
+    const keyName = this.toString();
+    const key = toKeys(keyName);
+    return _globals.Key.Find(key).IsPressedPhysically;
+}
+
+// 待機
+globalThis.wait = Wait.Default.wait;
+globalThis.h_wait = Wait.Default.h_wait;
+globalThis.waitForInput = Wait.Default.waitForInput;
+globalThis.waitForController = Wait.Default.waitForController;
+
+// ウィンドウ
+globalThis.activeWindow = Window.Default.activeWindow;
+globalThis.windowUnderMouse = Window.Default.windowUnderMouse;
+globalThis.createWindowById = Window.Default.createWindowById;
+globalThis.findWindow = Window.Default.findWindow;
+
+// コントローラー
+globalThis.getController = Controller.getController;
+globalThis.findController = Controller.findController;
+
+// 時間
+
+// モニター
+globalThis.getMainMonitor = Monitor.getMainMonitor;
+globalThis.getAllMonitors = Monitor.getAllMonitors;

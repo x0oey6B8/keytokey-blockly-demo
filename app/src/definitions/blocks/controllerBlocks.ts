@@ -91,7 +91,7 @@ export function defineControllerBlocks() {
             this.appendValueInput("BUTTON")
                 .setCheck("ControllerButtons");
             this.appendDummyInput()
-                .appendField("は")
+                .appendField("が")
                 // @ts-ignore
                 .appendField(new Blockly.FieldDropdown([["押されてる", "PRESSED"], ["押されてない", "RELEASED"]]), "DROPDOWN");
             this.setInputsInline(true);

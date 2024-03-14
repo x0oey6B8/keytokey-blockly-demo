@@ -73,7 +73,7 @@ export class CopyWorkspaceAsXmlMenuItem implements IDropDownMenuItem {
 }
 
 export class CopyWorkspaceAsJsonMenuItem implements IDropDownMenuItem {
-    header = "内容をテキストとしてコピー（JSON)";
+    header = "【開発用】クリップボードにJSONをコピー";
     subHeader = "workspace";
     condition = () => true;
     canVisible = () => import.meta.env.DEV;
@@ -84,7 +84,8 @@ export class CopyWorkspaceAsJsonMenuItem implements IDropDownMenuItem {
             const json = workspaceSession.getState();
             const editorStore = useEditorStore();
             const notification = useNotificationStore();
-            editorStore.setCode(json, "json", true);
+            const formattedJson = JSON.stringify(JSON.parse(json), null, 2);
+            editorStore.setCode(formattedJson, "json", true);
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(json);
                 notification.toastMessage("コピーしました。");

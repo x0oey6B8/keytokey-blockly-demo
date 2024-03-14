@@ -5,22 +5,26 @@ import { useEditingMacro } from "./editingMacro";
 import { MacroFile } from "../hosts/macroManager";
 import { useAppStore } from "./appStore";
 
+
 export const useTabStore = defineStore("tab", () => {
     const editingMacro = useEditingMacro();
     const appStore = useAppStore();
     const selectedTab = ref("");
+    const selectedTabIndex = ref(0);
     const items = ref<ITab[]>([]);
 
     watch(selectedTab, async (newTab) => await tabChanged(newTab));
 
     return {
         selectedTab,
+        selectedTabIndex,
         items,
         addTab,
         clear,
         closeTab,
         refreshTabs,
-        selectNextTab
+        selectTab,
+        selectNextTab,
     }
 
     function clear() {
@@ -35,14 +39,21 @@ export const useTabStore = defineStore("tab", () => {
             if (currentIndex > (items.value.length - 1)) {
                 currentIndex = 0;
             }
+            selectedTabIndex.value = currentIndex;
             selectedTab.value = items.value[currentIndex].id;
         }
+    }
+
+    function selectTab(tab: ITab) {
+        selectedTab.value = tab.id;
+        selectedTabIndex.value = items.value.findIndex(item => item.id === tab.id);
     }
 
     async function tabChanged(newTabId: string) {
         if (!editingMacro.macro) {
             return;
         }
+        selectedTabIndex.value = items.value.findIndex(item => item.id === newTabId);
         editingMacro.setFile(newTabId);
         appStore.loadBlocks();
     }
@@ -52,6 +63,7 @@ export const useTabStore = defineStore("tab", () => {
             return;
         }
         items.value = editingMacro.macro.listFiles().map(file => createTab(file));
+        selectedTabIndex.value = 0;
         selectedTab.value = items.value[0].id;
     }
 
@@ -61,13 +73,13 @@ export const useTabStore = defineStore("tab", () => {
     }
 
     function createTab(macroFile: MacroFile) {
-        const setting = macroFile.setting;
+        const file = macroFile.setting;
         const newTab: ITab = {
-            id: macroFile.setting.id,
+            id: file.id,
             header: macroFile.getDisplayName(),
-            canCloseButtonShow: setting.type !== "MAIN",
-            iconColor: setting.type !== "MAIN" ? "yellow" : "",
-            iconName: setting.type !== "MAIN" ? "bolt" : ""
+            canCloseButtonShow: file.type !== "MAIN",
+            iconColor: file.type !== "MAIN" ? "yellow" : "",
+            iconName: file.type !== "MAIN" ? "bolt" : ""
         };
         return newTab;
     }
@@ -81,7 +93,7 @@ export const useTabStore = defineStore("tab", () => {
 
         const index = files.findIndex(file => file.setting.id == tab.id);
         if (index < 0) {
-            alert("the file could not be found.");
+            alert("ファイルが見つかりませんでした。");
             return;
         }
 
@@ -94,6 +106,7 @@ export const useTabStore = defineStore("tab", () => {
             items.value.splice(i, 1);
             if (selectedTab.value === tab.id) {
                 selectedTab.value = items.value[0].id;
+                selectedTabIndex.value = 0;
             }
         }
     }

@@ -5,6 +5,7 @@ import 'vue3-toastify/dist/index.css';
 export const useNotificationStore = defineStore("notification", () => {
     return {
         toastMessage,
+        error,
         remove
     }
 
@@ -20,4 +21,11 @@ export const useNotificationStore = defineStore("notification", () => {
         toast.remove(toastId);
     }
 
+    function error(message: string, options: ToastOptions = {
+        autoClose: 3000,
+        theme: "colored",
+        type: "error"
+    }) {
+        return toast(message, options);
+    }
 });

@@ -1,7 +1,9 @@
 import { host } from "../../hosts/host";
 import { IDropDownMenuItem } from "../../models/dropdown";
+import { regenerateCode } from "../../models/regenerate";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { useEditingMacro } from "../../stores/editingMacro";
+import { useEditorStore } from "../../stores/editorStore";
 import { useNotificationStore } from "../../stores/notificationStore";
 import { SessionSelectionCommandOptions } from "../commands/debug";
 
@@ -9,8 +11,23 @@ export class RegenerateCodeMenuItem implements IDropDownMenuItem {
     header = "ブロックからコードを再生成";
     subHeader = "debug";
     condition = () => true;
-    clicked = () => {
-        alert("not implemented.");
+    clicked = async () => {
+        const result = await regenerateCode();
+        const template = `/*\n    @{name}\n*/\n@{code}\n`;
+        const array = result.codes.map(code => {
+            return template
+                .replace("@{name}", code.file.getDisplayName())
+                .replace("@{code}", code.javascript);
+        });
+
+        const editorStore = useEditorStore();
+        editorStore.setCode(array.join('\n'), "javascript", true);
+
+        const toaster = useNotificationStore();
+        toaster.toastMessage("再生成完了", {
+            theme: "colored",
+            type: "success"
+        });
     };
 }
 

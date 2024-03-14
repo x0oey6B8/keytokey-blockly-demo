@@ -1,10 +1,14 @@
+import { PromisifyFn, useDebounceFn } from "@vueuse/core";
 import { fileTemplateGroups } from "../definitions/files/fileTemplates";
 import { IRequestResult, hasHost, host } from "./host";
 import { v4 as uuidv4 } from 'uuid';
 
 export class MacroManager implements IMacroManager {
 
+    deboucedWrite: PromisifyFn<(request: IWriteRequest) => Promise<IRequestResult>> | undefined;
+
     constructor(private hostObjects: any) {
+        this.deboucedWrite = useDebounceFn((request: IWriteRequest) => this.write(request), 1000);
     }
 
     setImplementation = async (request: ISetImplementationCodeRequest) => {
@@ -99,7 +103,10 @@ export class MacroManager implements IMacroManager {
 
 export class MacroManagerPseudo implements IMacroManager {
 
+    deboucedWrite: PromisifyFn<(request: IWriteRequest) => Promise<IRequestResult>> | undefined;
+
     constructor(private macroStorage: LocalMacroStorage = new LocalMacroStorage()) {
+        this.deboucedWrite = useDebounceFn((request: IWriteRequest) => this.write(request), 1000);
     }
 
     create = async (request: IMacroCreationRequest) => {
@@ -224,6 +231,7 @@ export class LocalMacroStorage {
     async create(request: IMacroCreationRequest): Promise<IRequestResult> {
         this.settings.push({
             name: request.macroName,
+            parameters: [],
             id: uuidv4(),
             category: "",
             files: [
@@ -235,7 +243,7 @@ export class LocalMacroStorage {
             ],
             debug: {
                 logger: {
-                    isEnabled: false
+                    enabled: false
                 }
             },
             preload: true
@@ -391,11 +399,19 @@ export interface ILocalMacroFileContent {
 
 export class Macro {
 
+    hasSetImplementationOnce = false;
+    movingParameters: IMacroParameter[] = [];
+    hasParameterChanged = false;
+    debouncedApplySetting: PromisifyFn<() => void> | undefined = undefined;
+    debouncedSetImplementation: PromisifyFn<(request: ISetImplementationCodeRequest) => Promise<void>> | undefined = undefined;
+
     get name(): string {
         return this.setting.name;
     }
 
     constructor(public setting: IMacroSetting) {
+        this.debouncedApplySetting = useDebounceFn(() => this.applySetting(), 1000);
+        this.debouncedSetImplementation = useDebounceFn(async (request) => await this.setImplementation(request), 1000);
     }
 
     async delete() {
@@ -441,13 +457,174 @@ export class Macro {
     async applySetting() {
         return await host.macroManager.updateSetting(this.setting);
     }
+
+    async setImplementation(request: ISetImplementationCodeRequest) {
+        if (!this.hasSetImplementationOnce) {
+            console.log("[macro]", "set implementation.js");
+            await host.macroManager.setImplementation(request);
+            this.hasSetImplementationOnce = true;
+        }
+    }
+
+    compareParameters(parameterNames: string[]): IParameterComparisonResult {
+        const parameters = this.setting.parameters;
+        let changedCount = 0;
+        // パラメーターの数が異なる場合
+        if (parameterNames.length != parameters.length) {
+            // 新しいパラメーターの数が設定より多かった場合は追加されたとみなす
+            if (parameterNames.length > parameters.length) {
+                // 追加された数
+                changedCount = parameterNames.length - parameters.length;
+                // setting.parametersに無い名前の位置を探す
+                const index = parameterNames.findIndex(name => !parameters.some(p => p.name == name));
+                const addedNames = parameterNames.slice(index, index + changedCount);
+                // 前回削除したパラメーターと一致するかどうか
+                let moved = false;
+                // 追加されたパラメーターの数と削除されたパラメーターの数が同じ場合
+                if (changedCount === this.movingParameters.length) {
+                    // 削除されたパラメーターの名前を配列で取得
+                    const previousParamNames = this.movingParameters.map(p => p.name);
+                    // 追加された名前が削除された名前とすべて一致しているかどうか
+                    moved = addedNames.every(name => previousParamNames.includes(name));
+                }
+                return {
+                    reason: "ADDED",
+                    hasChanged: true,
+                    changedCount,
+                    index,
+                    multipleChanged: false,
+                    moved
+                }
+                // 新しいパラメターの数が設定より少なかった場合は削除されたとみなす
+            } else if (parameterNames.length < parameters.length) {
+                changedCount = parameters.length - parameterNames.length;
+                // 新しいパラメーターの数と設定の数との差が2以上ある場合は複数削除されたものとみなす
+                // UIにおいて複数接続されているブロックのうち、途中にあるブロックをドラッグした場合、
+                // その後ろに続くブロック（末尾まで）がくっついてくるため複数のブロックを同時に削除することが可能
+                // それ以外で複数削除することはできないため差が2以上の場合は特定の位置から末尾までが削除されたものと考えることができる
+                if (changedCount >= 2) {
+                    return {
+                        reason: "REMOVED",
+                        hasChanged: true,
+                        multipleChanged: true,
+                        index: parameterNames.length,
+                        changedCount
+                    }
+                } else {
+                    // 一つだけ削除された場合の処理；どのブロックが削除されたかを調べる
+                    let index = 0;
+                    for (; index < parameters.length; index++) {
+                        // indexがparameterNames.lengthを超えた場合は最後のパラメーターが削除されたとみなす
+                        if (index >= parameterNames.length) {
+                            break;
+                        }
+                        const p1 = parameterNames[index];
+                        const p2 = this.setting.parameters[index];
+                        if (p1 != p2.name) {
+                            break;
+                        }
+                    }
+                    let deletedIndex = Math.max(0, index);
+                    return {
+                        reason: "REMOVED",
+                        hasChanged: true,
+                        changedCount: 1,
+                        index: deletedIndex,
+                        multipleChanged: false
+                    }
+                }
+            }
+            // パラメーターの数が同じ場合
+        } else {
+            // 追加／削除がなかった場合
+            for (let index = 0; index < parameterNames.length; index++) {
+                const p1 = parameterNames[index];
+                const p2 = this.setting.parameters[index];
+                // 名前が異なる場合
+                if (p1 != p2.name) {
+                    return {
+                        reason: "RENAME",
+                        hasChanged: true,
+                        changedCount: 1,
+                        index,
+                        multipleChanged: false
+                    }
+                }
+            }
+        }
+        // 変更が何もなかった場合
+        return {
+            reason: "NO_CHANGE",
+            hasChanged: false,
+            changedCount: 0,
+            index: 0,
+            multipleChanged: false,
+        }
+    }
+
+    applyParameterChangedToSetting(parameterNames: string[], changedDetail: IParameterComparisonResult) {
+        if (!changedDetail.hasChanged) {
+            return;
+        }
+        const index = changedDetail.index;
+        switch (changedDetail.reason) {
+            case "ADDED":
+                if (changedDetail.moved) {
+                    this.setting.parameters.splice(index, 0, ...this.movingParameters);
+                } else {
+                    const params = parameterNames
+                        .slice(index, index + changedDetail.changedCount)
+                        .map(name => ({ name, valueType: "ANY", defaultValue: "0", description: `「${name}」の説明` } as IMacroParameter));
+                    this.setting.parameters.splice(index, 0, ...params);
+                }
+                this.movingParameters = [];
+                break;
+            case "REMOVED":
+                const removedParameters = this.setting.parameters.splice(index, changedDetail.changedCount);
+                this.movingParameters = removedParameters;
+                break;
+            case "RENAME":
+                this.setting.parameters[index].name = parameterNames[index];
+                break;
+        }
+
+        if (this.debouncedApplySetting) {
+            this.debouncedApplySetting();
+        }
+    }
+
+    setParameters(parameterNames: string[]): boolean {
+        const result = this.compareParameters(parameterNames);
+        console.log("[param]", "changed details", result);
+        if (result.hasChanged) {
+            this.hasParameterChanged = true;
+            this.applyParameterChangedToSetting(parameterNames, result);
+            return true; // changed
+        }
+        return false; // not changed
+    }
 }
+
+export interface IParameterComparisonResult {
+    hasChanged: boolean;
+    reason: ParameterChangedReason;
+    index: number;
+    multipleChanged: boolean;
+    changedCount: number;
+    moved?: boolean;
+}
+
+export type ParameterChangedReason = "NO_CHANGE" | "ADDED" | "REMOVED" | "RENAME"
 
 export class MacroFile {
 
     canWrite: boolean = false;
 
+    deboucedWrite: PromisifyFn<(json: string, javascript: string) => Promise<void> | undefined>;
+
+
     constructor(public macro: Macro, public setting: IMacroFileSetting) {
+        this.deboucedWrite = useDebounceFn((json: string, javascript: string) => this.write(json, javascript), 1000);
     }
 
     async read(): Promise<IMacroFileContent> {
@@ -462,6 +639,7 @@ export class MacroFile {
     async write(json: string, javascriptCode: string) {
 
         if (!this.canWrite) {
+            console.log("cannot write");
             return;
         }
 
@@ -493,6 +671,7 @@ export class MacroFile {
 }
 
 export interface IMacroManager {
+    deboucedWrite: PromisifyFn<(request: IWriteRequest) => Promise<IRequestResult>> | undefined;
     setImplementation: (request: ISetImplementationCodeRequest) => Promise<IRequestResult>;
     create: (request: IMacroCreationRequest) => Promise<IRequestResult>;
     updateSetting: (setting: IMacroSetting) => Promise<IRequestResult>;
@@ -562,9 +741,48 @@ export interface ISetImplementationCodeRequest {
     code: string;
 }
 
+export interface IMacroParameter {
+    name: string;
+    valueType: string;
+    defaultValue: string;
+    description: string;
+}
+
+export type ValueType = "NUMBER" | "STRING" | "BOOLEAN" | "KEYS" | "ANY";
+
+export class ValueTypeToName {
+    static convert(valueType: ValueType) {
+        switch (valueType) {
+            case "NUMBER": return "数値";
+            case "STRING": return "文字列";
+            case "BOOLEAN": return "真理値";
+            case "KEYS": return "キー／マウス";
+            case "ANY":
+            default:
+                return "任意";
+        }
+    }
+}
+
+export class ValueTypeToDefaultValue {
+    static convert(valueType: ValueType) {
+        switch (valueType) {
+            case "NUMBER": return "0";
+            case "STRING": return "\"文字列\"";
+            case "BOOLEAN": return "False";
+            case "KEYS": return "Keys.A";
+            case "ANY":
+            default:
+                return "0";
+        }
+    }
+}
+
+
 export interface IMacroSetting {
     id: string;
     name: string;
+    parameters: IMacroParameter[];
     category: string;
     files: IMacroFileSetting[];
     debug: IDebugSetting;
@@ -576,7 +794,7 @@ export interface IDebugSetting {
 }
 
 export interface IDebugLogger {
-    isEnabled: boolean;
+    enabled: boolean;
 }
 
 export interface IMacroFileSetting {

@@ -1,12 +1,21 @@
-import { host } from "../../hosts/host";
+import * as MacroMenus from "./macro"
 import * as FindMenus from "./find"
 import * as WorkspaceMenus from "./workspace"
 import * as CodeGenerationMenus from "./codeGeneration"
 import * as DebugMenus from "./debug"
 import * as HelpMenus from "./help"
 import { IAppDropDownMenu } from "../../models/dropdown";
+import { useBlocklyStore } from "../../stores/blocklyStore";
 
 export const dropdownMenus: IAppDropDownMenu[] = [
+    {
+        header: "マクロ",
+        menuItems: [
+            new MacroMenus.OpenMacroSetting(),
+            new MacroMenus.OpenAddFileToMacro(),
+            new MacroMenus.OpenMacroParameterEditor(),
+        ]
+    },
     {
         header: "探す",
         menuItems: [
@@ -59,6 +68,7 @@ export const dropdownMenus: IAppDropDownMenu[] = [
         menuItems: [
             new HelpMenus.ShowUsage(),
             new HelpMenus.ShowShortcutList(),
+            new HelpMenus.OpenLatestAppPage(),
         ]
     },
 ];
@@ -72,8 +82,20 @@ if (import.meta.env.DEV) {
                 subHeader: "dev",
                 condition: () => true,
                 clicked: async () => {
-                    console.log(await host.templateMatchingSettings.listAll());
+                    const bs = useBlocklyStore();
+                    const session = bs.getCurrentWorkspaceSession();
+                    if (session) {
+                        const block = session.getEntryProcedureBlock();
+                        if (block) {
+                            const vars = block.getVars();
+                            const zero = vars[0];
+                            const one = vars[1];
+                            vars[0] = one;
+                            vars[1] = zero;
+                            console.log(session.getState());
 
+                        }
+                    }
                 },
             }
         ]

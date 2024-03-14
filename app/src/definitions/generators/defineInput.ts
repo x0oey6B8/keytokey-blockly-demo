@@ -75,11 +75,11 @@ export class KEY_IS_PRESSED extends BlockCodeGenerator {
 }
 
 // 物理キーが押されてるかどうか
-export class PHYSICAL_KEY_IS_PRESSED extends BlockCodeGenerator {
-    name = "physical_key_is_pressed";
+export class key_is_hardware_pressed extends BlockCodeGenerator {
+    name = "key_is_hardware_pressed";
     GenerateAsJavascript(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
-        let code = `${v.key}.isPressedPhysically()`;
+        let code = `${v.key}.isHardwarePressed()`;
         if (v.dropdown_value === "RELEASED") {
             code = "!" + code;
         }

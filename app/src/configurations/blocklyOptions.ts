@@ -743,7 +743,7 @@ function getToolBoxXml(): string {
                 </block>
             </value>
         </block>
-        <block type="physical_key_is_pressed">
+        <block type="key_is_hardware_pressed">
             <value name="KEY">
                 <block type="keys">
                     <field name="VALUE">A</field>

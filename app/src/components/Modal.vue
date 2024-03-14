@@ -1,8 +1,13 @@
 <script lang="ts" setup>
+import { watch } from 'vue';
 import { IModalState } from '../models/modal';
 
 
 const props = defineProps<Props>();
+
+watch(() => props.state.isShowing, () => {
+    props.state.stateChanged();
+});
 
 function close() {
     if (!props.state.lock) {
