@@ -40,6 +40,7 @@ const tabSwitcherStore = useTabSwitcherStore();
         min-height: 300px;
         height: 60%;
         background-color: var(--bg-color-app);
+        border: solid 1px var(--border-color);
     }
     .active {
         background-color: var(--secondary-bg-color);

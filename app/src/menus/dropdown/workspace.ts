@@ -84,7 +84,7 @@ export class CopyWorkspaceAsJsonMenuItem implements IDropDownMenuItem {
             const json = workspaceSession.getState();
             const editorStore = useEditorStore();
             const notification = useNotificationStore();
-            const formattedJson = JSON.stringify(JSON.parse(json), null, 2);
+            const formattedJson = JSON.stringify(JSON.parse(json), null, 0);
             editorStore.setCode(formattedJson, "json", true);
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(json);

@@ -117,6 +117,32 @@ class Events {
                     handle(args);
                 });
                 return;
+            case "trigger-pressed":
+                _globals.TriggePressed.connect(function (_, args) {
+                    handle(args);
+                });
+                return;
+            case "trigger-released":
+                _globals.TriggeReleased.connect(function (_, args) {
+                    handle(args);
+                });
+                return;
+            case "key-pressed":
+                _globals.KeyStateChanged.connect(function (_, args) {
+                    if (args.IsInjected || !args.IsPressed) {
+                        return;
+                    }
+                    handle({ key: args.Key.ToString() });
+                });
+                return;
+            case "key-released":
+                _globals.KeyStateChanged.connect(function (_, args) {
+                    if (args.IsInjected || args.IsPressed) {
+                        return;
+                    }
+                    handle({ key: args.Key.ToString() });
+                });
+                return;
             case "":
                 return;
         }

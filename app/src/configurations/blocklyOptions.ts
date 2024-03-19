@@ -151,6 +151,10 @@ function getToolBoxXml(): string {
 
     <category name="イベント関連" categorystyle="variable_category">
         <block type="event_macro_ended"></block>
+        <block type="event_trigger_pressed"></block>
+        <block type="event_trigger_released"></block>
+        <block type="event_key_pressed"></block>
+        <block type="event_key_released"></block>
     </category>
 
     <category name="関数" categorystyle="procedure_category" custom="PROCEDURE"></category>

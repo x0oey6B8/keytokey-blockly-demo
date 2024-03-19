@@ -91,8 +91,8 @@ watch(tabStore.items, () => {
 onMounted(async () => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
     blockly.registerNewWorkspaceSession(container, async (event, session) => {
-        console.log("[event]", event);
-
+        // console.log("[event]", event);
+        
         // @ts-ignore
         if (event.type === "bubble_open" && !event.isOpen) {
             if (editing.macro?.hasParameterChanged) {

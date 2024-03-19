@@ -33,14 +33,14 @@ export const fileTemplateGroups: IFileTempalteGroup[] = [
                 header: `${eventTag}トリガーが押されたら`,
                 subHeader: "trigger pressed",
                 javascript: ``,
-                json: "[]",
+                json: `{"blocks":{"languageVersion":0,"blocks":[{"type":"event_trigger_pressed","id":"}^_;B/ym[TcF)6;U}2kd","x":16,"y":-17}]}}`,
                 type: "EVENT_TRIGGER_PRESSED"
             },
             {
                 header: `${eventTag}トリガーが離されたら`,
                 subHeader: "trigger released",
                 javascript: ``,
-                json: "[]",
+                json: `{"blocks":{"languageVersion":0,"blocks":[{"type":"event_trigger_released","id":"d#+{Y[:D]CO^1.ajOPv)","x":16,"y":-17}]}}`,
                 type: "EVENT_TRIGGER_RELEASED"
             },
         ]
@@ -52,21 +52,21 @@ export const fileTemplateGroups: IFileTempalteGroup[] = [
                 header: `${eventTag}キーが押されたら`,
                 subHeader: "key pressed",
                 javascript: ``,
-                json: "[]",
+                json: `{"blocks":{"languageVersion":0,"blocks":[{"type":"event_key_pressed","id":"colR%))R?sSdbm4t,vB3","x":16,"y":-17,"fields":{"KEY":{"id":"pzH?hx9HqkK0l/~|.@l6"}},"inputs":{"STATEMENT":{"block":{"type":"controls_if","id":";:v,N*]4iQ6AMCDH1OOm","inputs":{"IF0":{"block":{"type":"logic_expression","id":"V1QxLOwRWb1x--+eM:Tw","fields":{"operator":"EQUAL"},"inputs":{"LEFT_VALUE":{"block":{"type":"variables_get","id":")!{K|Wsx43klMtI|Gy$h","fields":{"VAR":{"id":"pzH?hx9HqkK0l/~|.@l6"}}}},"RIGHT_VALUE":{"block":{"type":"keys","id":"K+[Z+OG^.BUL4zbO2^%/","fields":{"VALUE":"A"}}}}}}}}}}}]},"variables":[{"name":"押されたキー","id":"pzH?hx9HqkK0l/~|.@l6"}]}`,
                 type: "EVENT_KEY_PRESSED"
             },
             {
                 header: `${eventTag}キーが離されたら`,
                 subHeader: "key released",
                 javascript: ``,
-                json: "[]",
+                json: `{"blocks":{"languageVersion":0,"blocks":[{"type":"event_key_released","id":"mcYln#~6W^X*cd0#5YuI","x":16,"y":-17,"fields":{"KEY":{"id":"i2a]rV[0kc$TVm/xRPTm"}},"inputs":{"STATEMENT":{"block":{"type":"controls_if","id":";:v,N*]4iQ6AMCDH1OOm","inputs":{"IF0":{"block":{"type":"logic_expression","id":"V1QxLOwRWb1x--+eM:Tw","fields":{"operator":"EQUAL"},"inputs":{"LEFT_VALUE":{"block":{"type":"variables_get","id":"?Ed8zPQY3yyly/I^cUMB","fields":{"VAR":{"id":"i2a]rV[0kc$TVm/xRPTm"}}}},"RIGHT_VALUE":{"block":{"type":"keys","id":"K+[Z+OG^.BUL4zbO2^%/","fields":{"VALUE":"A"}}}}}}}}}}}]},"variables":[{"name":"離されたキー","id":"i2a]rV[0kc$TVm/xRPTm"}]}`,
                 type: "EVENT_KEY_RELEASED"
             },
             {
                 header: `${eventTag}マウスが移動したら`,
                 subHeader: "mouse moved",
                 javascript: ``,
-                json: "[]",
+                json: ``,
                 type: "EVENT_MOUSE_MOVED"
             },
         ]

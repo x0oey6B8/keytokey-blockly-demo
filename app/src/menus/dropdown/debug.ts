@@ -1,6 +1,7 @@
 import { host } from "../../hosts/host";
 import { IDropDownMenuItem } from "../../models/dropdown";
 import { regenerateCode } from "../../models/regenerate";
+import { useAppStore } from "../../stores/appStore";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 import { useEditingMacro } from "../../stores/editingMacro";
 import { useEditorStore } from "../../stores/editorStore";
@@ -22,6 +23,15 @@ export class RegenerateCodeMenuItem implements IDropDownMenuItem {
 
         const editorStore = useEditorStore();
         editorStore.setCode(array.join('\n'), "javascript", true);
+
+        const editingStore = useEditingMacro();
+        const appStore = useAppStore();
+        const macro = editingStore.macro;
+        const code = appStore.implementation;
+        if (macro && code) {
+            macro.hasSetImplementationOnce = false;
+            macro.setImplementation({ code });
+        }
 
         const toaster = useNotificationStore();
         toaster.toastMessage("再生成完了", {

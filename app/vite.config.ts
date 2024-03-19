@@ -29,7 +29,8 @@ export default defineConfig(({ mode }) => {
         },
         base: basePath,
         build: {
-            outDir: "../root"
+            outDir: "../root",
+            chunkSizeWarningLimit: 6600,
         }
     }
 })
