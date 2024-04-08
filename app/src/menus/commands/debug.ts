@@ -34,14 +34,6 @@ class SessionSelectionCommandItem extends CommandItem {
                 const ids = session.loggedBlockIds.reverse();
                 const replayStore = useReplayStore();
                 replayStore.beginReplayMode(ids);
-
-                // for (const id of session.loggedBlockIds.reverse()) {
-                //     const block = workspaceSession.workspaceSvg.getBlockById(id);
-                //     if (block) {
-                //         workspaceSession.centerTo(block);
-                //     }
-                //     await wait(750);
-                // }
             }
         }
     }

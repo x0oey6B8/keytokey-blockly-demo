@@ -4,7 +4,7 @@
 */
 
 export class BlockColors {
-    // Variable = "#EC407A",  // Pink 400
+    static Variable = "#e05299";
     static Event = "#BAAC1C";
     static Logic = "#AB47BC";     // Purple 400
     static Loop = "#5ba55b";     // 

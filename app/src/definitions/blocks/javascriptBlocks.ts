@@ -1,5 +1,6 @@
 import Blockly, { Block } from "blockly";
 import { BlockColors } from "../../configurations/blockColors.ts";
+import { OutputType } from "./outputType.ts";
 
 export function defineJavascriptBlocks() {
     Blockly.Blocks['embedded_multiline_javascript'] = {
@@ -50,6 +51,20 @@ export function defineJavascriptBlocks() {
                 .appendField("値：");
             this.appendDummyInput()
                 .appendField("をJSON文字列に変換（改行あり）");
+            this.setColour(BlockColors.Text);
+            this.setOutput(true, null);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as Block;
+
+    Blockly.Blocks['json_parse'] = {
+        init: function () {
+            this.appendValueInput("VALUE")
+                .setCheck(OutputType.String)
+                .appendField("JSON文字列：");
+            this.appendDummyInput()
+                .appendField("をJSONに変換");
             this.setColour(BlockColors.Text);
             this.setOutput(true, null);
             this.setTooltip("");

@@ -1,5 +1,6 @@
 import Blockly, { BlockSvg } from "blockly";
 import { BlockColors } from "../../configurations/blockColors.ts";
+import { OutputType } from "./outputType.ts";
 
 export function defineWaitBlocks() {
     Blockly.Blocks['wait'] = {
@@ -36,30 +37,15 @@ export function defineWaitBlocks() {
 
     Blockly.Blocks['wait_for_input'] = {
         init: function () {
-            this.appendValueInput("KEY")
-                .setCheck("Keys");
+            this.appendValueInput("INPUT")
+                .setCheck([OutputType.Keys, OutputType.ControllerButtons]);
             this.appendDummyInput()
                 .appendField("の入力を待つ");
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(BlockColors.Action);
-            this.setTooltip("指定したキーの入力を待ちます。");
-            this.setHelpUrl("");
-        }
-    } as BlockSvg;
-    Blockly.Blocks['wait_for_controller'] = {
-        init: function () {
-            this.appendValueInput("BUTTON")
-                .appendField("コントローラー：")
-                .setCheck("ControllerButtons");
-            this.appendDummyInput()
-                .appendField("の入力を待つ");
-            this.setInputsInline(true);
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(BlockColors.Action);
-            this.setTooltip("指定したコントローラーの入力を待ちます。");
+            this.setTooltip("指定した入力を待ちます。");
             this.setHelpUrl("");
         }
     } as BlockSvg;

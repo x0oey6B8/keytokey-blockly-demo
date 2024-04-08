@@ -4,20 +4,17 @@ import { controllerButtons } from "../blocks/controllerButtons";
 
 export class MAPPING_SUSPEND_RESUME extends BlockCodeGenerator {
     name = "mapping_suspend_resume";
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const array = this.valueToCode(block, "INPUT_LIST", "NONE");
         const targetDevice = this.getFieldValue(block, "TARGET_DEVICE");
         const code = `mapping.suspend("${targetDevice}", ${array});\n`;
         return code;
     }
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsFreeString(block);
-    }
 }
 
 export class MAPPING_INPUT_ARRAY extends BlockCodeGenerator {
     name = "mapping_input_list";
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         let code = "";
         const dropdown = this.getFieldValue(block, "DROPDOWN");
         switch (dropdown) {
@@ -38,8 +35,5 @@ export class MAPPING_INPUT_ARRAY extends BlockCodeGenerator {
                 break;
         }
         return { code, order: "NONE" };
-    }
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsFreeString(block);
     }
 }

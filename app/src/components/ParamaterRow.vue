@@ -1,5 +1,8 @@
 <script lang="ts" setup>
-import { ValueType } from '../hosts/macroManager';
+import { ref } from 'vue';
+import { host } from '../hosts/host';
+import { InputType } from '../hosts/listener';
+import { ValueType, ValueTypeToDefaultValue } from '../hosts/macroManager';
 import { IValueType } from './ModalParameterEditor.vue';
 
 const props = defineProps<{
@@ -7,12 +10,72 @@ const props = defineProps<{
     valueTypes: IValueType[],
 }>();
 
+const blinking = ref(false);
+
+const menus: IParameterRowContextMenu[] = [
+    {
+        valueType: "NUMBER",
+        menuItems: []
+    },
+    {
+        valueType: "STRING",
+        menuItems: []
+    },
+    {
+        valueType: "BOOLEAN",
+        menuItems: [
+            {
+                header: "はい／有効／正しい",
+                callback: (rowProps) => {
+                    rowProps.defaultValue = "True";
+                }
+            },
+            {
+                header: "いいえ／無効／正しくない",
+                callback: (rowProps) => {
+                    rowProps.defaultValue = "False";
+                }
+            }
+        ]
+    },
+    {
+        valueType: "KEYS",
+        menuItems: [
+            {
+                header: "キー／マウスを入力して値をセットする",
+                callback: async (rowProps) => {
+                    blinking.value = true;
+                    rowProps.defaultValue = "キー／マウスを入力してください"
+                    const result = await host.listener.waitForInput({ listenType: InputType.KeyboardOrMouse });
+                    rowProps.defaultValue = `Keys.${result.name}`;
+                    blinking.value = false;
+                }
+            },
+        ]
+    },
+]
+
 function getValueColor(valueType: ValueType) {
     const def = props.valueTypes.find(t => t.value === valueType);
     const color = def?.fontColor ?? "";
     const style = { color };
     return style
 }
+
+function setDefaultValue(type: ValueType, row: any) {
+    row.defaultValue = ValueTypeToDefaultValue.convert(type);
+}
+
+interface IParameterRowContextMenu {
+    valueType: ValueType,
+    menuItems: IParameterRowContextMenuItem[]
+}
+
+interface IParameterRowContextMenuItem {
+    header: string;
+    callback: (rowProps: any) => void;
+}
+
 </script>
 
 <template>
@@ -26,8 +89,10 @@ function getValueColor(valueType: ValueType) {
                 v-model="tableProps.row.valueType" 
                 emit-value
                 map-options
+                style="width: 160px"
                 :options="valueTypes"
-                :option-value="opt => opt.value">
+                :option-value="opt => opt.value"
+                @update:model-value="valueType => setDefaultValue(valueType, tableProps.row)">
                 <!-- 選択アイテム -->
                 <template v-slot:selected-item="scope">
                     <div :class="scope.opt.valueTypeClass">
@@ -50,13 +115,18 @@ function getValueColor(valueType: ValueType) {
                 filled
                 v-model="tableProps.row.defaultValue"
                 :input-style="getValueColor(tableProps.row.valueType)"
+                :class="{'blinking': blinking}"
                 color="green"
                 class="full-width"
                 lazy-rules>
                 <q-menu touch-position context-menu>
                     <q-list dense style="min-width: 100px">
-                        <q-item clickable v-close-popup>
-                            <q-item-section>Open...</q-item-section>
+                        <q-item clickable v-close-popup
+                            v-for="menuItem of menus.find(menu => menu.valueType === tableProps.row.valueType)?.menuItems"
+                            @click="menuItem.callback(tableProps.row)">
+                            <q-item-section class="font-size-14 q-pa-sm">
+                                {{ menuItem.header }}
+                            </q-item-section>
                         </q-item>
                     </q-list>
                 </q-menu>

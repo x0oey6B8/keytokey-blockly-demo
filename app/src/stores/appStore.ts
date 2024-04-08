@@ -41,23 +41,27 @@ export const useAppStore = defineStore("AppStore", () => {
         setNewMacro,
         loadBlocks,
         clear,
-        readImplementationFile
+        fetchImplementationFile,
+        fetchImp,
     };
 
-    function readImplementationFile() {
+    function fetchImplementationFile() {
         try {
-            const url = import.meta.env.BASE_URL + "implementation.js";
-            console.log(url);
-            return fetch(url)
-                .then(async (response) => {
-                    if (response.ok) {
-                        implementation.value = await response.text();
-                    }
-                })
-                .catch(() => "");
+            return fetchImp().then(t => implementation.value = t);
         } catch (error) {
             return "";
         }
+    }
+
+    function fetchImp(): Promise<string> {
+        const url = import.meta.env.BASE_URL + "implementation.js";
+        return fetch(url, { cache: "no-store" }).then(async (res) => {
+            if (res.ok) {
+                return res.text();
+            } else {
+                return "";
+            }
+        });
     }
 
     function openDropdownMenus() {
@@ -147,7 +151,8 @@ export class SourceCodeWriter implements ISourceCodeWriter {
         const javascript = sourceCode.javascript;
         editing.file?.deboucedWrite(json, javascript);
         if (editing.macro?.debouncedSetImplementation) {
-            editing.macro?.debouncedSetImplementation({ code: appStore.implementation });
+            const macroName = editing.macro.name;
+            editing.macro?.debouncedSetImplementation({ code: appStore.implementation, macroName });
         }
     }
 }

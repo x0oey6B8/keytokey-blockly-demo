@@ -91,14 +91,18 @@ export interface IValueType {
                                 <span class="text-red">「ここから実行」</span>関数ブロックに引数が設定されていません。<br>
 
                                 <h5 class="q-mt-ex q-mb-sm">引数とは</h5>
-                                マクロ実行時、マクロから値を受け取ることができる機能です。<br>
-                                引数を設定するとマクロを割り当てる際マクロの選択画面に各引数の値入力欄が表示されます。<br>
-                                設定された値は実行時、引数と同じ名前の変数ブロックに格納されます。<br>
+                                マクロから数値、文字列、真理値、キー、などの値を受け取る機能です。<br>
+                                引数を設定すると、マクロを割り当てる際、マクロの選択画面に各引数の値入力欄が表示されます。<br>
                                 <img src="../assets/ss/param/param1.png" width="50%" height="50%"/>
+                                <br><br>
+                                設定された値は実行時、引数と同じ名前の変数ブロックで受け取る事ができます。<br>
+                                <img src="../assets/ss/param/param3.png" width="25%" height="25%"/>
 
                                 <h5 class="q-mt-ex q-mb-sm">設定方法</h5>
                                 「ここから実行」関数ブロック左の歯車アイコンから引数の設定が可能です。<br>
-                                引数の設定後、再度この画面を表示することで詳細設定を行うことができます。<br>
+                                <span class="text-yellow">引数の設定後、再度この画面を表示することで詳細設定を行うことができます。</span>
+                                <br>
+                                <br>
                                 <img src="../assets/ss/param/param2.png"/>
                             </div>
                             <q-table 
@@ -124,6 +128,10 @@ export interface IValueType {
 </template>
 
 <style lang="css" scoped>
+
+    .under-line {
+        color: yellow;
+    }
 
     .entire {
         width: 100%;

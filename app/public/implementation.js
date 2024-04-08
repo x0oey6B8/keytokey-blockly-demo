@@ -28,6 +28,66 @@
             y: _globals.Random(y_from, y_to),
         }
     }
+
+    toArray(clrArray) {
+        const array = [];
+        for (const v of clrArray) {
+            array.push(v);
+        }
+        return array;
+    }
+}
+
+class Console {
+
+    static Default = new Console();
+
+    /**
+    * @param {any} value
+    * @returns {void}
+    */
+    log(value) {
+        if (typeof value !== "boolean" && !value) {
+            clr.System.Console.WriteLine();
+        } else if (value.isJson()) {
+            clr.System.Console.WriteLine(JSON.stringify(value));
+        } else if (value.dump) {
+            value.dump();
+        } else {
+            const t = host.asType(clr.System.Object, value).GetType();
+            const name = t.FullName;
+            if (name === "Microsoft.ClearScript.V8.V8ScriptItem+V8ScriptObject") {
+                clr.System.Console.WriteLine(value.constructor.name);
+            } else if (name === "Microsoft.ClearScript.V8.V8ScriptItem+V8Array") {
+                clr.System.Console.WriteLine(JSON.stringify(value));
+            } else {
+                clr.System.Console.WriteLine(value);
+            }
+        }
+    }
+
+    /** コンソールに区切り線を出力します */
+    separate() {
+        clr.System.Console.WriteLine("-".repeat(this.width()));
+    }
+
+    clear() {
+        return clr.System.Console.Clear();
+    }
+
+    /**
+     * @returns {number} コンソールの横幅
+     */
+    width() {
+        return clr.System.Console.BufferWidth;
+    }
+
+    /**
+     * @returns {number} コンソールの縦幅
+     */
+    height() {
+        return clr.System.Console.BufferHeight;
+    }
 }
 
 class Bounds {
@@ -59,13 +119,54 @@ class Bounds {
     }
 }
 
-class Variables {
-    getGlobalVariable = (name) => {
+class Variable {
 
+    _variableDic;
+
+    constructor(variableDic) {
+        this._variableDic = variableDic;
     }
 
-    setValueToGlobalVariable = (name) => {
+    exists(name) {
+        name = this._prependPrefix(name);
+        return this._variableDic.ContainsKey(name);
+    }
 
+    get(name) {
+        const value = this._getValue(name);
+        return value;
+    }
+
+    set(name, value) {
+        if (this.exists(this._prependPrefix(name))) {
+            name = this._prependPrefix(name);
+            this._variableDic.SetValue(name, value);
+        } else {
+            const encodedName = this._prependPrefix(nameEncoder.Encode(name));
+            this._variableDic.SetValue(encodedName, value);
+        }
+    }
+
+    _prependPrefix(name) {
+        if (name === undefined) {
+            return "";
+        }
+
+        if (!name.startsWith("$")) {
+            name = `$${name}`;
+        }
+        return name;
+    }
+
+    _getValue(name) {
+        const encodedName = this._prependPrefix(nameEncoder.Encode(name));
+        if (this.exists(this._prependPrefix(name))) {
+            name = this._prependPrefix(name);
+            return this._variableDic.GetValue(name);
+        } else if (this.exists(encodedName)) {
+            return this._variableDic.GetValue(encodedName);
+        }
+        throw Error(`変数「${name}」が存在しませんでした`);
     }
 }
 
@@ -99,8 +200,8 @@ class Wait {
         }
     }
 
-    waitForInput = (keyName) => {
-        return _globals.WaitForInput(keyName.toClrKeys(), true);
+    waitForInput = (key) => {
+        return _globals.WaitForInput(key, true);
     }
 
     waitForController = (controllerButtonName) => {
@@ -118,29 +219,83 @@ class Events {
                 });
                 return;
             case "trigger-pressed":
-                _globals.TriggePressed.connect(function (_, args) {
+                _globals.TriggerPressed.connect(function (_, args) {
                     handle(args);
                 });
                 return;
             case "trigger-released":
-                _globals.TriggeReleased.connect(function (_, args) {
+                _globals.TriggerReleased.connect(function (_, args) {
                     handle(args);
                 });
                 return;
             case "key-pressed":
-                _globals.KeyStateChanged.connect(function (_, args) {
-                    if (args.IsInjected || !args.IsPressed) {
-                        return;
-                    }
-                    handle({ key: args.Key.ToString() });
+                _globals.Hooked.connect(function (_, args) {
+                    if (args.IsInjected) { return; }
+                    if (!args.IsPressed) { return; }
+                    if (args.EventType != clr.KeyToKey.Plugins.EventType.Stroke) { return; }
+                    const key = args.Key;
+                    const isRepeated = args.IsRepeated;
+                    const cancel = args.IsCancel;
+                    const e = { key, isRepeated, cancel };
+                    handle(e);
+                    args.IsCancel = e.cancel;
                 });
                 return;
             case "key-released":
-                _globals.KeyStateChanged.connect(function (_, args) {
-                    if (args.IsInjected || args.IsPressed) {
+                _globals.Hooked.connect(function (_, args) {
+                    if (args.IsInjected) { return; }
+                    if (args.IsPressed) { return; }
+                    if (args.EventType != clr.KeyToKey.Plugins.EventType.Stroke) { return; }
+                    const key = args.Key;
+                    const cancel = args.IsCancel;
+                    const e = { key, cancel };
+                    handle(e);
+                    args.IsCancel = e.cancel;
+                });
+                return;
+            case "key-state-changed":
+                _globals.Hooked.connect(function (_, args) {
+                    if (args.EventType != clr.KeyToKey.Plugins.EventType.Stroke) {
                         return;
                     }
-                    handle({ key: args.Key.ToString() });
+                    const key = args.Key;
+                    const isKeyPressed = args.IsPressed;
+                    const isInputByApp = args.IsInjected;
+                    const isRepeated = args.IsRepeated;
+                    const IsToggleKey = args.IsToggleKey;
+                    const cancel = args.IsCancel;
+                    const e = { key, isKeyPressed, isRepeated, IsToggleKey, isInputByApp, cancel };
+                    handle(e);
+                    args.IsCancel = e.cancel;
+                });
+                return;
+            case "mouse-moved":
+                _globals.MouseMoving.connect(function (_, args) {
+                    if (args.IsInjected) {
+                        return;
+                    }
+                    const newPoint = {
+                        x: args.NewPoint.X,
+                        y: args.NewPoint.Y
+                    };
+                    const oldPoint = {
+                        x: args.OldPoint.X,
+                        y: args.OldPoint.Y
+                    };
+                    const deltaX = args.Delta.X;
+                    const deltaY = args.Delta.Y;
+                    const isInputByApp = e.IsInjected;
+                    const cancel = args.IsCancel;
+                    const e = { newPoint, oldPoint, deltaX, deltaY, isInputByApp, cancel };
+                    handle(e);
+                    args.IsCancel = e.cancel;
+                });
+                return;
+            case "controller-state-changed":
+                _globals.ControllerStateChanged.connect(function (_, args) {
+                    const input = args.Button;
+                    const isInputPressed = args.IsPressed;
+                    handle({ input, isInputPressed });
                 });
                 return;
             case "":
@@ -254,14 +409,14 @@ class Trigger {
         if (!this.isKeyOrMouse) {
             throw new Error("キーボード、もしくはマウスがトリガーとして使用されていないため値を取得することができません。");
         }
-        return _globals.Trigger.Value.ToString();
+        return _globals.Trigger.Value;
     }
 
     get asController() {
         if (!this.isController) {
             throw new Error("コントローラーがトリガーとして使用されていないため値を取得することができません。");
         }
-        return _globals.Trigger.Value.ToString();
+        return _globals.Trigger.Value;
     }
 }
 
@@ -269,36 +424,60 @@ class Keyboard {
 
     static Default = new Keyboard();
 
-    down = (keyName) => {
-        const key = keyName.toClrKeys();
+    /**
+     * キーを押します
+     * @param {Keys} key 押すキー
+     * @returns {void}
+     */
+    down = (key) => {
         return _globals.Key.Find(key).Down();
     }
 
-    up = (keyName) => {
-        const key = keyName.toClrKeys();
+    /**
+     * キーを離します
+     * @param {Keys} key 離すキー
+     * @returns {void}
+     */
+    up = (key) => {
         return _globals.Key.Find(key).Up();
     }
-    tap = (keyName, wait1, wait2) => {
-        const key = keyName.toClrKeys();
+
+    /**
+     * キーを押して離します
+     * @param {Keys} key 入力するキー
+     * @param {number} wait1 押したあとの待機時間
+     * @param {number} wait2 離したあとの待機時間
+     * @returns {void}
+     */
+    tap = (key, wait1, wait2) => {
         return _globals.Key.Find(key).Tap(wait1, wait2);
     }
 
+    /** 
+     * 文字を入力
+     * @param {string} text 入力する文字
+     * @param {number} interval 文字の入力間隔
+     * @returns {void}
+     */
     inputText = (text, interval) => {
         _globals.InputText(text, interval);
     }
 
+    /** 
+     * 入力記録を再生
+     * @param {string} path 記録ファイルのパス 
+     */
     replay = (path) => {
         _globals.Replay(path);
     }
 
-    /*
-        v = {
-            excludedKeys: string[] // key name
-        }
-    */
+    /** 
+     * すべてのキーを離します
+     * @param {{excludedKeys: Keys[]}} v 除外するキー
+     */
     upAllKeys = (v) => {
         if (v.excludedKeys) {
-            const excludedKeys = v.excludedKeys.map(name => name.toClrKeys()).toClrArray(clr.KeyToKey.Enums.Keys);
+            const excludedKeys = v.excludedKeys.toClrArray(clr.KeyToKey.Enums.Keys);
             _globals.Key.UpAll(excludedKeys);
         }
     }
@@ -1207,90 +1386,302 @@ class VirtualDualShock4TriggerWrapper {
     }
 }
 
+class Keys {
+    static None = clr.KeyToKey.Enums.Keys.None;
+    static LButton = clr.KeyToKey.Enums.Keys.LButton;
+    static RButton = clr.KeyToKey.Enums.Keys.RButton;
+    static MButton = clr.KeyToKey.Enums.Keys.MButton;
+    static XButton1 = clr.KeyToKey.Enums.Keys.XButton1;
+    static XButton2 = clr.KeyToKey.Enums.Keys.XButton2;
+    static LShiftKey = clr.KeyToKey.Enums.Keys.LShiftKey;
+    static RShiftKey = clr.KeyToKey.Enums.Keys.RShiftKey;
+    static LControlKey = clr.KeyToKey.Enums.Keys.LControlKey;
+    static RControlKey = clr.KeyToKey.Enums.Keys.RControlKey;
+    static LAlt = clr.KeyToKey.Enums.Keys.LAlt;
+    static RAlt = clr.KeyToKey.Enums.Keys.RAlt;
+    static LWin = clr.KeyToKey.Enums.Keys.LWin;
+    static RWin = clr.KeyToKey.Enums.Keys.RWin;
+    static Enter = clr.KeyToKey.Enums.Keys.Enter;
+    static Space = clr.KeyToKey.Enums.Keys.Space;
+    static Escape = clr.KeyToKey.Enums.Keys.Escape;
+    static Back = clr.KeyToKey.Enums.Keys.Back;
+    static Tab = clr.KeyToKey.Enums.Keys.Tab;
+    static Up = clr.KeyToKey.Enums.Keys.Up;
+    static Down = clr.KeyToKey.Enums.Keys.Down;
+    static Left = clr.KeyToKey.Enums.Keys.Left;
+    static Right = clr.KeyToKey.Enums.Keys.Right;
+    static D0 = clr.KeyToKey.Enums.Keys.D0;
+    static D1 = clr.KeyToKey.Enums.Keys.D1;
+    static D2 = clr.KeyToKey.Enums.Keys.D2;
+    static D3 = clr.KeyToKey.Enums.Keys.D3;
+    static D4 = clr.KeyToKey.Enums.Keys.D4;
+    static D5 = clr.KeyToKey.Enums.Keys.D5;
+    static D6 = clr.KeyToKey.Enums.Keys.D6;
+    static D7 = clr.KeyToKey.Enums.Keys.D7;
+    static D8 = clr.KeyToKey.Enums.Keys.D8;
+    static D9 = clr.KeyToKey.Enums.Keys.D9;
+    static A = clr.KeyToKey.Enums.Keys.A;
+    static B = clr.KeyToKey.Enums.Keys.B;
+    static C = clr.KeyToKey.Enums.Keys.C;
+    static D = clr.KeyToKey.Enums.Keys.D;
+    static E = clr.KeyToKey.Enums.Keys.E;
+    static F = clr.KeyToKey.Enums.Keys.F;
+    static G = clr.KeyToKey.Enums.Keys.G;
+    static H = clr.KeyToKey.Enums.Keys.H;
+    static I = clr.KeyToKey.Enums.Keys.I;
+    static J = clr.KeyToKey.Enums.Keys.J;
+    static K = clr.KeyToKey.Enums.Keys.K;
+    static L = clr.KeyToKey.Enums.Keys.L;
+    static M = clr.KeyToKey.Enums.Keys.M;
+    static N = clr.KeyToKey.Enums.Keys.N;
+    static O = clr.KeyToKey.Enums.Keys.O;
+    static P = clr.KeyToKey.Enums.Keys.P;
+    static Q = clr.KeyToKey.Enums.Keys.Q;
+    static R = clr.KeyToKey.Enums.Keys.R;
+    static S = clr.KeyToKey.Enums.Keys.S;
+    static T = clr.KeyToKey.Enums.Keys.T;
+    static U = clr.KeyToKey.Enums.Keys.U;
+    static V = clr.KeyToKey.Enums.Keys.V;
+    static W = clr.KeyToKey.Enums.Keys.W;
+    static X = clr.KeyToKey.Enums.Keys.X;
+    static Y = clr.KeyToKey.Enums.Keys.Y;
+    static Z = clr.KeyToKey.Enums.Keys.Z;
+    static Apps = clr.KeyToKey.Enums.Keys.Apps;
+    static NumLock = clr.KeyToKey.Enums.Keys.NumLock;
+    static NumPad0 = clr.KeyToKey.Enums.Keys.NumPad0;
+    static NumPad1 = clr.KeyToKey.Enums.Keys.NumPad1;
+    static NumPad2 = clr.KeyToKey.Enums.Keys.NumPad2;
+    static NumPad3 = clr.KeyToKey.Enums.Keys.NumPad3;
+    static NumPad4 = clr.KeyToKey.Enums.Keys.NumPad4;
+    static NumPad5 = clr.KeyToKey.Enums.Keys.NumPad5;
+    static NumPad6 = clr.KeyToKey.Enums.Keys.NumPad6;
+    static NumPad7 = clr.KeyToKey.Enums.Keys.NumPad7;
+    static NumPad8 = clr.KeyToKey.Enums.Keys.NumPad8;
+    static NumPad9 = clr.KeyToKey.Enums.Keys.NumPad9;
+    static NumPadEnter = clr.KeyToKey.Enums.Keys.NumPadEnter;
+    static Multiply = clr.KeyToKey.Enums.Keys.Multiply;
+    static Add = clr.KeyToKey.Enums.Keys.Add;
+    static Subtract = clr.KeyToKey.Enums.Keys.Subtract;
+    static Decimal = clr.KeyToKey.Enums.Keys.Decimal;
+    static Divide = clr.KeyToKey.Enums.Keys.Divide;
+    static F1 = clr.KeyToKey.Enums.Keys.F1;
+    static F2 = clr.KeyToKey.Enums.Keys.F2;
+    static F3 = clr.KeyToKey.Enums.Keys.F3;
+    static F4 = clr.KeyToKey.Enums.Keys.F4;
+    static F5 = clr.KeyToKey.Enums.Keys.F5;
+    static F6 = clr.KeyToKey.Enums.Keys.F6;
+    static F7 = clr.KeyToKey.Enums.Keys.F7;
+    static F8 = clr.KeyToKey.Enums.Keys.F8;
+    static F9 = clr.KeyToKey.Enums.Keys.F9;
+    static F10 = clr.KeyToKey.Enums.Keys.F10;
+    static F11 = clr.KeyToKey.Enums.Keys.F11;
+    static F12 = clr.KeyToKey.Enums.Keys.F12;
+    static F13 = clr.KeyToKey.Enums.Keys.F13;
+    static F14 = clr.KeyToKey.Enums.Keys.F14;
+    static F15 = clr.KeyToKey.Enums.Keys.F15;
+    static F16 = clr.KeyToKey.Enums.Keys.F16;
+    static F17 = clr.KeyToKey.Enums.Keys.F17;
+    static F18 = clr.KeyToKey.Enums.Keys.F18;
+    static F19 = clr.KeyToKey.Enums.Keys.F19;
+    static F20 = clr.KeyToKey.Enums.Keys.F20;
+    static F21 = clr.KeyToKey.Enums.Keys.F21;
+    static F22 = clr.KeyToKey.Enums.Keys.F22;
+    static F23 = clr.KeyToKey.Enums.Keys.F23;
+    static F24 = clr.KeyToKey.Enums.Keys.F24;
+    static PrintScreen = clr.KeyToKey.Enums.Keys.PrintScreen;
+    static PageUp = clr.KeyToKey.Enums.Keys.PageUp;
+    static PageDown = clr.KeyToKey.Enums.Keys.PageDown;
+    static Insert = clr.KeyToKey.Enums.Keys.Insert;
+    static Delete = clr.KeyToKey.Enums.Keys.Delete;
+    static Scroll = clr.KeyToKey.Enums.Keys.Scroll;
+    static Pause = clr.KeyToKey.Enums.Keys.Pause;
+    static Cancel = clr.KeyToKey.Enums.Keys.Cancel;
+    static Clear = clr.KeyToKey.Enums.Keys.Clear;
+    static CapsLock = clr.KeyToKey.Enums.Keys.CapsLock;
+    static End = clr.KeyToKey.Enums.Keys.End;
+    static Home = clr.KeyToKey.Enums.Keys.Home;
+    static Select = clr.KeyToKey.Enums.Keys.Select;
+    static Help = clr.KeyToKey.Enums.Keys.Help;
+    static Print = clr.KeyToKey.Enums.Keys.Print;
+    static Oemplus = clr.KeyToKey.Enums.Keys.Oemplus;
+    static OemComma = clr.KeyToKey.Enums.Keys.OemComma;
+    static OemMinus = clr.KeyToKey.Enums.Keys.OemMinus;
+    static OemPeriod = clr.KeyToKey.Enums.Keys.OemPeriod;
+    static Oem1 = clr.KeyToKey.Enums.Keys.Oem1;
+    static Oem2 = clr.KeyToKey.Enums.Keys.Oem2;
+    static Oem3 = clr.KeyToKey.Enums.Keys.Oem3;
+    static Oem4 = clr.KeyToKey.Enums.Keys.Oem4;
+    static Oem5 = clr.KeyToKey.Enums.Keys.Oem5;
+    static Oem6 = clr.KeyToKey.Enums.Keys.Oem6;
+    static Oem7 = clr.KeyToKey.Enums.Keys.Oem7;
+    static Oem102 = clr.KeyToKey.Enums.Keys.Oem102;
+    static ZenHan = clr.KeyToKey.Enums.Keys.ZenHan;
+    static KanaMode = clr.KeyToKey.Enums.Keys.KanaMode;
+    static JunjaMode = clr.KeyToKey.Enums.Keys.JunjaMode;
+    static FinalMode = clr.KeyToKey.Enums.Keys.FinalMode;
+    static IMEConvert = clr.KeyToKey.Enums.Keys.IMEConvert;
+    static IMENonconvert = clr.KeyToKey.Enums.Keys.IMENonconvert;
+    static IMEAccept = clr.KeyToKey.Enums.Keys.IMEAccept;
+    static IMEModeChange = clr.KeyToKey.Enums.Keys.IMEModeChange;
+    static Packet = clr.KeyToKey.Enums.Keys.Packet;
+    static Sleep = clr.KeyToKey.Enums.Keys.Sleep;
+    static Play = clr.KeyToKey.Enums.Keys.Play;
+    static Zoom = clr.KeyToKey.Enums.Keys.Zoom;
+    static OemClear = clr.KeyToKey.Enums.Keys.OemClear;
+    static KanaHira = clr.KeyToKey.Enums.Keys.KanaHira;
+    static VolumeMute = clr.KeyToKey.Enums.Keys.VolumeMute;
+    static VolumeDown = clr.KeyToKey.Enums.Keys.VolumeDown;
+    static VolumeUp = clr.KeyToKey.Enums.Keys.VolumeUp;
+    static MediaNextTrack = clr.KeyToKey.Enums.Keys.MediaNextTrack;
+    static MediaPreviousTrack = clr.KeyToKey.Enums.Keys.MediaPreviousTrack;
+    static MediaStop = clr.KeyToKey.Enums.Keys.MediaStop;
+}
+
+class ControllerButtons {
+    static A = clr.KeyToKey.Enums.ControllerButtons.A;
+    static B = clr.KeyToKey.Enums.ControllerButtons.B;
+    static X = clr.KeyToKey.Enums.ControllerButtons.X;
+    static Y = clr.KeyToKey.Enums.ControllerButtons.Y;
+    static DPadUp = clr.KeyToKey.Enums.ControllerButtons.DPadUp;
+    static DPadDown = clr.KeyToKey.Enums.ControllerButtons.DPadDown;
+    static DPadLeft = clr.KeyToKey.Enums.ControllerButtons.DPadLeft;
+    static DPadRight = clr.KeyToKey.Enums.ControllerButtons.DPadRight;
+    static Start = clr.KeyToKey.Enums.ControllerButtons.Start;
+    static Back = clr.KeyToKey.Enums.ControllerButtons.Back;
+    static LB = clr.KeyToKey.Enums.ControllerButtons.LB;
+    static RB = clr.KeyToKey.Enums.ControllerButtons.RB;
+    static LT = clr.KeyToKey.Enums.ControllerButtons.LT;
+    static RT = clr.KeyToKey.Enums.ControllerButtons.RT;
+    static LeftStickUp = clr.KeyToKey.Enums.ControllerButtons.LeftStickUp;
+    static LeftStickDown = clr.KeyToKey.Enums.ControllerButtons.LeftStickDown;
+    static LeftStickLeft = clr.KeyToKey.Enums.ControllerButtons.LeftStickLeft;
+    static LeftStickRight = clr.KeyToKey.Enums.ControllerButtons.LeftStickRight;
+    static LeftStickPush = clr.KeyToKey.Enums.ControllerButtons.LeftStickPush;
+    static RightStickUp = clr.KeyToKey.Enums.ControllerButtons.RightStickUp;
+    static RightStickDown = clr.KeyToKey.Enums.ControllerButtons.RightStickDown;
+    static RightStickLeft = clr.KeyToKey.Enums.ControllerButtons.RightStickLeft;
+    static RightStickRight = clr.KeyToKey.Enums.ControllerButtons.RightStickRight;
+    static RightStickPush = clr.KeyToKey.Enums.ControllerButtons.RightStickPush;
+    static ExButton0 = clr.KeyToKey.Enums.ControllerButtons.ExButton0;
+    static ExButton1 = clr.KeyToKey.Enums.ControllerButtons.ExButton1;
+    static ExButton2 = clr.KeyToKey.Enums.ControllerButtons.ExButton2;
+    static ExButton3 = clr.KeyToKey.Enums.ControllerButtons.ExButton3;
+    static ExButton4 = clr.KeyToKey.Enums.ControllerButtons.ExButton4;
+    static ExButton5 = clr.KeyToKey.Enums.ControllerButtons.ExButton5;
+    static ExButton6 = clr.KeyToKey.Enums.ControllerButtons.ExButton6;
+    static ExButton7 = clr.KeyToKey.Enums.ControllerButtons.ExButton7;
+    static ExButton8 = clr.KeyToKey.Enums.ControllerButtons.ExButton8;
+    static ExButton9 = clr.KeyToKey.Enums.ControllerButtons.ExButton9;
+    static ExButton10 = clr.KeyToKey.Enums.ControllerButtons.ExButton10;
+    static ExButton11 = clr.KeyToKey.Enums.ControllerButtons.ExButton11;
+    static ExButton12 = clr.KeyToKey.Enums.ControllerButtons.ExButton12;
+    static ExButton13 = clr.KeyToKey.Enums.ControllerButtons.ExButton13;
+    static ExButton14 = clr.KeyToKey.Enums.ControllerButtons.ExButton14;
+}
+
 /*
     初期化
 */
+try {
+    // プロパティ
+    globalThis.console = Console.Default;
+    globalThis.trigger = new Trigger();
+    globalThis.mouse = new Mouse();
+    globalThis.controller = new Controller(_globals.Controller);
+    globalThis.xinput0 = new Controller(_globals.Controller.GetXInputController(0));
+    globalThis.xinput1 = new Controller(_globals.Controller.GetXInputController(1));
+    globalThis.xinput2 = new Controller(_globals.Controller.GetXInputController(2));
+    globalThis.xinput3 = new Controller(_globals.Controller.GetXInputController(3));
+    globalThis.virtualXInput0 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(0));
+    globalThis.virtualXInput1 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(1));
+    globalThis.virtualXInput2 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(2));
+    globalThis.virtualXInput3 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(3));
+    globalThis.dualShock4 = new VirtualDualShock4Wrapper(_globals.DualShock4);
+    globalThis.templateMatching = new TemplateMatching();
+    globalThis.mapping = new Mapping();
 
-// プロパティ
-globalThis.trigger = new Trigger();
-globalThis.mouse = new Mouse();
-globalThis.controller = new Controller(_globals.Controller);
-globalThis.xinput0 = new Controller(_globals.Controller.GetXInputController(0));
-globalThis.xinput1 = new Controller(_globals.Controller.GetXInputController(1));
-globalThis.xinput2 = new Controller(_globals.Controller.GetXInputController(2));
-globalThis.xinput3 = new Controller(_globals.Controller.GetXInputController(3));
-globalThis.virtualXInput0 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(0));
-globalThis.virtualXInput1 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(1));
-globalThis.virtualXInput2 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(2));
-globalThis.virtualXInput3 = new VirtualXInputWrapper(_globals.VirtualXInput.GetController(3));
-globalThis.dualShock4 = new VirtualDualShock4Wrapper(_globals.DualShock4);
-globalThis.templateMatching = new TemplateMatching();
-globalThis.mapping = new Mapping();
+    // 変数
+    globalThis.localVariable = new Variable(_globals.LocalVariables);
+    globalThis.globalVariable = new Variable(_globals.GlobalVariables);
 
-// ユーティリティ
-globalThis.randomPoint = Utilities.Default.randomPoint;
-globalThis.newBounds = Utilities.Default.newBounds;
-globalThis.newPoint = Utilities.Default.newPoint;
-globalThis.newSize = Utilities.Default.newSize;
-Array.prototype.toClrArray = function (type) {
-    var clrArray = host.newArr(type, this.length);
-    for (let index = 0; index < this.length; index++) {
-        const element = this[index];
-        clrArray[index] = element;
+    // ユーティリティ
+    globalThis.randomPoint = Utilities.Default.randomPoint;
+    globalThis.newBounds = Utilities.Default.newBounds;
+    globalThis.newPoint = Utilities.Default.newPoint;
+    globalThis.newSize = Utilities.Default.newSize;
+    Object.prototype.isKey = function () {
+        const isKey = host.isType(clr.KeyToKey.Enums.Keys, this);
+        return isKey;
     }
-    return clrArray;
+    Object.prototype.isControllerElement = function () {
+        const isControllerElement = host.isType(clr.KeyToKey.Enums.ControllerElements, this);
+        return isControllerElement;
+    }
+    Object.prototype.isJson = function () {
+        return this.constructor.name === "Object";
+    }
+    Object.prototype.isClassInstance = function () {
+        return this.constructor.name !== "Object";
+    }
+    Array.prototype.toClrArray = function (type) {
+        var clrArray = host.newArr(type, this.length);
+        for (let index = 0; index < this.length; index++) {
+            const element = this[index];
+            clrArray[index] = element;
+        }
+        return clrArray;
+    }
+    String.prototype.toClrKeys = function () {
+        const keyName = this.toString();
+        return toKeys(keyName);
+    };
+    String.prototype.toClrControllerButtons = function () {
+        const type = host.typeOf(clr.KeyToKey.Enums.ControllerButtons);
+        const v = toEnum(type, this.toString());
+        return v;
+    }
+    String.prototype.toClrIMEConversionMode = function () {
+        const type = host.typeOf(clr.KeyToKey.Enums.IMEConversionModes);
+        const v = toEnum(type, this.toString());
+        return v;
+    }
+
+    // キーボード
+    globalThis.down = Keyboard.Default.down;
+    globalThis.up = Keyboard.Default.up;
+    globalThis.tap = Keyboard.Default.tap;
+    globalThis.inputText = Keyboard.Default.inputText;
+    globalThis.replay = Keyboard.Default.replay;
+    globalThis.upAllKeys = Keyboard.Default.upAllKeys;
+    Object.prototype.isPressed = function () {
+        return this.isKey() && _globals.Key.Find(this).IsPressed;
+    }
+    Object.prototype.isHardwarePressed = function () {
+        return this.isKey() && _globals.Key.Find(this).IsPressedPhysically;
+    }
+
+    // 待機
+    globalThis.wait = Wait.Default.wait;
+    globalThis.h_wait = Wait.Default.h_wait;
+    globalThis.waitForInput = Wait.Default.waitForInput;
+    globalThis.waitForController = Wait.Default.waitForController;
+
+    // ウィンドウ
+    globalThis.activeWindow = Window.Default.activeWindow;
+    globalThis.windowUnderMouse = Window.Default.windowUnderMouse;
+    globalThis.createWindowById = Window.Default.createWindowById;
+    globalThis.findWindow = Window.Default.findWindow;
+
+    // コントローラー
+    globalThis.getController = Controller.getController;
+    globalThis.findController = Controller.findController;
+
+    // 時間
+
+    // モニター
+    globalThis.getMainMonitor = Monitor.getMainMonitor;
+    globalThis.getAllMonitors = Monitor.getAllMonitors;
+} catch (error) {
+    clr.System.Console.WriteLine("implementationエラー：");
+    clr.System.Console.WriteLine(error.stack);
 }
-String.prototype.toClrKeys = function () {
-    const keyName = this.toString();
-    return toKeys(keyName);
-};
-String.prototype.toClrControllerButtons = function () {
-    const type = host.typeOf(clr.KeyToKey.Enums.ControllerButtons);
-    const v = toEnum(type, this.toString());
-    return v;
-}
-String.prototype.toClrIMEConversionMode = function () {
-    const type = host.typeOf(clr.KeyToKey.Enums.IMEConversionModes);
-    const v = toEnum(type, this.toString());
-    return v;
-}
-
-// キーボード
-globalThis.down = Keyboard.Default.down;
-globalThis.up = Keyboard.Default.up;
-globalThis.tap = Keyboard.Default.tap;
-globalThis.inputText = Keyboard.Default.inputText;
-globalThis.replay = Keyboard.Default.replay;
-globalThis.upAllKeys = Keyboard.Default.upAllKeys;
-String.prototype.isPressed = function () {
-    const keyName = this.toString();
-    const key = toKeys(keyName);
-    return _globals.Key.Find(key).IsPressed;
-}
-String.prototype.isHardwarePressed = function () {
-    const keyName = this.toString();
-    const key = toKeys(keyName);
-    return _globals.Key.Find(key).IsPressedPhysically;
-}
-
-// 待機
-globalThis.wait = Wait.Default.wait;
-globalThis.h_wait = Wait.Default.h_wait;
-globalThis.waitForInput = Wait.Default.waitForInput;
-globalThis.waitForController = Wait.Default.waitForController;
-
-// ウィンドウ
-globalThis.activeWindow = Window.Default.activeWindow;
-globalThis.windowUnderMouse = Window.Default.windowUnderMouse;
-globalThis.createWindowById = Window.Default.createWindowById;
-globalThis.findWindow = Window.Default.findWindow;
-
-// コントローラー
-globalThis.getController = Controller.getController;
-globalThis.findController = Controller.findController;
-
-// 時間
-
-// モニター
-globalThis.getMainMonitor = Monitor.getMainMonitor;
-globalThis.getAllMonitors = Monitor.getAllMonitors;

@@ -11,7 +11,7 @@ export const useEditorStore = defineStore("editorStore", () => {
     const modalState: Ref<IModalState> = ref({
         isShowing: false,
         lock: false,
-        stateChanged: () => console.log("aaa")
+        stateChanged: () => { }
     });
     let _editor: monaco.editor.IStandaloneCodeEditor | undefined = undefined;
 

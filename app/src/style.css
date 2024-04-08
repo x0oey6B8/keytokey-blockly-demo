@@ -114,6 +114,17 @@ body {
     background: var(--border-color);
     border: solid 1px var(--border-color);
 }
+
+/*
+    vue3-toastify
+*/
+
+.vue3-toastify-font-color-black {
+    color: black !important;
+}
+
+
+
 /* 
     Blockly関係
 */
@@ -237,4 +248,22 @@ body {
 .blocklyCommentIcon {
     width: 20px;
     height: 20px;
+}
+
+/*
+    アニメーション
+*/
+
+.blinking {
+    animation: blink 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }

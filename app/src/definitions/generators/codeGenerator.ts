@@ -21,25 +21,14 @@ export type GeneratedCode = IReturnedCode | string[] | string;
 export abstract class BlockCodeGenerator implements IBlockCodeGenerator {
 
     abstract name: string;
-    abstract GenerateAsJavascript(block: BlockSvg): GeneratedCode;
-    abstract GenerateAsFreeString(block: BlockSvg): GeneratedCode;
-
-    target: CodeGenerationTarget = "JAVASCRIPT";
+    abstract generateCode(block: BlockSvg): GeneratedCode;
 
     constructor(private generator: any) {
     }
 
     generate = (block: BlockSvg) => {
 
-        let generated: GeneratedCode;
-
-        if (this.target === "JAVASCRIPT") {
-            generated = this.GenerateAsJavascript(block);
-        } else if (this.target === "DESCRIPTION") {
-            generated = this.GenerateAsFreeString(block);
-        } else {
-            generated = this.GenerateAsJavascript(block);
-        }
+        let generated: GeneratedCode = this.generateCode(block);
 
         if (typeof generated === "string" || Array.isArray(generated)) {
             return generated;

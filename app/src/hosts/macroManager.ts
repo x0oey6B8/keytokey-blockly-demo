@@ -2,6 +2,7 @@ import { PromisifyFn, useDebounceFn } from "@vueuse/core";
 import { fileTemplateGroups } from "../definitions/files/fileTemplates";
 import { IRequestResult, hasHost, host } from "./host";
 import { v4 as uuidv4 } from 'uuid';
+import { useAppStore } from "../stores/appStore";
 
 export class MacroManager implements IMacroManager {
 
@@ -241,6 +242,11 @@ export class LocalMacroStorage {
                     type: request.type
                 }
             ],
+            variable: {
+                local: {
+                    alwaysClear: true
+                }
+            },
             debug: {
                 logger: {
                     enabled: false
@@ -460,9 +466,12 @@ export class Macro {
 
     async setImplementation(request: ISetImplementationCodeRequest) {
         if (!this.hasSetImplementationOnce) {
-            console.log("[macro]", "set implementation.js");
-            await host.macroManager.setImplementation(request);
-            this.hasSetImplementationOnce = true;
+            try {
+                await host.macroManager.setImplementation(request);
+                this.hasSetImplementationOnce = true;
+            } catch (error) {
+
+            }
         }
     }
 
@@ -574,7 +583,7 @@ export class Macro {
                 } else {
                     const params = parameterNames
                         .slice(index, index + changedDetail.changedCount)
-                        .map(name => ({ name, valueType: "ANY", defaultValue: "0", description: `「${name}」の説明` } as IMacroParameter));
+                        .map(name => ({ name, valueType: "NUMBER", defaultValue: "0", description: `「${name}」の説明` } as IMacroParameter));
                     this.setting.parameters.splice(index, 0, ...params);
                 }
                 this.movingParameters = [];
@@ -650,6 +659,11 @@ export class MacroFile {
             json: json,
             javascript: javascriptCode,
         })
+        const appStore = useAppStore();
+        this.macro.setImplementation({
+            macroName: this.macro.setting.name,
+            code: appStore.implementation
+        });
     }
 
     getDisplayName() {
@@ -739,6 +753,7 @@ export interface IWriteRequest extends IFileInfo {
 
 export interface ISetImplementationCodeRequest {
     code: string;
+    macroName: string;
 }
 
 export interface IMacroParameter {
@@ -782,11 +797,12 @@ export class ValueTypeToDefaultValue {
 export interface IMacroSetting {
     id: string;
     name: string;
+    preload: boolean;
     parameters: IMacroParameter[];
     category: string;
     files: IMacroFileSetting[];
+    variable: IVariableSetting;
     debug: IDebugSetting;
-    preload: boolean;
 }
 
 export interface IDebugSetting {
@@ -795,6 +811,14 @@ export interface IDebugSetting {
 
 export interface IDebugLogger {
     enabled: boolean;
+}
+
+export interface IVariableSetting {
+    local: ILocalVariableSetting;
+}
+
+export interface ILocalVariableSetting {
+    alwaysClear: boolean;
 }
 
 export interface IMacroFileSetting {
@@ -809,9 +833,11 @@ export type FileType =
     | "EVENT_MACRO_ENDED"
     | "EVENT_KEY_PRESSED"
     | "EVENT_KEY_RELEASED"
+    | "EVENT_KEY_STATE_CHANGED"
     | "EVENT_MOUSE_MOVED"
     | "EVENT_TRIGGER_PRESSED"
-    | "EVENT_TRIGGER_RELEASED";
+    | "EVENT_TRIGGER_RELEASED"
+    | "EVENT_CONTROLLER_STATE_CHANGED";
 
 export interface IMacroFileContent {
     name: string;
@@ -824,11 +850,13 @@ export class FileTypeToFileNameConverter {
         switch (fileType) {
             case "MAIN": return "main"
             case "EVENT_MACRO_ENDED": return "end"
-            case "EVENT_KEY_PRESSED": return "pressed"
-            case "EVENT_KEY_RELEASED": return "released"
+            case "EVENT_KEY_PRESSED": return "key_pressed"
+            case "EVENT_KEY_RELEASED": return "key_released"
+            case "EVENT_KEY_STATE_CHANGED": return "key_state_changed"
             case "EVENT_MOUSE_MOVED": return "mouse_moved"
             case "EVENT_TRIGGER_PRESSED": return "trigger_pressed"
             case "EVENT_TRIGGER_RELEASED": return "trigger_released"
+            case "EVENT_CONTROLLER_STATE_CHANGED": return "controller_state_changed"
             default:
                 return "";
         }

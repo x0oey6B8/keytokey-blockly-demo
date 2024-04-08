@@ -16,11 +16,13 @@ const parameterEditor = useParameterEditorStore();
 const macroName = ref("");
 const isLoggerEnabled = ref(false);
 const preload = ref(false);
+const everyTimeClear = ref(false);
 if (editingMacro.macro) {
     const setting = editingMacro.macro.setting;
     macroName.value = setting.name;
     isLoggerEnabled.value = setting.debug.logger.enabled;
-    preload.value = true;
+    preload.value = setting.preload;
+    everyTimeClear.value = setting.variable.local.alwaysClear;
 }
 
 watch(isLoggerEnabled, async (newValue) => {
@@ -34,6 +36,13 @@ watch(isLoggerEnabled, async (newValue) => {
 watch(preload, async (newValue) => {
     if (editingMacro.macro) {
         editingMacro.macro.setting.preload = newValue;
+        await editingMacro.macro.applySetting();
+    }
+});
+
+watch(everyTimeClear, async (newValue) => {
+    if (editingMacro.macro) {
+        editingMacro.macro.setting.variable.local.alwaysClear = newValue;
         await editingMacro.macro.applySetting();
     }
 });
@@ -97,6 +106,20 @@ function openParameterSetting() {
                                     ・直前読み込みによってブロックの変更をリアルタイムで反映させることができます。<br>
                                     以下の要素はリアルタイム反映されません。<br>
                                     ・引数の設定変更<br>
+                                </q-tooltip>
+                            </q-item>
+                            <q-item tag="label" v-ripple style="user-select: none;" round>
+                                <q-item-section>
+                                    <q-item-label>ローカル変数をクリア</q-item-label>
+                                    <q-item-label caption class="font-size-12">
+                                        マクロを実行する前に前回使用したローカル変数をクリアします。
+                                    </q-item-label>
+                                </q-item-section>
+                                <q-item-section avatar>
+                                    <q-toggle color="green" val="friend" v-model="everyTimeClear" />
+                                </q-item-section>
+                                <q-tooltip>
+                                    オフ：前回実行したローカル変数が残ります
                                 </q-tooltip>
                             </q-item>
                         </div>

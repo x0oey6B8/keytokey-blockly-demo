@@ -19,6 +19,19 @@ export function defineConsoleBlocks() {
         }
     } as BlockSvg;
 
+    Blockly.Blocks['console_separate'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("コンソールに区切り線を出力")
+            this.setInputsInline(true);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as BlockSvg;
+
     Blockly.Blocks['console_clear'] = {
         init: function () {
             this.appendDummyInput()

@@ -466,55 +466,55 @@ export const keys: Blockly.MenuOption[] = [
         "Print"
     ],
     [
-        "+(plus)",
+        "；(セミコロン)",
         "Oemplus"
     ],
     [
-        ",(comma)",
+        "，(コンマ)",
         "OemComma"
     ],
     [
-        "-(dash)",
+        "ー(マイナス)",
         "OemMinus"
     ],
     [
-        ".(dot)",
+        "．(ピリオド)",
         "OemPeriod"
     ],
     [
-        ":(colon)",
+        "：(コロン)",
         "Oem1"
     ],
     [
-        "/(slash)",
+        "/(スラッシュ)",
         "Oem2"
     ],
     [
-        "@(atmark)",
+        "@",
         "Oem3"
     ],
     [
-        "[(openbracket)",
+        "[",
         "Oem4"
     ],
     [
-        "\\(backslash)",
+        "\\(バックスラッシュ)",
         "Oem5"
     ],
     [
-        "](closebracket)",
+        "]",
         "Oem6"
     ],
     [
-        "^(caret)",
+        "^",
         "Oem7"
     ],
     [
-        "\\(backslash)",
+        "\\(バックスラッシュ)",
         "Oem102"
     ],
     [
-        "ZenHan",
+        "全角／半角",
         "ZenHan"
     ],
     [
@@ -530,11 +530,11 @@ export const keys: Blockly.MenuOption[] = [
         "FinalMode"
     ],
     [
-        "IMEConvert",
+        "変換",
         "IMEConvert"
     ],
     [
-        "IMENonconvert",
+        "無変換",
         "IMENonconvert"
     ],
     [
@@ -566,7 +566,7 @@ export const keys: Blockly.MenuOption[] = [
         "OemClear"
     ],
     [
-        "KanaHira",
+        "カナ／ひら",
         "KanaHira"
     ],
     [

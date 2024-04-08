@@ -1,5 +1,40 @@
-import Blockly, { Block, BlockSvg } from "blockly";
+import Blockly, { Block, BlockSvg, Field } from "blockly";
 import { BlockColors } from "../../configurations/blockColors.ts";
+import { host } from "../../hosts/host.ts";
+import { InputType } from "../../hosts/listener.ts";
+import { useNotificationStore } from "../../stores/notificationStore.ts";
+import { ContextMenuOption, LegacyContextMenuOption } from "blockly/core/contextmenu_registry";
+
+export class ChangeValueByInputMenuItemFactory {
+    static create(findValueBlock: () => Block | null): ((p1: Array<ContextMenuOption | LegacyContextMenuOption>) => void) {
+        const callback = (options: Array<ContextMenuOption | LegacyContextMenuOption>) => {
+            options.splice(0, 0, {
+                text: "キー／マウスを入力して値を変更",
+                enabled: true,
+                weight: 0,
+                callback: async (_) => {
+                    const toaster = useNotificationStore();
+                    try {
+                        const inputBlock = findValueBlock();
+                        const field = inputBlock?.getField("VALUE");
+                        if (!field) {
+                            toaster.error("キー／マウスの値ブロックを接続してください");
+                            return;
+                        }
+                        toaster.topMessage = "キー／マウスを入力してください";
+                        const result = await host.listener.waitForInput({ listenType: InputType.KeyboardOrMouse });
+                        field.setValue(result.name);
+                    } catch (error: any) {
+                        console.log(error.stack);
+                    } finally {
+                        toaster.topMessage = "";
+                    }
+                }
+            })
+        };
+        return callback;
+    }
+}
 
 export function defineInputBlocks() {
 
@@ -15,6 +50,9 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Logic);
             this.setTooltip("キーの入力状態を取得します。");
             this.setHelpUrl("");
+            this.customContextMenu = ChangeValueByInputMenuItemFactory.create(() => {
+                return this.getInputTargetBlock("KEY");
+            });
         }
     };
 
@@ -30,6 +68,9 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Logic);
             this.setTooltip("物理キーの入力状態を取得します。");
             this.setHelpUrl("");
+            this.customContextMenu = ChangeValueByInputMenuItemFactory.create(() => {
+                return this.getInputTargetBlock("KEY");
+            });
         }
     };
 
@@ -46,6 +87,9 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Logic);
             this.setTooltip("キーの入力状態を取得します。");
             this.setHelpUrl("");
+            this.customContextMenu = ChangeValueByInputMenuItemFactory.create(() => {
+                return this.getInputTargetBlock("KEY");
+            });
         }
     };
 
@@ -75,15 +119,18 @@ export function defineInputBlocks() {
             this.appendDummyInput()
                 .appendField("を");
             this.appendDummyInput()
-                .appendField(new Blockly.FieldDropdown([["押す", "Down"], ["離す", "Up"]]), "BEHAVIOR");
+                .appendField(new Blockly.FieldDropdown([["押す", "Down"], ["離す", "Up"]]) as Field<string>, "BEHAVIOR");
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(BlockColors.Action);
             this.setTooltip("キーを入力します");
             this.setHelpUrl("");
+            this.customContextMenu = ChangeValueByInputMenuItemFactory.create(() => {
+                return this.getInputTargetBlock("KEY");
+            });
         }
-    };
+    } as BlockSvg;
 
     Blockly.Blocks['tap'] = {
         init: function () {
@@ -105,16 +152,9 @@ export function defineInputBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("キーを押して離します。");
             this.setHelpUrl("");
-            this.customContextMenu = (options) => {
-                options.push({
-                    text: "aaaaa",
-                    enabled: true,
-                    weight: 0,
-                    callback: (_) => {
-                        console.log(this.id);
-                    }
-                })
-            };
+            this.customContextMenu = ChangeValueByInputMenuItemFactory.create(() => {
+                return this.getInputTargetBlock("KEY1");
+            });
         }
 
     } as BlockSvg;

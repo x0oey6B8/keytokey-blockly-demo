@@ -1,12 +1,12 @@
 import { definedCodeGenerators } from "./codeGenerator";
 import { COMMENT, COMMENT_STATEMENT } from "./defineComment";
-import { CONSOLE_CLEAR, CONSOLE_LOG } from "./defineConsole";
+import { CONSOLE_CLEAR, CONSOLE_LOG, CONSOLE_SEPARATE } from "./defineConsole";
 import { CONTROLLER, CONTROLLER_PROPERTY, CONTROLLER_STICK_PROPERTY, CONTROLLER_TRIGGER_PROPERTY, IS_CONTROLLER_PRESSED, XINPUT_CONTROLLER } from "./defineController";
 import { VIRTUAL_DUALSHOCK4_DOWN_UP, VIRTUAL_DUALSHOCK4_NEUTRALIZE_DPAD, VIRTUAL_DUALSHOCK4_RESET, VIRTUAL_DUALSHOCK4_STICK_ANGLE1, VIRTUAL_DUALSHOCK4_STICK_ANGLE2, VIRTUAL_DUALSHOCK4_STICK_VALUE, VIRTUAL_DUALSHOCK4_TAP, VIRTUAL_DUALSHOCK4_TRIGGER1, VIRTUAL_DUALSHOCK4_TRIGGER2 } from "./defineDualShock4";
-import { EVENT_KEY_PRESSED, EVENT_KEY_RELEASED, EVENT_MACRO_ENDED, EVENT_TRIGGER_PRESSED, EVENT_TRIGGER_RELEASED } from "./defineEvent";
+import { EVENT_CANCEL_INPUT, EVENT_CONTROLLER_STATE_CHANGED, EVENT_KEY_PRESSED, EVENT_KEY_RELEASED, EVENT_KEY_STATE_CHANGED, EVENT_MACRO_ENDED, EVENT_MOUSE_MOVED, EVENT_TRIGGER_PRESSED, EVENT_TRIGGER_RELEASED } from "./defineEvent";
 import { GET_IME_CONVERSION_MODE, SET_IME_CONVERSION_MODE } from "./defineIME";
 import { KEY_DOWN_UP, KEY_TAP, KEY_IS_PRESSED, KEY_UP_ALL, MOUSE_SET_RANDOM_OFFSET_RANGE, MOUSE_SET_ORIGIN_POINT, MOUSE_MOVE, MOUSE_RELATIVE_MOVE, MOUSE_GET_POINT, KEYS_ARE_PRESSED, key_is_hardware_pressed, INPUT_TEXT, MOUSE_SCROLL, INPUT_REPLAY } from "./defineInput";
-import { EMBEDDED_SINGLELINE_JAVASCRIPT, FORMTTED_JSON_STRINGIFY, EMBEDDED_MULTILINE_JAVASCRIPT, JSON_STRINGIFY } from "./defineJavascript";
+import { EMBEDDED_SINGLELINE_JAVASCRIPT, FORMTTED_JSON_STRINGIFY, EMBEDDED_MULTILINE_JAVASCRIPT, JSON_STRINGIFY, JSON_PARSE } from "./defineJavascript";
 import { LOGIC_EXPRESSION, LOGIC_OPERATION } from "./defineLogic";
 import { FOR_OF } from "./defineLoop";
 import { MAPPING_INPUT_ARRAY, MAPPING_SUSPEND_RESUME } from "./defineMapping";
@@ -15,8 +15,9 @@ import { TEMPLATE_MATCHING_RESULT_PROPERTIES, TEMPLATE_MATCHING_MATCH_BY_ID, TEM
 import { DATE_TIME_PROPERTY, DATE_TIME_NOW, PERFORMANCE_NOW, DATE_TIME_TO_STRING } from "./defineTime";
 import { TRIGGER_AS_CONTROLLER, TRIGGER_AS_KEY, TRIGGER_IS_CONTROLLER, TRIGGER_IS_KEYBOARD, TRIGGER_IS_KEY_OR_MOUSE, TRIGGER_IS_MOUSE, TRIGGER_IS_PRESSED } from "./defineTrigger";
 import { VALUE_CONTROLLER_BUTTONS, VALUE_KEYS, VALUE_POINT, VALUE_POINT_GET_PROPERTY, DIRECTION, VALUE_SIZE, MAPPING_TARGET, VALUE_RANDOM_POINT, GET_SIZE_PROPERTY, IME_CONVERSION_MODE } from "./defineValue";
+import { CLEAR_LOCAL_VARIABLES, GET_VALUE_FROM_VARIABLE, SET_VALUE_TO_VARIABLE, VARIABLE_EXISTS } from "./defineVariable";
 import { VIRTUAL_XINPUT_DOWN_UP, VIRTUAL_XINPUT_NEUTRALIZE_DPAD, VIRTUAL_XINPUT_RESET, VIRTUAL_XINPUT_STICK_ANGLE1, VIRTUAL_XINPUT_STICK_ANGLE2, VIRTUAL_XINPUT_STICK_VALUE, VIRTUAL_XINPUT_TAP, VIRTUAL_XINPUT_TRIGGER1, VIRTUAL_XINPUT_TRIGGER2 } from "./defineVirtualXInput";
-import { WAIT, HIGH_PRECISION_WAIT, WAIT_FOR_INPUT, WAIT_FOR_CONTROLLER } from "./defineWait";
+import { WAIT, HIGH_PRECISION_WAIT, WAIT_FOR_INPUT } from "./defineWait";
 import { GET_WINDOW, CREATE_WINDOW_BY_WINDOW_HANDLE, WINDOW_GET_PROPERTY, WINDOW_DUMP, FIND_WINDOW_BY, WINDOW_SET_BOUNDS, WINDOW_CLOSE, WINDOW_SET_STATE, WINDOW_SET_VISIBILITY, WINDOW_SET_POINT, WINDOW_SET_SIZE, WINDOW_SET_TEXT, WINDOW_SET_TITLE, WINDOW_RESTORE } from "./defineWindow";
 
 export function defineTestCodeGenerator(generator: any) {
@@ -26,6 +27,13 @@ export function defineTestCodeGenerator(generator: any) {
     /* Obsolete */definedCodeGenerators.push(new EMBEDDED_SINGLELINE_JAVASCRIPT(generator));
     definedCodeGenerators.push(new JSON_STRINGIFY(generator));
     definedCodeGenerators.push(new FORMTTED_JSON_STRINGIFY(generator));
+    definedCodeGenerators.push(new JSON_PARSE(generator));
+
+    // 変数
+    definedCodeGenerators.push(new SET_VALUE_TO_VARIABLE(generator));
+    definedCodeGenerators.push(new GET_VALUE_FROM_VARIABLE(generator));
+    definedCodeGenerators.push(new VARIABLE_EXISTS(generator));
+    definedCodeGenerators.push(new CLEAR_LOCAL_VARIABLES(generator));
 
     // 値
     definedCodeGenerators.push(new VALUE_KEYS(generator));
@@ -45,6 +53,10 @@ export function defineTestCodeGenerator(generator: any) {
     definedCodeGenerators.push(new EVENT_TRIGGER_RELEASED(generator));
     definedCodeGenerators.push(new EVENT_KEY_PRESSED(generator));
     definedCodeGenerators.push(new EVENT_KEY_RELEASED(generator));
+    definedCodeGenerators.push(new EVENT_KEY_STATE_CHANGED(generator));
+    definedCodeGenerators.push(new EVENT_MOUSE_MOVED(generator));
+    definedCodeGenerators.push(new EVENT_CANCEL_INPUT(generator));
+    definedCodeGenerators.push(new EVENT_CONTROLLER_STATE_CHANGED(generator));
 
 
     // ループ
@@ -84,7 +96,6 @@ export function defineTestCodeGenerator(generator: any) {
     definedCodeGenerators.push(new WAIT(generator));
     definedCodeGenerators.push(new HIGH_PRECISION_WAIT(generator));
     definedCodeGenerators.push(new WAIT_FOR_INPUT(generator));
-    definedCodeGenerators.push(new WAIT_FOR_CONTROLLER(generator));
 
     // 画像認識
     definedCodeGenerators.push(new TEMPLATE_MATCHING_MATCH_BY_ID(generator));
@@ -93,6 +104,7 @@ export function defineTestCodeGenerator(generator: any) {
 
     // コンソール
     definedCodeGenerators.push(new CONSOLE_LOG(generator));
+    definedCodeGenerators.push(new CONSOLE_SEPARATE(generator));
     definedCodeGenerators.push(new CONSOLE_CLEAR(generator));
 
     // ウィンドウ

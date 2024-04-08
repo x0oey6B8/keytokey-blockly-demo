@@ -8,18 +8,11 @@ export class LOGIC_OPERATION extends BlockCodeGenerator {
         super(generator);
     }
 
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         return v.operator === "AND"
             ? { code: `${v.left} && ${v.right}`, order: "NONE" }
             : { code: `${v.left} || ${v.right}`, order: "NONE" };
-    }
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        const v = this.getValues(block);
-        console.log(v.operator, typeof v.operator);
-        return v.operator == "AND"
-            ? { code: `${v.left} かつ ${v.right}`, order: "NONE" }
-            : { code: `${v.left} または\n ${v.right}`, order: "NONE" }
     }
     getValues(block: BlockSvg) {
         return {
@@ -33,14 +26,10 @@ export class LOGIC_OPERATION extends BlockCodeGenerator {
 export class LOGIC_EXPRESSION extends BlockCodeGenerator {
     name = "logic_expression";
 
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const symbol = this.operatorToSymbol(v.operator);
         const code = `${v.left} ${symbol} ${v.right}`;
-        return { code, order: "NONE" };
-    }
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        const code = this.generateCommentFromOperator(block);
         return { code, order: "NONE" };
     }
     getValues(block: BlockSvg) {

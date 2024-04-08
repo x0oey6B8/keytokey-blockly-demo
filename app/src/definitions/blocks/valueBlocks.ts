@@ -4,6 +4,7 @@ import { BlockColors } from "../../configurations/blockColors.ts";
 import { controllerButtons } from "./controllerButtons.ts";
 import { OutputType } from "./outputType.ts";
 import { mappingTargets } from "./mappingSources.ts";
+import { ChangeValueByInputMenuItemFactory } from "./inputBlocks.ts";
 
 export function defineValueBlocks() {
 
@@ -18,6 +19,9 @@ export function defineValueBlocks() {
             this.setColour(BlockColors.Enum);
             this.setTooltip("");
             this.setHelpUrl("");
+            this.customContextMenu = ChangeValueByInputMenuItemFactory.create(() => {
+                return this;
+            });
         }
     } as BlockSvg;
 

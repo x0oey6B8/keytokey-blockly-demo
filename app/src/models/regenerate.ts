@@ -49,7 +49,7 @@ export async function regenerateCode(): Promise<IRegenerationResult> {
     workspace.dispose();
 
     const appStore = useAppStore();
-    macro.setImplementation({ code: appStore.implementation });
+    macro.setImplementation({ code: appStore.implementation, macroName: macro.name });
 
     return {
         success: true,

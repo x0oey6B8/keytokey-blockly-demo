@@ -81,11 +81,11 @@ export class CopyWorkspaceAsJsonMenuItem implements IDropDownMenuItem {
         const blocklyStore = useBlocklyStore();
         const workspaceSession = blocklyStore.getCurrentWorkspaceSession()
         if (workspaceSession) {
-            const json = workspaceSession.getState();
+            let json = workspaceSession.getState();
+            json = encodeURIComponent(json);
             const editorStore = useEditorStore();
             const notification = useNotificationStore();
-            const formattedJson = JSON.stringify(JSON.parse(json), null, 0);
-            editorStore.setCode(formattedJson, "json", true);
+            editorStore.setCode(json, "json", true);
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(json);
                 notification.toastMessage("コピーしました。");

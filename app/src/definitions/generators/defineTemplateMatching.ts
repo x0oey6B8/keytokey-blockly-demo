@@ -4,14 +4,10 @@ import { BlockCodeGenerator } from "./codeGenerator";
 export class TEMPLATE_MATCHING_MATCH_BY_ID extends BlockCodeGenerator {
     name = "template_matching_match_by_id";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `templateMatching.${v.functionName}(${v.identifier})`;
         return { code, order: "NONE" };
-    }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
         const identifier = this.valueToCode(block, "IDENTIFIER", "ATOMIC");
@@ -44,14 +40,10 @@ class TEMPLATE_MATCHING_RESULT_PROPERTY_NAMES {
 export class TEMPLATE_MATCHING_RESULT_PROPERTIES extends BlockCodeGenerator {
     name = "template_matching_result_properties";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.result}.${v.propertyName}`;
         return { code, order: "NONE" };
-    }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
         const result = this.valueToCode(block, "RESULT", "ATOMIC");
@@ -64,14 +56,10 @@ export class TEMPLATE_MATCHING_RESULT_PROPERTIES extends BlockCodeGenerator {
 export class TEMPLATE_MATCHING_FOUND_IMAGE_PROPERTIES extends BlockCodeGenerator {
     name = "template_matching_found_image_properties";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.result}.${v.propertyName}`;
         return { code, order: "NONE" };
-    }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
     }
     getValues(block: BlockSvg) {
         const result = this.valueToCode(block, "RESULT", "ATOMIC");

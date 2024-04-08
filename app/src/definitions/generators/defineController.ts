@@ -4,42 +4,30 @@ import { BlockCodeGenerator } from "./codeGenerator";
 export class CONTROLLER extends BlockCodeGenerator {
     name = "controller";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         return { code: "controller", order: "NONE" };
-    }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
     }
 }
 
 export class XINPUT_CONTROLLER extends BlockCodeGenerator {
     name = "xinput_controller";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const index = this.getFieldValue(block, "INDEX");
         return { code: `xinput${index}`, order: "NONE" };
-    }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
     }
 }
 
 export class CONTROLLER_PROPERTY extends BlockCodeGenerator {
     name = "controller_proeprty";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.controller}.${v.propertyName}`;
         return {
             code,
             order: "NONE"
         };
-    }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
     }
 
     getValues(block: BlockSvg) {
@@ -63,7 +51,7 @@ export class CONTROLLER_PROPERTY extends BlockCodeGenerator {
 export class IS_CONTROLLER_PRESSED extends BlockCodeGenerator {
     name = "is_controller_pressed";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.controller}.${v.propertyName}(${v.button})`;
         return {
@@ -71,11 +59,6 @@ export class IS_CONTROLLER_PRESSED extends BlockCodeGenerator {
             order: "NONE"
         };
     }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
-    }
-
     getValues(block: BlockSvg) {
         const controller = this.valueToCode(block, "CONTROLLER", "NONE");
         const dropdown = this.getFieldValue(block, "DROPDOWN");
@@ -88,17 +71,13 @@ export class IS_CONTROLLER_PRESSED extends BlockCodeGenerator {
 export class CONTROLLER_STICK_PROPERTY extends BlockCodeGenerator {
     name = "controller_stick_property";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.controller}.${v.stick}.${v.propertyName}`;
         return {
             code,
             order: "NONE"
         };
-    }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
     }
 
     getValues(block: BlockSvg) {
@@ -125,7 +104,7 @@ export class CONTROLLER_STICK_PROPERTY extends BlockCodeGenerator {
 export class CONTROLLER_TRIGGER_PROPERTY extends BlockCodeGenerator {
     name = "controller_trigger_property";
     // @ts-ignore
-    GenerateAsJavascript(block: BlockSvg): GeneratedCode {
+    generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
         const code = `${v.controller}.${v.stick}.${v.propertyName}`;
         return {
@@ -133,11 +112,6 @@ export class CONTROLLER_TRIGGER_PROPERTY extends BlockCodeGenerator {
             order: "NONE"
         };
     }
-    // @ts-ignore
-    GenerateAsFreeString(block: BlockSvg): GeneratedCode {
-        return this.GenerateAsJavascript(block);
-    }
-
     getValues(block: BlockSvg) {
         const controller = this.valueToCode(block, "CONTROLLER", "NONE");
         const stick = this.getFieldValue(block, "TRIGGER") === "LEFT" ? "leftTrigger" : "rightTrigger";

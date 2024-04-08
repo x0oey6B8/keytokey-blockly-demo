@@ -9,7 +9,6 @@ import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
 import { overwriteMessages } from "../definitions/message/overwrite"
 import { defineTestCodeGenerator } from "../definitions/generators/defineCodeGenerator";
-import { definedCodeGenerators } from "../definitions/generators/codeGenerator";
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
@@ -42,7 +41,6 @@ export const useBlocklyStore = defineStore("blockly", () => {
     };
 
     function registerNewWorkspaceSession(container: HTMLElement, onChange: BlocklyOnChange) {
-        console.log(typeof onChange);
         workspaceSession = new WorkspaceSession(container, true, onChange);
     }
 
@@ -291,13 +289,6 @@ export class WorkspaceSession {
         return decodedCode;
     }
 
-    createDescriptionCode() {
-        for (const gen of definedCodeGenerators) { gen.target = "DESCRIPTION" }
-        const code = this.createDecodedCode(StatementPrefix.NONE);
-        for (const gen of definedCodeGenerators) { gen.target = "JAVASCRIPT" }
-        return code;
-    }
-
     private decode(text: string) {
         const regex = /(_[A-Z0-9]{2})+/g;
         const decodedStr = text.replace(regex, match => {
@@ -328,11 +319,19 @@ export class WorkspaceSession {
     setState(json: string) {
         const workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
         if (workspace) {
-            const state = JSON.parse(json);
-            Blockly.Events.disable();
-            Blockly.serialization.workspaces.load(state, workspace);
-            this.setInitialScrollPosition();
-            Blockly.Events.enable();
+            try {
+                const state = JSON.parse(json);
+                Blockly.Events.disable();
+                Blockly.serialization.workspaces.load(state, workspace);
+                this.setInitialScrollPosition();
+                Blockly.Events.enable();
+            } catch (error) {
+                console.log("---------------読み込みエラー---------------");
+                console.log(error);
+                console.log(json);
+                console.log("---------------読み込みエラー---------------");
+                throw error;
+            }
         }
     }
 }

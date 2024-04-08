@@ -13,6 +13,14 @@ export class RegenerateCodeMenuItem implements IDropDownMenuItem {
     subHeader = "debug";
     condition = () => true;
     clicked = async () => {
+
+        const editingStore = useEditingMacro();
+        const toaster = useNotificationStore();
+        if (!editingStore.macro) {
+            toaster.error("マクロが選択されていません");
+            return;
+        }
+
         const result = await regenerateCode();
         const template = `/*\n    @{name}\n*/\n@{code}\n`;
         const array = result.codes.map(code => {
@@ -21,22 +29,28 @@ export class RegenerateCodeMenuItem implements IDropDownMenuItem {
                 .replace("@{code}", code.javascript);
         });
 
+        const appStore = useAppStore();
+        let code = appStore.implementation;
+        if (import.meta.env.DEV) {
+            const imp = await appStore.fetchImp();
+            if (imp) {
+                code = imp;
+                appStore.implementation = code;
+            }
+        }
+        const macro = editingStore.macro;
+        if (macro && code) {
+            macro.hasSetImplementationOnce = false;
+            macro.setImplementation({ code, macroName: macro.name });
+        }
+
         const editorStore = useEditorStore();
         editorStore.setCode(array.join('\n'), "javascript", true);
 
-        const editingStore = useEditingMacro();
-        const appStore = useAppStore();
-        const macro = editingStore.macro;
-        const code = appStore.implementation;
-        if (macro && code) {
-            macro.hasSetImplementationOnce = false;
-            macro.setImplementation({ code });
-        }
-
-        const toaster = useNotificationStore();
         toaster.toastMessage("再生成完了", {
             theme: "colored",
-            type: "success"
+            type: "success",
+            pauseOnFocusLoss: false
         });
     };
 }

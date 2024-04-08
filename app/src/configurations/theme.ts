@@ -44,9 +44,9 @@ export function defineTheme() {
             'list_category': {
                 colour: BlockColors.List,
             },
-            // 'variable_category': {
-            //     colour: BlockColors.Variable
-            // }
+            'variable_category': {
+                colour: BlockColors.Variable
+            }
         },
         blockStyles: {
             'logic_blocks': {
@@ -69,10 +69,10 @@ export function defineTheme() {
                 'colourPrimary': BlockColors.List,
                 'colourSecondary': BlockColors.List,
             },
-            // 'variable_blocks': {
-            //     'colourPrimary': BlockColors.Variable,
-            //     'colourSecondary': BlockColors.Variable,
-            // },
+            'variable_blocks': {
+                'colourPrimary': BlockColors.Variable,
+                'colourSecondary': BlockColors.Variable,
+            },
             'キーボード／マウス': {
                 'colourPrimary': '#01579b',
                 'colourSecondary': '#01579b',

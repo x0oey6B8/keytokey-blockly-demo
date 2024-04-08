@@ -1,5 +1,6 @@
-import Blockly, { BlockSvg } from "blockly";
+import Blockly, { BlockSvg, Field } from "blockly";
 import { BlockColors } from "../../configurations/blockColors";
+import { useNotificationStore } from "../../stores/notificationStore";
 
 export function defineEventBlocks() {
     Blockly.Blocks['event_macro_ended'] = {
@@ -41,11 +42,12 @@ export function defineEventBlocks() {
     Blockly.Blocks['event_key_pressed'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("イベント：物理キーが押されたら｜変数：")
+                .appendField("イベント：キー／マウスが押されたら｜変数：")
                 .appendField(new Blockly.FieldVariable("押されたキー"), "KEY")
+                .appendField(new Blockly.FieldVariable("繰り返された入力?"), "IS_REPEATED")
             this.appendStatementInput("STATEMENT");
             this.setInputsInline(true);
-            this.setColour(BlockColors.Action);
+            this.setColour(BlockColors.Enum);
             this.setTooltip("");
             this.setHelpUrl("");
         }
@@ -54,7 +56,7 @@ export function defineEventBlocks() {
     Blockly.Blocks['event_key_released'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField("イベント：物理キーが離されたら｜変数：")
+                .appendField("イベント：キー／マウスが離されたら｜変数：")
                 .appendField(new Blockly.FieldVariable("離されたキー"), "KEY")
             this.appendStatementInput("STATEMENT");
             this.setInputsInline(true);
@@ -63,4 +65,114 @@ export function defineEventBlocks() {
             this.setHelpUrl("");
         }
     } as BlockSvg;
+
+    Blockly.Blocks['event_key_state_changed'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("イベント：キーが押されたら／離されたら")
+            this.appendDummyInput()
+                .appendField("受け取る変数：")
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("キー"), "KEY");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("押された？"), "IS_KEY_PRESSED");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("トグルキー？"), "IS_TOGGLE_KEY");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("繰り返された入力？"), "IS_REPEATED");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("アプリによる入力？"), "IS_INPUT_BY_APP");
+            this.appendStatementInput("STATEMENT");
+            this.setInputsInline(false);
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as BlockSvg;
+
+
+    Blockly.Blocks['event_mouse_moved'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("イベント：マウスが移動したら｜");
+            this.appendDummyInput()
+                .appendField("変数：");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("新しい座標"), "NEW_POINT");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("古い座標"), "OLD_POINT");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("横の移動量"), "DELTA_X");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("縦の移動量"), "DELTA_Y");
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldVariable("アプリによる入力？"), "IS_INPUT_BY_APP");
+            this.appendStatementInput("STATEMENT");
+            this.setInputsInline(false);
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as BlockSvg;
+
+    Blockly.Blocks['event_cancel_input'] = {
+        init: function () {
+            const allowingBlockTypes = [
+                "event_key_pressed",
+                "event_key_released",
+                "event_key_state_changed",
+                "event_mouse_moved",
+            ]
+            const menu = new Blockly.FieldDropdown([["キャンセルする", "true"], ["キャンセルしない", "false"]]);
+            this.appendDummyInput().appendField("入力を").appendField(menu as Field<string>, "VALUE");
+            this.setInputsInline(true);
+            this.setPreviousStatement(true);
+            this.setNextStatement(true);
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+            const getRootBlock = () => {
+                let ancestor = this;
+                while (true) {
+                    let parent = ancestor.getParent();
+                    if (parent) {
+                        ancestor = parent;
+                        continue;
+                    }
+                    break;
+                }
+                return ancestor.id !== this.id ? ancestor : undefined;
+            }
+            this.onchange = () => {
+                if (this.workspace?.isDragging()) {
+                    return;
+                }
+                const rootBlock = getRootBlock();
+                if (rootBlock) {
+                    if (!allowingBlockTypes.includes(rootBlock.type)) {
+                        this.unplug();
+                        const toaster = useNotificationStore();
+                        toaster.info(`「入力キャンセル」ブロックは特定のイベントブロックにのみ接続できます`);
+                    }
+                }
+            };
+        }
+    } as BlockSvg;
+
+    Blockly.Blocks['event_controller_state_changed'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("イベント：コントローラーのボタンやスティックの入力があったら")
+            this.appendDummyInput()
+                .appendField("受け取る変数：")
+                .appendField(new Blockly.FieldVariable("入力"), "INPUT")
+                .appendField(new Blockly.FieldVariable("押された？"), "IS_PRESSED");
+            this.appendStatementInput("STATEMENT");
+            this.setInputsInline(false);
+            this.setColour(BlockColors.Action);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as BlockSvg;
+
 }

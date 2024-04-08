@@ -1,4 +1,5 @@
 import { IDebug, Debug, DebugPseudo } from "./debug";
+import { IInputListener, InputListener, InputListenerPseudo } from "./listener";
 import { IMacroManager, MacroManager, MacroManagerPseudo } from "./macroManager";
 import { IPathUtils, PathUtils, PathUtilsPseudo } from "./pathUtils";
 import { IProfile, Profile, ProfilePseudo } from "./profile";
@@ -21,6 +22,7 @@ export interface IHostObjects {
     templateMatchingSettings: ITemplateMatchingSettings;
     profile: IProfile;
     debug: IDebug;
+    listener: IInputListener;
 }
 
 export interface IRequestResult {
@@ -36,7 +38,9 @@ export class HostObjects implements IHostObjects {
         this.pathUtils = new PathUtils(this.hostObjects);
         this.templateMatchingSettings = new TemplateMatchingSettings(this.hostObjects);
         this.debug = new Debug(this.hostObjects);
+        this.listener = new InputListener(this.hostObjects);
     }
+    listener: IInputListener;
     debug: IDebug;
     pathUtils: IPathUtils;
     macroManager: IMacroManager;
@@ -45,6 +49,7 @@ export class HostObjects implements IHostObjects {
 }
 
 export class HostObjectsPseudo implements IHostObjects {
+    listener = new InputListenerPseudo();
     debug = new DebugPseudo();
     profile = new ProfilePseudo();
     macroManager = new MacroManagerPseudo();

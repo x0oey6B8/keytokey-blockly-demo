@@ -23,10 +23,12 @@ import { resize } from "./helpers/ui/resize"
 import { useTabSwitcherStore } from "./stores/tabSwitcherStore";
 import { useReplayStore } from "./stores/replayStore";
 import { StatementPrefix } from "./definitions/generators/defineGenerator";
+import { useNotificationStore } from "./stores/notificationStore";
 
 const appStore = useAppStore();
 const editing = useEditingMacro();
 const tabStore = useTabStore();
+const toaster = useNotificationStore();
 const tabSwitcher = useTabSwitcherStore();
 const blockly = useBlocklyStore();
 const editor = useEditorStore();
@@ -35,7 +37,7 @@ const commandPalette = useCommandPaletteStore();
 const quaser = useQuasar();
 quaser.dark.set(true);
 
-
+toaster.topMessageModal.isShowing = true;
 const tabs = ref(null);
 useSortable(tabs, tabStore.items, {
     animation: 150,
@@ -122,7 +124,7 @@ onMounted(async () => {
     });
     window.addEventListener("resize", resize);
     resize();
-    await appStore.readImplementationFile();
+    await appStore.fetchImplementationFile();
     appStore.openMacroMenu();
 });
 
@@ -168,19 +170,19 @@ onUpdated(() => {
                                 </div>
                             </q-tabs>
                             <!-- タブ横ボタン -->
-                            <div id="tab-side-content" class="flex no-wrap" v-if="editing.hasMacro()">
-                                <div>
+                            <div id="tab-side-content" class="flex no-wrap">
+                                <div v-if="editing.hasMacro()">
                                     <q-btn flat icon="add" size="sm" class="side-button q-px-md full-height" @click="appStore.openMenuToAddFile"/>
                                     <q-tooltip>イベントを追加</q-tooltip>
                                 </div>
                                 <q-separator vertical inset class="" />
-                                <div>
+                                <div v-if="editing.hasMacro()">
                                     <q-btn flat icon="settings" size="sm" class="side-button q-px-md full-height" @click="appStore.openMacroSetting"/>
                                     <q-tooltip>マクロの設定</q-tooltip>
                                 </div>
                                 <div>
                                     <q-btn flat icon="menu" size="sm" class="open-menu-button side-button q-px-md full-height" @click="appStore.openDropdownMenus"/>
-                                    <q-tooltip>メニュー</q-tooltip>
+                                    <q-tooltip>省略されたメニューを表示</q-tooltip>
                                 </div>
                             </div>
                         </div>
@@ -209,6 +211,12 @@ onUpdated(() => {
             <div id="blocklyDiv" style="position: absolute;"></div>
             <ReplayInfo></ReplayInfo>
         </div>
+        <div v-if="toaster.topMessage" class="full-width full-height flex justify-center align-center relative-position">
+            <div style="max-width: 40%; min-width: 25%; min-height: 50px; max-height: 100px; border: solid 1px var(--border-color)"
+                class="flex justify-center bg-blue q-mt-md rounded insert-shadow">
+                <span class="self-center blinking">{{ toaster.topMessage }}</span>
+            </div>
+        </div>
     </div>
     <Teleport to="body">
         <ModalEditor :modal-state="editor.modalState"></ModalEditor>
@@ -225,6 +233,13 @@ onUpdated(() => {
         <ModalShortcutGuide></ModalShortcutGuide>
         <ModalTabSwitcher></ModalTabSwitcher>
         <ModalParameterEditor></ModalParameterEditor>
+        <!-- <Modal :state="toaster.topMessageModal">
+            <template #content>
+                <div style="width: 200px; height: 30px; background-color: green;">
+
+                </div>
+            </template>
+        </Modal> -->
     </Teleport>
 </template>
 

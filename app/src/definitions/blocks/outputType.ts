@@ -1,4 +1,5 @@
 export enum OutputType {
+    Any = "Any",
     Number = "Number",
     String = "String",
     Boolean = "Boolean",

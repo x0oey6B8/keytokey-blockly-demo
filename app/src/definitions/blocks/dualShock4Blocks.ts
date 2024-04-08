@@ -8,7 +8,7 @@ export function defineDualShock4Blocks() {
     Blockly.Blocks['virtual_dualshock4_down_up'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(" 仮想DualShock4コントローラーの")
+                .appendField(" DualShock4コントローラーの")
                 .appendField(new Blockly.FieldDropdown(dualShock4Buttons), "BUTTON")
                 .appendField("を")
                 .appendField(new Blockly.FieldDropdown([["押す", "Down"], ["離す", "Up"]]), "BEHAVIOR");
@@ -24,7 +24,7 @@ export function defineDualShock4Blocks() {
     Blockly.Blocks['virtual_dualshock4_tap'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(" 仮想DualShock4コントローラーの")
+                .appendField(" DualShock4コントローラーの")
                 .appendField(new Blockly.FieldDropdown(dualShock4Buttons), "BUTTON")
                 .appendField("を押して")
             this.appendValueInput("WAIT1")
@@ -48,7 +48,7 @@ export function defineDualShock4Blocks() {
     Blockly.Blocks['virtual_dualshock4_neutralize_dpad'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(" 仮想DualShock4コントローラーの十字キーを離す");
+                .appendField("DualShock4コントローラーの十字キーを離す");
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -61,7 +61,7 @@ export function defineDualShock4Blocks() {
     Blockly.Blocks['virtual_dualshock4_stick_value'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(" 仮想DualShock4コントローラーの")
+                .appendField(" DualShock4コントローラーの")
                 .appendField(new Blockly.FieldDropdown([["左スティック", "leftStick"], ["右スティック", "rightStick"]]), "STICK")
                 .appendField("の");
             this.appendValueInput("POINT")
@@ -81,7 +81,7 @@ export function defineDualShock4Blocks() {
     Blockly.Blocks['virtual_dualshock4_stick_angle1'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(" 仮想DualShock4コントローラーの")
+                .appendField(" DualShock4コントローラーの")
                 .appendField(new Blockly.FieldDropdown([["左スティック", "leftStick"], ["右スティック", "rightStick"]]), "STICK")
                 .appendField("に")
             this.appendDummyInput()
@@ -107,7 +107,7 @@ export function defineDualShock4Blocks() {
     Blockly.Blocks['virtual_dualshock4_stick_angle2'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(" 仮想DualShock4コントローラーの")
+                .appendField(" DualShock4コントローラーの")
                 .appendField(new Blockly.FieldDropdown([["左スティック", "leftStick"], ["右スティック", "rightStick"]]), "STICK")
                 .appendField("に")
             this.appendValueInput("ANGLE")
@@ -130,7 +130,7 @@ export function defineDualShock4Blocks() {
     Blockly.Blocks['virtual_dualshock4_trigger1'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(" 仮想DualShock4コントローラーの")
+                .appendField(" DualShock4コントローラーの")
                 .appendField(new Blockly.FieldDropdown([["左トリガー", "leftTrigger"], ["右トリガー", "rightTrigger"]]), "TRIGGER")
                 .appendField("に")
             this.appendDummyInput()
@@ -150,7 +150,7 @@ export function defineDualShock4Blocks() {
     Blockly.Blocks['virtual_dualshock4_trigger2'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(" 仮想DualShock4コントローラーの")
+                .appendField(" DualShock4コントローラーの")
                 .appendField(new Blockly.FieldDropdown([["左トリガー", "leftTrigger"], ["右トリガー", "rightTrigger"]]), "TRIGGER")
                 .appendField("に")
             this.appendValueInput("INPUT_RATE")

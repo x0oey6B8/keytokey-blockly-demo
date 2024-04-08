@@ -3,191 +3,191 @@ import * as Blockly from "blockly/core"
 export const controllerButtons: Blockly.MenuOption[] = [
     [
         "A（✕）",
-        "A"
+        "ControllerButtons.A"
     ],
     [
         "B（◯）",
-        "B"
+        "ControllerButtons.B"
     ],
     [
         "X（▢）",
-        "X"
+        "ControllerButtons.X"
     ],
     [
         "Y（△）",
-        "Y"
+        "ControllerButtons.Y"
     ],
     [
         "十字キー上",
-        "DPadUp"
+        "ControllerButtons.DPadUp"
     ],
     [
         "十字キー下",
-        "DPadDown"
+        "ControllerButtons.DPadDown"
     ],
     [
         "十字キー左",
-        "DPadLeft"
+        "ControllerButtons.DPadLeft"
     ],
     [
         "十字キー右",
-        "DPadRight"
+        "ControllerButtons.DPadRight"
     ],
     [
         "Start(Options)",
-        "Start"
+        "ControllerButtons.Start"
     ],
     [
         "Back(Share)",
-        "Back"
+        "ControllerButtons.Back"
     ],
     [
         "LB(L1)",
-        "LB"
+        "ControllerButtons.LB"
     ],
     [
         "RB(R1)",
-        "RB"
+        "ControllerButtons.RB"
     ],
     [
         "LT(L2)",
-        "LT"
+        "ControllerButtons.LT"
     ],
     [
         "RT(R2)",
-        "RT"
+        "ControllerButtons.RT"
     ],
     [
         "左スティック上",
-        "LeftStickUp"
+        "ControllerButtons.LeftStickUp"
     ],
     [
         "左スティック下",
-        "LeftStickDown"
+        "ControllerButtons.LeftStickDown"
     ],
     [
         "左スティック左",
-        "LeftStickLeft"
+        "ControllerButtons.LeftStickLeft"
     ],
     [
         "左スティック右",
-        "LeftStickRight"
+        "ControllerButtons.LeftStickRight"
     ],
     [
         "左スティック押し込み(L3)",
-        "LeftStickPush"
+        "ControllerButtons.LeftStickPush"
     ],
     // [
     //     "左スティック左上",
-    //     "LeftStickUpLeft"
+    //     "ControllerButtons.LeftStickUpLeft"
     // ],
     // [
     //     "左スティック右上",
-    //     "LeftStickUpRight"
+    //     "ControllerButtons.LeftStickUpRight"
     // ],
     // [
     //     "左スティック左下",
-    //     "LeftStickDownLeft"
+    //     "ControllerButtons.LeftStickDownLeft"
     // ],
     // [
     //     "左スティック右下",
-    //     "LeftStickDownRight"
+    //     "ControllerButtons.LeftStickDownRight"
     // ],
     [
         "右スティック上",
-        "RightStickUp"
+        "ControllerButtons.RightStickUp"
     ],
     [
         "右スティック下",
-        "RightStickDown"
+        "ControllerButtons.RightStickDown"
     ],
     [
         "右スティック左",
-        "RightStickLeft"
+        "ControllerButtons.RightStickLeft"
     ],
     [
         "右スティック右",
-        "RightStickRight"
+        "ControllerButtons.RightStickRight"
     ],
     [
         "右スティック押し込み(R3)",
-        "RightStickPush"
+        "ControllerButtons.RightStickPush"
     ],
     // [
     //     "右スティック左上",
-    //     "RightStickUpLeft"
+    //     "ControllerButtons.RightStickUpLeft"
     // ],
     // [
     //     "右スティック右上",
-    //     "RightStickUpRight"
+    //     "ControllerButtons.RightStickUpRight"
     // ],
     // [
     //     "右スティック左下",
-    //     "RightStickDownLeft"
+    //     "ControllerButtons.RightStickDownLeft"
     // ],
     // [
     //     "右スティック右下",
-    //     "RightStickDownRight"
+    //     "ControllerButtons.RightStickDownRight"
     // ],
     [
         "拡張ボタン0",
-        "ExButton0"
+        "ControllerButtons.ExButton0"
     ],
     [
         "拡張ボタン1",
-        "ExButton1"
+        "ControllerButtons.ExButton1"
     ],
     [
         "拡張ボタン2",
-        "ExButton2"
+        "ControllerButtons.ExButton2"
     ],
     [
         "拡張ボタン3",
-        "ExButton3"
+        "ControllerButtons.ExButton3"
     ],
     [
         "拡張ボタン4",
-        "ExButton4"
+        "ControllerButtons.ExButton4"
     ],
     [
         "拡張ボタン5",
-        "ExButton5"
+        "ControllerButtons.ExButton5"
     ],
     [
         "拡張ボタン6",
-        "ExButton6"
+        "ControllerButtons.ExButton6"
     ],
     [
         "拡張ボタン7",
-        "ExButton7"
+        "ControllerButtons.ExButton7"
     ],
     [
         "拡張ボタン8",
-        "ExButton8"
+        "ControllerButtons.ExButton8"
     ],
     [
         "拡張ボタン9",
-        "ExButton9"
+        "ControllerButtons.ExButton9"
     ],
     [
         "拡張ボタン10",
-        "ExButton10"
+        "ControllerButtons.ExButton10"
     ],
     [
         "拡張ボタン11",
-        "ExButton11"
+        "ControllerButtons.ExButton11"
     ],
     [
         "拡張ボタン12",
-        "ExButton12"
+        "ControllerButtons.ExButton12"
     ],
     [
         "拡張ボタン13",
-        "ExButton13"
+        "ControllerButtons.ExButton13"
     ],
     [
         "拡張ボタン14",
-        "ExButton14"
+        "ControllerButtons.ExButton14"
     ],
     [
         "拡張ボタン15",

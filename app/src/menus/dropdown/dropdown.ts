@@ -5,7 +5,9 @@ import * as CodeGenerationMenus from "./codeGeneration"
 import * as DebugMenus from "./debug"
 import * as HelpMenus from "./help"
 import { IAppDropDownMenu } from "../../models/dropdown";
-import { useBlocklyStore } from "../../stores/blocklyStore";
+import { host } from "../../hosts/host"
+import { InputType } from "../../hosts/listener"
+import { useNotificationStore } from "../../stores/notificationStore"
 
 export const dropdownMenus: IAppDropDownMenu[] = [
     {
@@ -37,18 +39,19 @@ export const dropdownMenus: IAppDropDownMenu[] = [
             new WorkspaceMenus.ClearSpecificBlockByIdMenuItem(),
         ]
     },
-    // {
-    //     header: "ツール",
-    //     menuItems: [
-    //         {
-    //             header: "Not Implemented",
-    //             subHeader: "tool",
-    //             condition: () => true,
-    //             clicked: async () => {
-    //             }
-    //         }
-    //     ]
-    // },
+    {
+        header: "ツール",
+        menuItems: [
+            {
+                header: "Not Implemented",
+                subHeader: "tool",
+                condition: () => true,
+                clicked: async () => {
+                    alert("ｼﾞｯｿｳｼﾃﾅｲﾖ! ｢ﾉｯﾄｲﾝﾌﾟﾘﾒﾝﾃｯﾄﾞ｣ｯﾃｶｲﾃﾙﾃﾞｼｮ!( •̀ ω •́ )y");
+                }
+            }
+        ]
+    },
     {
         header: "デバッグ",
         menuItems: [
@@ -64,7 +67,7 @@ export const dropdownMenus: IAppDropDownMenu[] = [
         ]
     },
     {
-        header: "ヘルプ",
+        header: "その他",
         menuItems: [
             new HelpMenus.ShowUsage(),
             new HelpMenus.ShowShortcutList(),
@@ -82,20 +85,32 @@ if (import.meta.env.DEV) {
                 subHeader: "dev",
                 condition: () => true,
                 clicked: async () => {
-                    const bs = useBlocklyStore();
-                    const session = bs.getCurrentWorkspaceSession();
-                    if (session) {
-                        const block = session.getEntryProcedureBlock();
-                        if (block) {
-                            const vars = block.getVars();
-                            const zero = vars[0];
-                            const one = vars[1];
-                            vars[0] = one;
-                            vars[1] = zero;
-                            console.log(session.getState());
-
-                        }
-                    }
+                    // const bs = useBlocklyStore();
+                    // const session = bs.getCurrentWorkspaceSession();
+                    // if (session) {
+                    //     const block = session.getEntryProcedureBlock();
+                    //     if (block) {
+                    //         const vars = block.getVars();
+                    //         const zero = vars[0];
+                    //         const one = vars[1];
+                    //         vars[0] = one;
+                    //         vars[1] = zero;
+                    //         console.log(session.getState());
+                    //     }
+                    // }
+                    const toaster = useNotificationStore();
+                    const id = toaster.toastMessage("キー／マウスを入力してください", {
+                        autoClose: true,
+                        theme: "colored",
+                        type: "info",
+                        transition: "none",
+                        isLoading: true
+                    });
+                    const input = await host.listener.waitForInput({
+                        listenType: InputType.KeyboardOrMouse
+                    });
+                    toaster.done(id);
+                    console.log(input);
                 },
             }
         ]

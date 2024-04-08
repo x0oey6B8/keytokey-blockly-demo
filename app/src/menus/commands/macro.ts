@@ -9,6 +9,7 @@ import { useEditingMacro } from "../../stores/editingMacro";
 import { useTabStore } from "../../stores/tabStore";
 import { fileTemplateGroups } from "../../definitions/files/fileTemplates";
 import { v4 as uuidv4 } from "uuid"
+import { regenerateCode } from "../../models/regenerate";
 
 /*
     マクロのメニューを表示するためのオプション
@@ -498,7 +499,6 @@ export class AddFileCommandPaletteOptions extends CommandPaletteOptions {
     }
 
     add = async (template: IFileTemplate) => {
-
         const tabStore = useTabStore();
         const toaster = useNotificationStore();
         const editing = useEditingMacro();
@@ -517,7 +517,7 @@ export class AddFileCommandPaletteOptions extends CommandPaletteOptions {
             fileName: FileTypeToFileNameConverter.convert(template.type),
             type: template.type,
             javascript: template.javascript,
-            json: template.json,
+            json: this.getJson(template),
         };
         const result = await host.macroManager.addFile(request);
         if (result.hasError) {
@@ -532,5 +532,14 @@ export class AddFileCommandPaletteOptions extends CommandPaletteOptions {
         macro.setting.files.push(file)
         macro.applySetting();
         tabStore.addTab(new MacroFile(macro, file));
+        await regenerateCode();
+    }
+
+    getJson(template: IFileTemplate) {
+        try {
+            return decodeURIComponent(template.json);
+        } catch (error) {
+            return template.json;
+        }
     }
 }

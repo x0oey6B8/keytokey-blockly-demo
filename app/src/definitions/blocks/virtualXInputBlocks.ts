@@ -5,10 +5,10 @@ import { xinputButtons } from "./xinputButtons.ts";
 import { FieldSlider } from "@blockly/field-slider";
 
 const xinputs = [
-    ["仮想XInputコントローラー0", "0"],
-    ["仮想XInputコントローラー1", "1"],
-    ["仮想XInputコントローラー2", "2"],
-    ["仮想XInputコントローラー3", "3"],
+    ["XInput0", "0"],
+    ["XInput1", "1"],
+    ["XInput2", "2"],
+    ["XInput3", "3"],
 ] as Blockly.MenuGenerator
 
 export function defineVirtualXInputBlock() {
@@ -74,7 +74,7 @@ export function defineVirtualXInputBlock() {
                 .appendField(new Blockly.FieldDropdown(xinputs), "DEVICE_NUMBER")
                 .appendField("の")
                 .appendField(new Blockly.FieldDropdown([["左スティック", "leftStick"], ["右スティック", "rightStick"]]), "STICK")
-                .appendField("の");
+                .appendField("に");
             this.appendValueInput("POINT")
                 .setCheck(OutputType.Point)
                 .appendField("入力座標：");
