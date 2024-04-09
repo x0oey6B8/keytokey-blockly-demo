@@ -48,6 +48,10 @@ body {
     color: var(--font-color)
 }
 
+.font-color {
+    color: var(--font-color) !important;
+}
+
 .font-size-12 {
     font-size: var(--font-size-12) !important;
 }
@@ -266,4 +270,40 @@ body {
     100% {
         opacity: 1;
     }
+}
+
+/*
+    スクロールバー
+*/
+
+.scrollbar::-webkit-scrollbar {
+    background-color: transparent;
+    width: 12px !important;
+}
+
+.scrollbar::-webkit-scrollbar:hover {
+    background-color: #EEEEEE10;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+    background-color: #EEEEEE10;
+    border-radius: 10px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #EEEEEE40;
+    border-radius: 10px;
+}
+
+/* 
+    scrollbarを持つ親要素（階層はどこでも）に指定することで
+    指定した要素上にマウスカーソルがある場合にスクロールバーの色を変更する
+*/
+
+.scrollbar-colorizer:hover .scrollbar::-webkit-scrollbar {
+    background-color: #EEEEEE10;
+}
+
+.scrollbar-colorizer:hover .scrollbar::-webkit-scrollbar-thumb {
+    background-color: #EEEEEE40;
 }

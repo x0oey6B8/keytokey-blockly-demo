@@ -32,6 +32,16 @@ export class SwitchToolboxPositionMenuItem implements IDropDownMenuItem {
     };
 }
 
+export class ToggleScrollbarVisibilityMenuItem implements IDropDownMenuItem {
+    header = "スクロールバーの表示／非表示";
+    subHeader = "workspace";
+    condition = () => true;
+    clicked = () => {
+        const blockly = useBlocklyStore();
+        blockly.getCurrentWorkspaceSession()?.toggleScrollbarVisiblity();
+    };
+}
+
 export class MakeWorkspaceReadOnlyMenuItem implements IDropDownMenuItem {
     header = "Make Workspace Readonly";
     subHeader = "workspace";

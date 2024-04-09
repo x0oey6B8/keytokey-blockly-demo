@@ -9,6 +9,7 @@ import ModalTabSwitcher from "./components/ModalTabSwitcher.vue";
 import ModalParameterEditor from "./components/ModalParameterEditor.vue";
 import ReplayMenu from "./components/ReplayMenu.vue";
 import ReplayInfo from "./components/ReplayInfo.vue";
+import CursorPositionLogger from "./components/CursorPositionLogger.vue";
 import { onMounted, onUpdated, ref, watch } from "vue";
 import { SourceCodeWriter, useAppStore } from "./stores/appStore";
 import { useBlocklyStore } from "./stores/blocklyStore";
@@ -24,12 +25,14 @@ import { useTabSwitcherStore } from "./stores/tabSwitcherStore";
 import { useReplayStore } from "./stores/replayStore";
 import { StatementPrefix } from "./definitions/generators/defineGenerator";
 import { useNotificationStore } from "./stores/notificationStore";
+import { useCursorPositionsStore } from "./stores/cursorPositionsStore";
 
 const appStore = useAppStore();
 const editing = useEditingMacro();
 const tabStore = useTabStore();
 const toaster = useNotificationStore();
 const tabSwitcher = useTabSwitcherStore();
+const cursorPositions = useCursorPositionsStore();
 const blockly = useBlocklyStore();
 const editor = useEditorStore();
 const replayStore = useReplayStore();
@@ -240,6 +243,7 @@ onUpdated(() => {
                 </div>
             </template>
         </Modal> -->
+        <CursorPositionLogger v-if="cursorPositions.modal.isShowing"></CursorPositionLogger>
     </Teleport>
 </template>
 

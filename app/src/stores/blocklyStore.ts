@@ -70,6 +70,12 @@ export class WorkspaceSession {
         this.workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
         this.workspaceSvg.addChangeListener((e) => this.onChange(e, this));
         // this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
+        this.workspaceSvg.scrollbar?.setVisible(false);
+    }
+
+    toggleScrollbarVisiblity() {
+        const newVisibility = !this.workspaceSvg.scrollbar?.isVisible();
+        this.workspaceSvg.scrollbar?.setVisible(newVisibility);
     }
 
     setInitialScrollPosition() {

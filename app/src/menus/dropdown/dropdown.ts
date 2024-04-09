@@ -8,6 +8,7 @@ import { IAppDropDownMenu } from "../../models/dropdown";
 import { host } from "../../hosts/host"
 import { InputType } from "../../hosts/listener"
 import { useNotificationStore } from "../../stores/notificationStore"
+import { useCursorPositionsStore } from "../../stores/cursorPositionsStore"
 
 export const dropdownMenus: IAppDropDownMenu[] = [
     {
@@ -31,6 +32,7 @@ export const dropdownMenus: IAppDropDownMenu[] = [
         menuItems: [
             new WorkspaceMenus.SetEntryBlockDefaultPosition(),
             new WorkspaceMenus.SwitchToolboxPositionMenuItem(),
+            new WorkspaceMenus.ToggleScrollbarVisibilityMenuItem(),
             // new WorkspaceMenus.MakeWorkspaceReadOnlyMenuItem(),
             // new WorkspaceMenus.MakeWorkspaceEditableMenuItem(),
             new WorkspaceMenus.CopyWorkspaceAsXmlMenuItem(),
@@ -43,11 +45,12 @@ export const dropdownMenus: IAppDropDownMenu[] = [
         header: "ツール",
         menuItems: [
             {
-                header: "Not Implemented",
+                header: "マウスの位置を記録",
                 subHeader: "tool",
                 condition: () => true,
                 clicked: async () => {
-                    alert("ｼﾞｯｿｳｼﾃﾅｲﾖ! ｢ﾉｯﾄｲﾝﾌﾟﾘﾒﾝﾃｯﾄﾞ｣ｯﾃｶｲﾃﾙﾃﾞｼｮ!( •̀ ω •́ )y");
+                    const store = useCursorPositionsStore();
+                    store.open();
                 }
             }
         ]

@@ -1,5 +1,9 @@
 export interface IInputListener {
     waitForInput(request: IWaitForInputRequest): Promise<IInputReceivedArgs>;
+    startToLogCursorPositions(): void;
+    stopLoggingCursorPositions(): void;
+    changeTrigger(keyName: string): void;
+    getTrigger(): Promise<string>;
 }
 
 export enum InputType {
@@ -19,6 +23,18 @@ export interface IWaitForInputRequest {
 export class InputListener implements IInputListener {
     constructor(private hostObjects: any) {
     }
+    getTrigger(): Promise<string> {
+        return this.hostObjects.inputListener.GetTrigger();
+    }
+    changeTrigger(keyName: string) {
+        this.hostObjects.inputListener.ChangeTrigger(keyName);
+    }
+    startToLogCursorPositions(): void {
+        this.hostObjects.inputListener.StartToLogCursorPositions();
+    }
+    stopLoggingCursorPositions(): void {
+        this.hostObjects.inputListener.StopLoggingCursorPositions();
+    }
     waitForInput = async (request: IWaitForInputRequest) => {
         const requestJsonString = JSON.stringify(request);
         const jsonString = await this.hostObjects.inputListener.WaitForInput(requestJsonString);
@@ -30,6 +46,18 @@ export class InputListener implements IInputListener {
 export class InputListenerPseudo implements IInputListener {
     constructor() {
     }
+    async getTrigger(): Promise<string> {
+        return "LButton"
+    }
+    // @ts-ignore
+    changeTrigger(keyName: string): void {
+    }
+    startToLogCursorPositions(): void {
+    }
+
+    stopLoggingCursorPositions(): void {
+    }
+
     waitForInput = async (request: IWaitForInputRequest) => {
         return {
             type: request.listenType,
