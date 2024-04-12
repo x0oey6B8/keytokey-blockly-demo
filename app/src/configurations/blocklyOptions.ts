@@ -147,7 +147,7 @@ function getToolBoxXml(): string {
 
 
     <category name="変数（KeyToKey）" categorystyle="variable_category">
-        <block type="set_value_to_variable"><field name="TYPE">LOCAL</field><value name="NAME"><block type="text"><field name="TEXT">変数名</field></block></value><value name="VALUE"><block type="math_number"><field name="NUM">123</field></block></value></block>
+        <block type="set_value_to_variable"><field name="TYPE">GLOBAL</field><value name="NAME"><block type="text"><field name="TEXT">変数名</field></block></value><value name="VALUE"><block type="math_number"><field name="NUM">123</field></block></value></block>
         <block type="get_value_from_variable"><field name="TYPE">GLOBAL</field><value name="NAME"><block type="text"><field name="TEXT">変数名</field></block></value></block>
         <block type="variable_exists"><field name="TYPE">GLOBAL</field><value name="NAME"><block type="text"><field name="TEXT">変数名</field></block></value></block>
         <block type="clear_local_variables"></block>

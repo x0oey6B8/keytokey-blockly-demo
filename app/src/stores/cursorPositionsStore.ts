@@ -4,12 +4,13 @@ import { ref } from "vue";
 import { host } from "../hosts/host";
 import { InputType } from "../hosts/listener";
 import { keys } from "../definitions/blocks/keys";
+import { useDebounceFn } from "@vueuse/core";
 
 export const useCursorPositionsStore = defineStore("cursor-positions", () => {
 
     const modal = ref(ModalStateFactory.create());
     const isLogging = ref(false);
-    const rows = ref<ILoggedCursorPosition[]>([]);
+    const rows = ref<ICursorPositionRowViewModel[]>([]);
     const isWaitingForInput = ref(false);
     const keyName = ref("");
 
@@ -36,7 +37,6 @@ export const useCursorPositionsStore = defineStore("cursor-positions", () => {
     }
 
     function setTrigger(newKeyName: string) {
-        console.log("new trigger", newKeyName);
         const name = keys.find(key => key[1] === newKeyName)?.[0];
         if (name) {
             keyName.value = name as string;
@@ -44,7 +44,7 @@ export const useCursorPositionsStore = defineStore("cursor-positions", () => {
     }
 
     function receive(jsonStr: string) {
-        const loggedPosition: ILoggedCursorPosition = JSON.parse(jsonStr);
+        const loggedPosition: ICursorPositionRowViewModel = JSON.parse(jsonStr);
         rows.value.splice(0, 0, loggedPosition);
     }
 
@@ -83,12 +83,18 @@ export const useCursorPositionsStore = defineStore("cursor-positions", () => {
     }
 });
 
+export interface ICursorPositionRowViewModel extends ILoggedCursorPosition {
+    visibility: boolean;
+}
+
 export interface ICursorPoint {
     x: number;
     y: number;
 }
 
 export interface ILoggedCursorPosition {
+    processName: string;
+    windowTitle: string;
     point: ICursorPoint;
     activeWindowBased: IActiveWindowBased;
 }

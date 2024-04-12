@@ -4,7 +4,6 @@ import KBD from "./KBD.vue"
 import { QTableProps } from "quasar";
 import { useAppStore } from "../stores/appStore";
 
-console.log("shortcut");
 const appStore = useAppStore();
 
 const columns: QTableProps["columns"] = [

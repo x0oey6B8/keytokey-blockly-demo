@@ -236,13 +236,6 @@ onUpdated(() => {
         <ModalShortcutGuide></ModalShortcutGuide>
         <ModalTabSwitcher></ModalTabSwitcher>
         <ModalParameterEditor></ModalParameterEditor>
-        <!-- <Modal :state="toaster.topMessageModal">
-            <template #content>
-                <div style="width: 200px; height: 30px; background-color: green;">
-
-                </div>
-            </template>
-        </Modal> -->
         <CursorPositionLogger v-if="cursorPositions.modal.isShowing"></CursorPositionLogger>
     </Teleport>
 </template>
