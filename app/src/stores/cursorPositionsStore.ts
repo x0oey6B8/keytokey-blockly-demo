@@ -4,7 +4,6 @@ import { ref } from "vue";
 import { host } from "../hosts/host";
 import { InputType } from "../hosts/listener";
 import { keys } from "../definitions/blocks/keys";
-import { useDebounceFn } from "@vueuse/core";
 
 export const useCursorPositionsStore = defineStore("cursor-positions", () => {
 
