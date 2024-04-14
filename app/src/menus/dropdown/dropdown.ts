@@ -75,6 +75,7 @@ export const dropdownMenus: IAppDropDownMenu[] = [
             new HelpMenus.ShowUsage(),
             new HelpMenus.ShowShortcutList(),
             new HelpMenus.OpenLatestAppPage(),
+            new HelpMenus.OpenUrl(),
         ]
     },
 ];

@@ -1,5 +1,7 @@
+import { CommandItem, CommandPaletteOptions } from "../../models/commandPalette";
 import { IDropDownMenuItem } from "../../models/dropdown";
 import { useAppStore } from "../../stores/appStore";
+import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 
 export class ShowUsage implements IDropDownMenuItem {
     header = "使用方法";
@@ -33,5 +35,30 @@ export class OpenLatestAppPage implements IDropDownMenuItem {
                 const url = `https://x0oey6b8.github.io/keytokey-blockly-demo/root/index.html?version=${commitId}`
                 window.location.href = url;
             });
+    }
+}
+
+export class OpenUrl implements IDropDownMenuItem {
+    header = "URLを開く";
+    subHeader = "help";
+    condition = () => true;
+    clicked = async () => {
+        const currentUrl = window.location.href;
+        const options = new CommandPaletteOptions({
+            text: currentUrl,
+            hint: "URL",
+            filtering: false,
+            closeAuto: true,
+            commandItems: [
+                new CommandItem({
+                    header: "URLを開く",
+                    callback: (args) => {
+                        window.location.href = args.text;
+                    }
+                })
+            ]
+        });
+        const store = useCommandPaletteStore();
+        store.open(options);
     }
 }
