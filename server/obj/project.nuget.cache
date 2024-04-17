@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "rZPLK8+lFqN9D2oBAL3yg/6s4tyJ2Lob+TAPhsthdPSz/t0ISE28CaNot86sZnlNNBZosrael3fvgzfGjKyQdA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\root\\source\\repos\\keytokey-blockly-demo\\server\\server.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\root\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\8.0.2\\microsoft.netcore.app.runtime.win-x64.8.0.2.nupkg.sha512",
+    "C:\\Users\\root\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\8.0.2\\microsoft.windowsdesktop.app.runtime.win-x64.8.0.2.nupkg.sha512",
+    "C:\\Users\\root\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\8.0.2\\microsoft.aspnetcore.app.runtime.win-x64.8.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}

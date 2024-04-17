@@ -416,8 +416,8 @@ export class Macro {
     }
 
     constructor(public setting: IMacroSetting) {
-        this.debouncedApplySetting = useDebounceFn(() => this.applySetting(), 1000);
-        this.debouncedSetImplementation = useDebounceFn(async (request) => await this.setImplementation(request), 1000);
+        this.debouncedApplySetting = useDebounceFn(() => this.applySetting(), 500);
+        this.debouncedSetImplementation = useDebounceFn(async (request) => await this.setImplementation(request), 500);
     }
 
     async delete() {

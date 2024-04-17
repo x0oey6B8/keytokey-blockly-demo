@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => {
         build: {
             outDir: "../root",
             chunkSizeWarningLimit: 6600,
+            emptyOutDir: true,
         }
     }
 })
