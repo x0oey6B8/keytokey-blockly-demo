@@ -1,3 +1,4 @@
+import { FileType } from "../../hosts/macroManager";
 import { IFileTempalteGroup } from "../../models/fileTemplate";
 
 const eventTag = "";
@@ -91,3 +92,12 @@ export const fileTemplateGroups: IFileTempalteGroup[] = [
         ]
     }
 ]
+
+export const fileTemplates =
+    fileTemplateGroups
+        .map(group => group.templates)
+        .reduce((accumulator, current) => accumulator.concat(current));
+
+export function findFileByFileType(type: FileType) {
+    return fileTemplates.find(temp => temp.type === type);
+}
