@@ -9,6 +9,7 @@ import { options } from "../configurations/blocklyOptions"
 import { defineContextMenu } from "../definitions/contextMenus/defineContextMenu";
 import { overwriteMessages } from "../definitions/message/overwrite"
 import { defineTestCodeGenerator } from "../definitions/generators/defineCodeGenerator";
+import { useDebounceFn } from "@vueuse/core";
 //import formatXml from "xml-formatter"
 
 export const useBlocklyStore = defineStore("blockly", () => {
@@ -62,6 +63,7 @@ export class WorkspaceSession {
     workspaceSvg: WorkspaceSvg
     isMainWorkspace: boolean;
     isToolboxShowing = true;
+
 
     constructor(container: HTMLElement, isMainWorkspace: boolean, private onChange: BlocklyOnChange) {
         this.isMainWorkspace = isMainWorkspace;
@@ -330,7 +332,7 @@ export class WorkspaceSession {
                 Blockly.Events.disable();
                 Blockly.serialization.workspaces.load(state, workspace);
                 this.setInitialScrollPosition();
-                Blockly.Events.enable();
+                useDebounceFn(() => { Blockly.Events.enable(); }, 500)();
             } catch (error) {
                 console.log("---------------読み込みエラー---------------");
                 console.log(error);

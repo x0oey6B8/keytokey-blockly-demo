@@ -20,12 +20,14 @@ import { defineDualShock4Blocks } from "./dualShock4Blocks.ts";
 import { defineEventBlocks } from "./eventBlocks.ts";
 import { defineTriggerBlocks } from "./triggerBlocks.ts";
 import { defineVariableBlocks } from "./variableBlocks.ts";
+import { defineProfileBlocks } from "./profileBlocks.ts";
 
 export function defineBlocks(): void {
 
     defineVariableBlocks();
     defineEventBlocks();
     defineLoopBlocks();
+    defineProfileBlocks();
     defineInputBlocks();
     defineTriggerBlocks();
     defineWaitBlocks();

@@ -3,17 +3,17 @@ import { BlockColors } from "../../configurations/blockColors";
 import { useNotificationStore } from "../../stores/notificationStore";
 import { FileType } from "../../hosts/macroManager";
 import { useEditingMacro } from "../../stores/editingMacro";
-import { findFileByFileType } from "../files/fileTemplates";
 
-function disconnectEventBlockOnInappropriateFile(targetFile: FileType, block: BlockSvg) {
+function disconnectEventBlockOnInappropriateFile(e: Blockly.Events.Abstract, targetFile: FileType, block: BlockSvg) {
     const file = useEditingMacro()?.file;
-    if (file?.setting.type !== targetFile) {
-        if (block.workspace.getToolbox()) {
-            block.dispose();
-            const toaster = useNotificationStore();
-            const name = findFileByFileType(targetFile)?.header;
-            toaster.error(`ブロックはファイル「${name}」でのみ使用できます。`);
-        }
+    if (e.type != Blockly.Events.BLOCK_DRAG || file?.setting.type === targetFile) {
+        return;
+    }
+
+    if (block.workspace.getToolbox()) {
+        block.dispose();
+        const toaster = useNotificationStore();
+        toaster.error(`ブロックは現在のファイルではで使用できません`);
     }
 }
 
@@ -27,7 +27,7 @@ export function defineEventBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-            this.onchange = () => disconnectEventBlockOnInappropriateFile("EVENT_MACRO_ENDED", this);
+            this.onchange = (e) => disconnectEventBlockOnInappropriateFile(e, "EVENT_MACRO_ENDED", this);
         }
     } as BlockSvg;
 
@@ -40,7 +40,7 @@ export function defineEventBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-            this.onchange = () => disconnectEventBlockOnInappropriateFile("EVENT_TRIGGER_PRESSED", this);
+            this.onchange = (e) => disconnectEventBlockOnInappropriateFile(e, "EVENT_TRIGGER_PRESSED", this);
         }
     } as BlockSvg;
 
@@ -53,7 +53,7 @@ export function defineEventBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-            this.onchange = () => disconnectEventBlockOnInappropriateFile("EVENT_TRIGGER_RELEASED", this);
+            this.onchange = (e) => disconnectEventBlockOnInappropriateFile(e, "EVENT_TRIGGER_RELEASED", this);
         }
     } as BlockSvg;
 
@@ -68,7 +68,7 @@ export function defineEventBlocks() {
             this.setColour(BlockColors.Enum);
             this.setTooltip("");
             this.setHelpUrl("");
-            this.onchange = () => disconnectEventBlockOnInappropriateFile("EVENT_KEY_PRESSED", this);
+            this.onchange = (e) => disconnectEventBlockOnInappropriateFile(e, "EVENT_KEY_PRESSED", this);
         }
     } as BlockSvg;
 
@@ -82,7 +82,7 @@ export function defineEventBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-            this.onchange = () => disconnectEventBlockOnInappropriateFile("EVENT_KEY_RELEASED", this);
+            this.onchange = (e) => disconnectEventBlockOnInappropriateFile(e, "EVENT_KEY_RELEASED", this);
         }
     } as BlockSvg;
 
@@ -107,7 +107,7 @@ export function defineEventBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-            this.onchange = () => disconnectEventBlockOnInappropriateFile("EVENT_KEY_STATE_CHANGED", this);
+            this.onchange = (e) => disconnectEventBlockOnInappropriateFile(e, "EVENT_KEY_STATE_CHANGED", this);
         }
     } as BlockSvg;
 
@@ -133,7 +133,7 @@ export function defineEventBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-            this.onchange = () => disconnectEventBlockOnInappropriateFile("EVENT_MOUSE_MOVED", this);
+            this.onchange = (e) => disconnectEventBlockOnInappropriateFile(e, "EVENT_MOUSE_MOVED", this);
         }
     } as BlockSvg;
 
@@ -194,7 +194,7 @@ export function defineEventBlocks() {
             this.setColour(BlockColors.Action);
             this.setTooltip("");
             this.setHelpUrl("");
-            this.onchange = () => disconnectEventBlockOnInappropriateFile("EVENT_CONTROLLER_STATE_CHANGED", this);
+            this.onchange = (e) => disconnectEventBlockOnInappropriateFile(e, "EVENT_CONTROLLER_STATE_CHANGED", this);
         }
     } as BlockSvg;
 

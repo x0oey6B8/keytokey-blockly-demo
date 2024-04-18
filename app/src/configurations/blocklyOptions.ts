@@ -525,7 +525,40 @@ function getToolBoxXml(): string {
     <sep></sep>
 
 
-    <category name="プロファイル"></category>
+    <category name="プロファイル">
+        <label text="プロファイル名を取得"></label>
+        <block type="profile_get_name"></block>
+
+        <label text="プロファイルを変更する"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="change_profile"><value name="NAME"><block type="text"><field name="TEXT">プロファイル名</field></block></value></block>
+
+        <label text="プロファイルが有効かどうか"></label>
+        <block type="profile_is_enabled"></block>
+
+        <label text="プロファイルがアクティブウィンドウで有効かどうか"></label>
+        <block type="profile_can_work_on_active_window"></block>
+
+        <label text="プロファイルが実行可能な状態かどうか"></label>
+        <block type="profile_can_work"></block>
+
+        <label text="テンプレート"></label>
+        <label text="無効、もしくはアクティブウィンドウで無効な場合"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_if"><value name="IF0"><block type="profile_can_work"><field name="VALUE">CANNOT</field></block></value></block>
+
+        <label text="有効＆アクティブウィンドウで有効な場合"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_if"><value name="IF0"><block type="profile_can_work"><field name="VALUE">CAN</field></block></value></block>
+
+        <label text="プロファイルが有効だったら"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_if"><value name="IF0"><block type="profile_is_enabled"></block></value></block>
+
+        <label text="プロファイルがアクティブウィンドウで有効だったら"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_if"><value name="IF0"><block type="profile_can_work_on_active_window"><field name="VALUE">CAN</field></block></value></block>
+
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
+        <label text="　"></label>
+    </category>
 
 
     <category name="トリガー">
@@ -955,6 +988,7 @@ function getToolBoxXml(): string {
                 </block>
             </value>
         </block>
+        
         <label text="高精度／高負荷"></label>
         <block type="highprecision_wait">
             <value name="WAIT_TIME">
@@ -963,14 +997,9 @@ function getToolBoxXml(): string {
                 </block>
             </value>
         </block>
+
         <label text="キーの入力を待つ"></label>
-        <block type="wait_for_input">
-            <value name="KEY">
-                <block type="keys">
-                    <field name="VALUE">A</field>
-                </block>
-            </value>
-        </block>
+        <block xmlns="https://developers.google.com/blockly/xml" type="wait_for_input"><value name="INPUT"><block type="keys"><field name="VALUE">A</field></block></value></block>
 
         <label text="コントローラーの入力を待つ"></label>
         <block xmlns="https://developers.google.com/blockly/xml" type="wait_for_input"><value name="INPUT"><block type="controller_buttons"><field name="VALUE">ControllerButtons.A</field></block></value></block>
