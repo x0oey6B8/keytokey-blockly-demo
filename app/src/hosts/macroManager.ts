@@ -81,7 +81,7 @@ export class MacroManager implements IMacroManager {
     }
 
     write = async (request: IWriteRequest) => {
-        console.log("write", request);
+        //console.log("write", request);
         const json = await this.hostObjects.macroManager.WriteFile(JSON.stringify(request));
         const result: IRequestResult = JSON.parse(json);
         return result;
@@ -604,7 +604,7 @@ export class Macro {
 
     setParameters(parameterNames: string[]): boolean {
         const result = this.compareParameters(parameterNames);
-        console.log("[param]", "changed details", result);
+        //console.log("[param]", "changed details", result);
         if (result.hasChanged) {
             this.hasParameterChanged = true;
             this.applyParameterChangedToSetting(parameterNames, result);

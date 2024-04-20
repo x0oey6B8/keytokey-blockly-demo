@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { javascriptGenerator } from "blockly/javascript";
-import Blockly, { BlockSvg, WorkspaceSvg } from "blockly/core"
+import Blockly, { Block, BlockSvg, BlocklyOptions, WorkspaceSvg } from "blockly/core"
 import { setLocaleToJa } from "../configurations/language";
 import { defineTheme } from "../configurations/theme";
 import { StatementPrefix, defineCodeGenerator, setStatementPrefix } from "../definitions/generators/defineGenerator";
@@ -68,11 +68,12 @@ export class WorkspaceSession {
     constructor(container: HTMLElement, isMainWorkspace: boolean, private onChange: BlocklyOnChange) {
         this.isMainWorkspace = isMainWorkspace;
         this.workspaceSvg = Blockly.inject(container, options);
-        this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
         this.workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
+        //this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
+        this.workspaceSvg.addChangeListener(disableOrphans);
         this.workspaceSvg.addChangeListener((e) => this.onChange(e, this));
-        // this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
         this.workspaceSvg.scrollbar?.setVisible(false);
+        // this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
     }
 
     toggleScrollbarVisiblity() {
@@ -228,6 +229,8 @@ export class WorkspaceSession {
         const selectedBlock = this.getSelectedBlock();
         if (selectedBlock) {
             selectedBlock.unplug(true);
+            getAllChildBlocks(selectedBlock).forEach(block => block.setEnabled(false));
+            logCurrentBlockStatus(selectedBlock.workspace.id, selectedBlock);
         }
     }
 
@@ -254,6 +257,7 @@ export class WorkspaceSession {
 
         if (selectedBlock.nextConnection && newBlock.previousConnection) {
             selectedBlock.nextConnection.connect(newBlock.previousConnection);
+            logCurrentBlockStatus(selectedBlock.workspace.id, selectedBlock);
         } else {
             this.centerTo(newBlock);
         }
@@ -355,4 +359,133 @@ export interface ISourceCodeWriter {
 export interface ISourceCode {
     json: string,
     javascript: string,
+}
+
+/*
+    Blockly.Events.disableOrphans
+*/
+type LoggedStatusDictionary = {
+    [workspaceId: string]: LoggedStatus;
+}
+
+type BlockStatus = { [id: string]: boolean }
+
+const loggedBlockDic: LoggedStatusDictionary = {};
+
+class LoggedStatus {
+    constructor(public blocks: BlockSvg[], public blockStatus: BlockStatus, public isConnectedRootStatement: boolean) {
+    }
+}
+
+export function disableOrphans(event: Blockly.Events.Abstract) {
+
+    if (!(event.type === Blockly.Events.SELECTED
+        || event.type === Blockly.Events.MOVE
+        || event.type === Blockly.Events.BLOCK_DRAG)) {
+        return;
+    }
+
+    if (!event.workspaceId) {
+        return;
+    }
+
+    // イベントが発生したワークスペース取得
+    const workspace = Blockly.common.getWorkspaceById(event.workspaceId) as WorkspaceSvg;
+    if (!event.workspaceId) {
+        return;
+    }
+
+    // 選択しているブロックのIDを取得
+    const id = Blockly.getSelected()?.id;
+    if (!id) {
+        return;
+    }
+
+    // 選択しているブロックを取得
+    const block = workspace.getBlockById(id);
+    if (!block) {
+        return;
+    }
+
+    // ルートのステートメントブロックの場合
+    if (isRootStatement(block)) {
+        return;
+    }
+
+    // ルートブロックに接続されてないブロックを探し無効にする
+    const topBlocks = workspace.getTopBlocks();
+    for (const topBlock of topBlocks) {
+        if (topBlock.nextConnection) {
+            const children = getAllChildBlocks(topBlock);
+            children.forEach(child => child.setEnabled(false));
+        }
+    }
+
+    // 選択したときに一連のブロックとブロックの状態を取得して記録しておく
+    if (event.type === Blockly.Events.SELECTED) {
+        logCurrentBlockStatus(workspace.id, block);
+
+        // ドラッグ開始したとき
+    } else if (event.type === Blockly.Events.BLOCK_DRAG && !(event as Blockly.Events.BlockDrag)?.isStart) {
+        // ドラッグ時に記録した子ブロックを取得
+        for (const block of loggedBlockDic[workspace.id].blocks) {
+            block.setEnabled(true);
+        }
+        // ブロックの位置が変更されたため記録を更新する
+        logCurrentBlockStatus(workspace.id, block);
+    }
+}
+
+export function logCurrentBlockStatus(workspaceId: string, block: BlockSvg) {
+    // すべての子ブロックを取得
+    const blocks = getAllChildBlocks(block);
+    // ルートブロックを取得
+    const rootStatement = getRootBlock(block);
+    // ルートブロックがあるかどうかチェックする
+    const isConnectedToRootStatement = rootStatement !== undefined;
+    // 記録しておく
+    loggedBlockDic[workspaceId] = new LoggedStatus(blocks, {}, isConnectedToRootStatement);
+}
+
+export function isRootStatement(block: BlockSvg | undefined) {
+    if (!block) {
+        return false;
+    }
+    const isBlockStatement = block.statementInputCount > 0;
+    const canConnectPrevious = block.previousConnection !== null;
+    return isBlockStatement && !canConnectPrevious;
+}
+
+export function getAllChildBlocks(block: BlockSvg) {
+    const results = [];
+    let current: BlockSvg | null = block;
+    do {
+        results.push(current);
+        current = current.getNextBlock();
+    } while (current);
+    return results;
+}
+
+export function getParentStatementBlocks(block: BlockSvg) {
+    let ancestor = block;
+    const blocks: BlockSvg[] = [];
+    while (true) {
+        let parent = ancestor.getParent();
+        if (!parent) { break; }
+        if (parent.statementInputCount) {
+            blocks.push(parent);
+        }
+        ancestor = parent;
+    }
+    return blocks;
+}
+
+export function getRootBlock(block: BlockSvg) {
+    let ancestor = block;
+    while (true) {
+        let parent = ancestor.getParent();
+        if (!parent) { break; }
+        ancestor = parent;
+    }
+    return ancestor.id !== block.id ? ancestor : undefined;
 }

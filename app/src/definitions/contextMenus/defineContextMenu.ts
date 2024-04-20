@@ -106,4 +106,20 @@ export function defineContextMenu() {
             return getEnabledOrDisabled(true);
         },
     });
+
+    Blockly.ContextMenuRegistry.registry.register({
+        displayText: "テスト",
+        id: "テスト",
+        scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
+        weight: 102,
+        callback: () => {
+            const blockly = useBlocklyStore();
+            const block = blockly.getCurrentWorkspaceSession()?.getSelectedBlock();
+            if (block) {
+            }
+        },
+        preconditionFn: () => {
+            return getEnabledOrDisabled(true);
+        },
+    });
 }

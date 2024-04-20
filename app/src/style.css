@@ -225,7 +225,7 @@ body {
 }
 
 .blocklyDisabled .blocklyEditableText text {
-    fill: #e7e7e7 !important;
+    /* fill: #e7e7e7 !important; */
 }
 
 /* Change the hover background color */
