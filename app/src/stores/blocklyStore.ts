@@ -381,7 +381,8 @@ export function disableOrphans(event: Blockly.Events.Abstract) {
 
     if (!(event.type === Blockly.Events.SELECTED
         || event.type === Blockly.Events.MOVE
-        || event.type === Blockly.Events.BLOCK_DRAG)) {
+        || event.type === Blockly.Events.BLOCK_DRAG
+        || event.type === Blockly.Events.CHANGE)) {
         return;
     }
 
@@ -409,6 +410,11 @@ export function disableOrphans(event: Blockly.Events.Abstract) {
 
     // ルートのステートメントブロックの場合
     if (isRootStatement(block)) {
+        return;
+    }
+
+    if (event.type === Blockly.Events.CHANGE) {
+        logCurrentBlockStatus(workspace.id, block);
         return;
     }
 
