@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { javascriptGenerator } from "blockly/javascript";
-import Blockly, { Block, BlockSvg, BlocklyOptions, WorkspaceSvg } from "blockly/core"
+import Blockly, { BlockSvg, WorkspaceSvg } from "blockly/core"
 import { setLocaleToJa } from "../configurations/language";
 import { defineTheme } from "../configurations/theme";
 import { StatementPrefix, defineCodeGenerator, setStatementPrefix } from "../definitions/generators/defineGenerator";

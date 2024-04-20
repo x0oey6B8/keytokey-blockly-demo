@@ -119,6 +119,46 @@ class Bounds {
     }
 }
 
+class Profile {
+
+    /**
+     * プロファイル名を取得します
+     */
+    get name() {
+        return _globals.Profile.Name;
+    }
+
+    /**
+     * プロファイルが有効かどうかを取得します。
+     */
+    get isEnabled() {
+        return _globals.Profile.IsEnabled;
+    }
+
+    /**
+     * プロファイルがアクティブウィンドウ上で実行可能かどうかを取得します。
+     */
+    get canWorkOnActiveWindow() {
+        return _globals.Profile.CanWorkOnActiveWindow;
+    }
+
+    /**
+     * プロファイルが有効かつアクティブウィンドウ上で実行かどうかを取得します。
+     */
+    get canWork() {
+        return _globals.Profile.IsEnabled && _globals.Profile.CanWorkOnActiveWindow;
+    }
+
+    /**
+     * プロファイルを変更します
+     * @param {string} profileName 
+     */
+    changeTo(profileName) {
+        console.log(profileName);
+        _globals.Profile.ChangeTo(profileName);
+    }
+}
+
 class Variable {
 
     _variableDic;
@@ -127,16 +167,31 @@ class Variable {
         this._variableDic = variableDic;
     }
 
+    /**
+     * KeyToKey側に変数が存在するかどうかを取得します。
+     * @param {string} name 
+     * @returns {boolean} 変数が存在する場合はtrue、存在しない場合はfalseを返します。
+     */
     exists(name) {
         name = this._prependPrefix(name);
         return this._variableDic.ContainsKey(name);
     }
 
+    /**
+     * KeyToKey側の変数の値を取得します。
+     * @param {string} name 変数名
+     * @returns {any} 変数の値
+     */
     get(name) {
         const value = this._getValue(name);
         return value;
     }
 
+    /**
+     * KeyToKey側の変数に値をセットします。
+     * @param {string} name 変数名
+     * @param {number|string|boolean|Keys} value 値
+     */
     set(name, value) {
         if (this.exists(this._prependPrefix(name))) {
             name = this._prependPrefix(name);
@@ -174,12 +229,21 @@ class Variable {
 class Wait {
     static Default = new Wait();
 
+    /**
+     * 指定した時間待機します（精度は高くありません）
+     * @param {number} ms_time 待機する時間
+     * @param {string} unit 単位
+     */
     wait = (ms_time, unit) => {
         const waiter = _globals.CreateWaiter(false);
         const t = this.calcTime(ms_time, unit);
         waiter.Wait(t);
     }
 
+    /**
+     * 高精度高負荷な待機を行います。
+     * @param {number} ms_time 待機時間（ミリ秒）
+     */
     h_wait = (ms_time) => {
         const waiter = _globals.CreateWaiter(true);
         waiter.Wait(ms_time);
@@ -1585,6 +1649,7 @@ class ControllerButtons {
 try {
     // プロパティ
     globalThis.console = Console.Default;
+    globalThis.profile = new Profile();
     globalThis.trigger = new Trigger();
     globalThis.mouse = new Mouse();
     globalThis.controller = new Controller(_globals.Controller);
