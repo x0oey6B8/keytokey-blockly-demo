@@ -17,12 +17,14 @@ const macroName = ref("");
 const isLoggerEnabled = ref(false);
 const preload = ref(false);
 const everyTimeClear = ref(false);
+const disabledOnWindow = ref(false);
 if (editingMacro.macro) {
     const setting = editingMacro.macro.setting;
     macroName.value = setting.name;
     isLoggerEnabled.value = setting.debug.logger.enabled;
     preload.value = setting.preload;
     everyTimeClear.value = setting.variable.local.alwaysClear;
+    disabledOnWindow.value = setting.interrupt.disabled_on_window;
 }
 
 watch(isLoggerEnabled, async (newValue) => {
@@ -41,6 +43,13 @@ watch(preload, async (newValue) => {
 });
 
 watch(everyTimeClear, async (newValue) => {
+    if (editingMacro.macro) {
+        editingMacro.macro.setting.variable.local.alwaysClear = newValue;
+        await editingMacro.macro.applySetting();
+    }
+});
+
+watch(disabledOnWindow, async (newValue) => {
     if (editingMacro.macro) {
         editingMacro.macro.setting.variable.local.alwaysClear = newValue;
         await editingMacro.macro.applySetting();
@@ -71,16 +80,12 @@ function openParameterSetting() {
                 <span class="font-size-14 header-title">{{ macroName }}</span>
                 <span>の設定</span>
             </div>
-            <hr/>
+            <hr />
             <div class="settings">
                 <div class="tabs-wrapper">
                     <div class="tabs">
                         <div v-for="tab in store.tabs" :key="tab.header">
-                            <q-btn 
-                                flat
-                                class="fit-content tab-button" 
-                                :class="{ selected: tab.isSelected }"
-                                @click="changeTabSelection(tab)">
+                            <q-btn flat class="fit-content tab-button" :class="{ selected: tab.isSelected }" @click="changeTabSelection(tab)">
                                 {{ tab.header }}
                             </q-btn>
                         </div>
@@ -107,6 +112,17 @@ function openParameterSetting() {
                                     以下の要素はリアルタイム反映されません。<br>
                                     ・引数の設定変更<br>
                                 </q-tooltip>
+                            </q-item>
+                            <q-item tag="label" v-ripple style="user-select: none;" round>
+                                <q-item-section>
+                                    <q-item-label>実行できないウィンドウで停止</q-item-label>
+                                    <q-item-label caption class="font-size-12">
+                                        実行できないアクティブウィンドウにフォーカスがあたったとき実行中のマクロを停止させます。
+                                    </q-item-label>
+                                </q-item-section>
+                                <q-item-section avatar>
+                                    <q-toggle color="green" val="friend" v-model="disabledOnWindow" />
+                                </q-item-section>
                             </q-item>
                             <q-item tag="label" v-ripple style="user-select: none;" round>
                                 <q-item-section>
@@ -145,7 +161,7 @@ function openParameterSetting() {
                                 </q-tooltip>
                             </q-item>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
@@ -154,111 +170,110 @@ function openParameterSetting() {
 </template>
 
 <style scoped>
+.header {
+    padding: 3px 0 10px 0px;
+    grid-row: 1;
+    display: flex;
+    justify-content: center;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
 
-    .header {
-        padding: 3px 0 10px 0px;
-        grid-row: 1;
-        display: flex;
-        justify-content: center;
-        justify-content: center;
-        align-items: center;
-        display: flex;
-    }
+.header span {
+    user-select: none;
+}
 
-    .header span {
-        user-select: none;
-    }
+.header-title {
+    max-width: 400px;
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    user-select: none;
+}
 
-    .header-title {
-        max-width: 400px;
-        overflow-x: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        user-select: none;
-    }
+.tab-button {
+    min-height: 1.972em !important;
+    margin-bottom: 7px;
+    border-radius: 6px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
 
-    .tab-button {
-        min-height: 1.972em !important;
-        margin-bottom: 7px;
-        border-radius: 6px;
-        padding-left: 10px;
-        padding-right: 10px;
-    }
+.tab-button:selected {
+    background: var(--secondary-bg-color);
+}
 
-    .tab-button:selected {
-        background: var(--secondary-bg-color);
-    }
+.entire {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    .entire {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+.center-panel {
+    width: 600px;
+    height: 400px;
+    padding: 12px;
+    margin-bottom: 60px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color-app);
+    display: grid;
+    grid-template-rows: 45px auto 1fr;
+}
 
-    .center-panel {
-        width: 600px;
-        height: 400px;
-        padding: 12px;
-        margin-bottom: 60px;
-        border-radius: 10px;
-        border: 1px solid var(--border-color);
-        background-color: var(--bg-color-app);
-        display: grid;
-        grid-template-rows: 45px auto 1fr;
-    }
+.settings {
+    display: flex;
+    grid-row: 3;
+    width: 100%;
+    margin-top: 0px;
+}
 
-    .settings {
-        display: flex;
-        grid-row: 3;
-        width: 100%;
-        margin-top: 0px;
-    }
+.tabs-wrapper {
+    margin-top: 14px;
+    width: 25%;
+    /* height: 100%; */
+    border-right: 1px solid var(--border-color);
+    padding-right: 0px;
+}
 
-    .tabs-wrapper {
-        margin-top: 14px;
-        width: 25%;
-        /* height: 100%; */
-        border-right: 1px solid var(--border-color);
-        padding-right: 0px;
-    }
+.tabs {
+    /* background-color: antiquewhite; */
+    width: 100%;
+    margin-top: 5px;
+    margin-left: 10px;
+    padding-right: 15px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+}
 
-    .tabs {
-        /* background-color: antiquewhite; */
-        width: 100%;
-        margin-top: 5px;
-        margin-left: 10px;
-        padding-right: 15px;
-        font-size: 14px;
-        display:flex;
-        flex-direction: column;
-    }
+.tab {
+    padding: 3px 10px;
+    margin-bottom: 7px;
+    border-radius: 5px;
+    width: fit-content;
+    user-select: none;
+}
 
-    .tab {
-        padding: 3px 10px;
-        margin-bottom: 7px;
-        border-radius: 5px;
-        width: fit-content;
-        user-select: none;
-    }
+.tab span {
+    overflow-wrap: break-word;
+}
 
-    .tab span {
-        overflow-wrap: break-word;
-    }
+.tab:hover {
+    cursor: pointer;
+}
 
-    .tab:hover {
-        cursor: pointer;
-    }
+.selected {
+    background: var(--secondary-bg-color);
+}
 
-    .selected {
-        background: var(--secondary-bg-color);
-    }
-
-    .contents-container {
-        height: 100%;
-        width: 100%;
-        margin-left: 10px;
-    }
+.contents-container {
+    height: 100%;
+    width: 100%;
+    margin-left: 10px;
+}
 </style>
 ../stores/macroSettingsStore

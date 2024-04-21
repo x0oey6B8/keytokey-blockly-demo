@@ -252,6 +252,9 @@ export class LocalMacroStorage {
                     enabled: false
                 }
             },
+            interrupt: {
+                disabled_on_window: true
+            },
             preload: true
         });
         this.fileContents.push({
@@ -802,6 +805,7 @@ export interface IMacroSetting {
     category: string;
     files: IMacroFileSetting[];
     variable: IVariableSetting;
+    interrupt: IInterruptSetting;
     debug: IDebugSetting;
 }
 
@@ -819,6 +823,10 @@ export interface IVariableSetting {
 
 export interface ILocalVariableSetting {
     alwaysClear: boolean;
+}
+
+export interface IInterruptSetting {
+    disabled_on_window: boolean;
 }
 
 export interface IMacroFileSetting {
