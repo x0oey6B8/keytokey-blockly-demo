@@ -51,7 +51,7 @@ watch(everyTimeClear, async (newValue) => {
 
 watch(disabledOnWindow, async (newValue) => {
     if (editingMacro.macro) {
-        editingMacro.macro.setting.variable.local.alwaysClear = newValue;
+        editingMacro.macro.setting.interrupt.disabled_on_window = newValue;
         await editingMacro.macro.applySetting();
     }
 });
@@ -108,7 +108,7 @@ function openParameterSetting() {
                                     オフ：<br>
                                     ・実行直前に読み込みます。<br>
                                     ・実行までの速度が遅くなります。<br>
-                                    ・直前読み込みによってブロックの変更をリアルタイムで反映させることができます。<br>
+                                    ・直前読み込みによってマクロの変更をリアルタイムで反映させることができます。<br>
                                     以下の要素はリアルタイム反映されません。<br>
                                     ・引数の設定変更<br>
                                 </q-tooltip>
@@ -117,7 +117,7 @@ function openParameterSetting() {
                                 <q-item-section>
                                     <q-item-label>実行できないウィンドウで停止</q-item-label>
                                     <q-item-label caption class="font-size-12">
-                                        実行できないアクティブウィンドウにフォーカスがあたったとき実行中のマクロを停止させます。
+                                        実行できないウィンドウがアクティブになったとき実行中のマクロを停止させます。
                                     </q-item-label>
                                 </q-item-section>
                                 <q-item-section avatar>
