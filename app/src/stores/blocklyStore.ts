@@ -69,8 +69,8 @@ export class WorkspaceSession {
         this.isMainWorkspace = isMainWorkspace;
         this.workspaceSvg = Blockly.inject(container, options);
         this.workspace = Blockly.common.getWorkspaceById(this.workspaceSvg.id);
-        //this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
-        this.workspaceSvg.addChangeListener(disableOrphans);
+        this.workspaceSvg.addChangeListener(Blockly.Events.disableOrphans);
+        // this.workspaceSvg.addChangeListener(disableOrphans);
         this.workspaceSvg.addChangeListener((e) => this.onChange(e, this));
         this.workspaceSvg.scrollbar?.setVisible(false);
         // this.workspaceSvg.registerButtonCallback("addKeyValue", this.addKeyValue);
@@ -229,8 +229,10 @@ export class WorkspaceSession {
         const selectedBlock = this.getSelectedBlock();
         if (selectedBlock) {
             selectedBlock.unplug(true);
+            Blockly.Events.setRecordUndo(false);
             getAllChildBlocks(selectedBlock).forEach(block => block.setEnabled(false));
             logCurrentBlockStatus(selectedBlock.workspace.id, selectedBlock);
+            Blockly.Events.setRecordUndo(true);
         }
     }
 
@@ -324,7 +326,9 @@ export class WorkspaceSession {
         if (!workspace) {
             return "";
         }
-        const json = JSON.stringify(Blockly.serialization.workspaces.save(workspace));
+        const serializedState = Blockly.serialization.workspaces.save(workspace);
+        console.log(serializedState)
+        const json = JSON.stringify(serializedState);
         return json;
     }
 
@@ -335,6 +339,7 @@ export class WorkspaceSession {
                 const state = JSON.parse(json);
                 Blockly.Events.disable();
                 Blockly.serialization.workspaces.load(state, workspace);
+                workspace.clearUndo();
                 this.setInitialScrollPosition();
                 useDebounceFn(() => { Blockly.Events.enable(); }, 500)();
             } catch (error) {
@@ -379,12 +384,7 @@ class LoggedStatus {
 
 export function disableOrphans(event: Blockly.Events.Abstract) {
 
-    if (!(event.type === Blockly.Events.SELECTED
-        || event.type === Blockly.Events.MOVE
-        || event.type === Blockly.Events.BLOCK_DRAG
-        || event.type === Blockly.Events.CHANGE)) {
-        return;
-    }
+    console.log(event);
 
     if (!event.workspaceId) {
         return;
@@ -394,6 +394,27 @@ export function disableOrphans(event: Blockly.Events.Abstract) {
     const workspace = Blockly.common.getWorkspaceById(event.workspaceId) as WorkspaceSvg;
     if (!event.workspaceId) {
         return;
+    }
+
+    const eventBlockId = (event as any).blockId;
+    if (eventBlockId) {
+        const eventBlock = workspace.getBlockById(eventBlockId);
+        if (eventBlock?.outputConnection && !eventBlock.getParent()) {
+            Blockly.Events.setRecordUndo(false);
+            eventBlock.setEnabled(false);
+            Blockly.Events.setRecordUndo(true);
+        }
+    }
+
+    // ルートブロックに接続されてないブロックを探し無効にする
+    const topBlocks = workspace.getTopBlocks();
+    for (const topBlock of topBlocks) {
+        if (topBlock.nextConnection) {
+            const children = getAllChildBlocks(topBlock);
+            Blockly.Events.setRecordUndo(false);
+            children.forEach(child => child.setEnabled(false));
+            Blockly.Events.setRecordUndo(true);
+        }
     }
 
     // 選択しているブロックのIDを取得
@@ -413,31 +434,17 @@ export function disableOrphans(event: Blockly.Events.Abstract) {
         return;
     }
 
-    if (event.type === Blockly.Events.CHANGE) {
-        logCurrentBlockStatus(workspace.id, block);
-        return;
-    }
-
-    // ルートブロックに接続されてないブロックを探し無効にする
-    const topBlocks = workspace.getTopBlocks();
-    for (const topBlock of topBlocks) {
-        if (topBlock.nextConnection) {
-            const children = getAllChildBlocks(topBlock);
-            children.forEach(child => child.setEnabled(false));
-        }
-    }
-
     // 選択したときに一連のブロックとブロックの状態を取得して記録しておく
-    if (event.type === Blockly.Events.SELECTED) {
-        logCurrentBlockStatus(workspace.id, block);
-
-        // ドラッグ開始したとき
-    } else if (event.type === Blockly.Events.BLOCK_DRAG && !(event as Blockly.Events.BlockDrag)?.isStart) {
+    if (event.type === Blockly.Events.BLOCK_DRAG && !(event as Blockly.Events.BlockDrag)?.isStart) {
         // ドラッグ時に記録した子ブロックを取得
         for (const block of loggedBlockDic[workspace.id].blocks) {
+            Blockly.Events.setRecordUndo(false);
             block.setEnabled(true);
+            Blockly.Events.setRecordUndo(true);
         }
         // ブロックの位置が変更されたため記録を更新する
+        logCurrentBlockStatus(workspace.id, block);
+    } else {
         logCurrentBlockStatus(workspace.id, block);
     }
 }

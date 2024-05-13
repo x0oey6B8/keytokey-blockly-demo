@@ -1,15 +1,15 @@
+import { host } from "../../hosts/host";
 import { CommandItem, CommandPaletteOptions } from "../../models/commandPalette";
 import { IDropDownMenuItem } from "../../models/dropdown";
 import { useAppStore } from "../../stores/appStore";
 import { useCommandPaletteStore } from "../../stores/commandPaletteStore";
 
 export class ShowUsage implements IDropDownMenuItem {
-    header = "使用方法";
+    header = "ブロックマクロについて";
     subHeader = "help";
     condition = () => true;
     clicked = () => {
-        const appStore = useAppStore();
-        appStore.openDropdownMenus();
+        host.utils.openInBrowser("https://github.com/x0oey6B8/KeyToKey-Web/wiki/ブロックマクロ");
     };
 }
 

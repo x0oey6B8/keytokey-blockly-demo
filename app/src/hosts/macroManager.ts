@@ -64,8 +64,8 @@ export class MacroManager implements IMacroManager {
         }
         const json = await this.hostObjects.macroManager.List();
         const settings: IMacroSetting[] = JSON.parse(json);
-        console.log(settings);
-        return settings.map(setting => new Macro(setting));
+        const results = settings.map(setting => new Macro(new MacroSetting(setting)));
+        return results;
     }
 
     addFile = async (request: IAddFileRequest) => {
@@ -89,7 +89,7 @@ export class MacroManager implements IMacroManager {
 
     find = async (request: IFindMacroRequest) => {
         const json = await this.hostObjects.macroManager.Find(JSON.stringify(request));
-        const setting: IMacroSetting = JSON.parse(json);
+        const setting: IMacroSetting = new MacroSetting(JSON.parse(json));
         return new Macro(setting);
     }
 
@@ -203,7 +203,9 @@ export class LocalMacroStorage {
     private load() {
         const settings = localStorage.getItem("settings");
         if (settings) {
-            this.settings = JSON.parse(settings);
+            console.log(JSON.parse(settings));
+            this.settings = (JSON.parse(settings) as IMacroSetting[]).map(setting => new MacroSetting(setting));
+            console.log(this.settings);
         }
 
         const fileContents = localStorage.getItem("fileContents");
@@ -230,33 +232,14 @@ export class LocalMacroStorage {
     }
 
     async create(request: IMacroCreationRequest): Promise<IRequestResult> {
-        this.settings.push({
-            name: request.macroName,
-            parameters: [],
+        const setting = new MacroSetting();
+        setting.name = request.macroName;
+        setting.files.push({
             id: uuidv4(),
-            category: "",
-            files: [
-                {
-                    id: uuidv4(),
-                    name: request.fileName,
-                    type: request.type
-                }
-            ],
-            variable: {
-                local: {
-                    alwaysClear: true
-                }
-            },
-            debug: {
-                logger: {
-                    enabled: false
-                }
-            },
-            interrupt: {
-                disabled_on_window: true
-            },
-            preload: true
+            name: request.fileName,
+            type: request.type
         });
+        this.settings.push(setting);
         this.fileContents.push({
             javascriptCode: request.javascript,
             json: request.json,
@@ -283,7 +266,7 @@ export class LocalMacroStorage {
         const index = this.settings.findIndex(macroSetting => macroSetting.name === request.sourceMacroName);
         if (index > -1) {
             // マクロ設定の複製
-            const setting: IMacroSetting = JSON.parse(JSON.stringify(this.settings[index]));
+            const setting: IMacroSetting = new MacroSetting(JSON.parse(JSON.stringify(this.settings[index])));
             setting.name = request.newMacroName;
             setting.id = uuidv4();
             setting.files.forEach(file => file.id = uuidv4());
@@ -796,7 +779,6 @@ export class ValueTypeToDefaultValue {
     }
 }
 
-
 export interface IMacroSetting {
     id: string;
     name: string;
@@ -807,6 +789,25 @@ export interface IMacroSetting {
     variable: IVariableSetting;
     interrupt: IInterruptSetting;
     debug: IDebugSetting;
+}
+
+export class MacroSetting implements IMacroSetting {
+    constructor(init?: Partial<IMacroSetting>) {
+        Object.assign(this, init);
+    }
+    id: string = uuidv4();
+    name: string = "名前";
+    preload: boolean = true;
+    parameters: IMacroParameter[] = [];
+    category: string = "";
+    files: IMacroFileSetting[] = [];
+    variable: IVariableSetting = {
+        local: {
+            alwaysClear: true
+        }
+    };
+    interrupt: IInterruptSetting = { disabled_on_window: true };
+    debug: IDebugSetting = { logger: { enabled: true } };
 }
 
 export interface IDebugSetting {

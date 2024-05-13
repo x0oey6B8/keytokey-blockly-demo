@@ -27,7 +27,7 @@ class TEMPLATE_MATCHING_RESULT_PROPERTY_NAMES {
             case "IS_NOT_SUCCESS": return "isNotSuccess";
             case "FOUND_FIRST_IMAGE": return "foundImage";
             case "FOUND_ALL_IMAGES": return "foundImages";
-            case "SCORE": return "isSuccess";
+            case "SCORE": return "score";
             case "FOUND_POINT_CENTER": return "point";
             case "FOUND_POINT_TOP_LEFT": return "topLeftPoint";
             case "FOUND_POINT_BOTTOM_RIGHT": return "bottomRightPoint";

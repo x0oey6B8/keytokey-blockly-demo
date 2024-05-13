@@ -116,6 +116,7 @@ export function defineContextMenu() {
             const blockly = useBlocklyStore();
             const block = blockly.getCurrentWorkspaceSession()?.getSelectedBlock();
             if (block) {
+                console.log(block.nextConnection, block.outputConnection, block.previousConnection);
             }
         },
         preconditionFn: () => {
