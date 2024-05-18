@@ -46,20 +46,28 @@ export const mappingTargets: Blockly.MenuOption[] = [
         "RT"
     ],
     [
-        "左スティック",
-        "LeftStick"
-    ],
-    [
         "左スティック押し込み(L3)",
         "LeftStickPush"
     ],
     [
-        "右スティック上",
-        "RightStick"
-    ],
-    [
         "右スティック押し込み(R3)",
         "RightStickPush"
+    ],
+    [
+        "左スティック横",
+        "LeftStickX"
+    ],
+    [
+        "左スティック縦",
+        "LeftStickX"
+    ],
+    [
+        "右スティック横",
+        "RightStickX"
+    ],
+    [
+        "右スティック縦",
+        "RightStickY"
     ],
     [
         "拡張ボタン0",
