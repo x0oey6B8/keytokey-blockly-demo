@@ -19,10 +19,10 @@ export class MAPPING_INPUT_ARRAY extends BlockCodeGenerator {
         const dropdown = this.getFieldValue(block, "DROPDOWN");
         switch (dropdown) {
             case "LEFT_STICK":
-                code = `["LeftStickUp","LeftStickDown","LeftStickLeft","LeftStickRight"]`;
+                code = `["LeftStickX","LeftStickY"]`;
                 break;
             case "RIGHT_STICK":
-                code = `["RightStickUp","RightStickDown","RightStickLeft","RightStickRight"]`;
+                code = `["RightStickX","RightStickY"]`;
                 break;
             case "DPAD":
                 code = `["DPadUp","DPadDown","DPadLeft","DPadRight"]`;
