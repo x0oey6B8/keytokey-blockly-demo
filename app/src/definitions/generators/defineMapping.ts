@@ -7,7 +7,8 @@ export class MAPPING_SUSPEND_RESUME extends BlockCodeGenerator {
     generateCode(block: BlockSvg): GeneratedCode {
         const array = this.valueToCode(block, "INPUT_LIST", "NONE");
         const targetDevice = this.getFieldValue(block, "TARGET_DEVICE");
-        const code = `mapping.suspend("${targetDevice}", ${array});\n`;
+        const behavior = this.getFieldValue(block, "BEHAVIOR");
+        const code = `mapping.${behavior.toLowerCase()}("${targetDevice}", ${array});\n`;
         return code;
     }
 }
