@@ -59,7 +59,7 @@ export const mappingTargets: Blockly.MenuOption[] = [
     ],
     [
         "左スティック縦",
-        "LeftStickX"
+        "LeftStickY"
     ],
     [
         "右スティック横",
