@@ -1095,7 +1095,7 @@ function getToolBoxXml(): string {
             <field name="VAR" id="2}oH}@8I#0H8^Fq/U8Zj">結果</field>
             <value name="VALUE">
                 <block type="template_matching_match_by_id">
-                    <field name="DROPDOWN">MULTIPLE</field>
+                    <field name="DROPDOWN">SINGLE</field>
                     <value name="IDENTIFIER">
                         <block type="text">
                             <field name="TEXT">識別キー</field>
