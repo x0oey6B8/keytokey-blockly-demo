@@ -240,7 +240,7 @@ export class INPUT_TEXT extends BlockCodeGenerator {
     name = "input_text";
     generateCode(block: BlockSvg): GeneratedCode {
         const v = this.getValues(block);
-        const code = `inputText(${v.text}, ${v.interval})`;
+        const code = `inputText(${v.text}, ${v.interval});\n`;
         return code;
     }
 

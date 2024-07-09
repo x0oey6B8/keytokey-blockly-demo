@@ -21,9 +21,11 @@ import { defineEventBlocks } from "./eventBlocks.ts";
 import { defineTriggerBlocks } from "./triggerBlocks.ts";
 import { defineVariableBlocks } from "./variableBlocks.ts";
 import { defineProfileBlocks } from "./profileBlocks.ts";
+import { defineSystemBlocks } from "./systemBlock.ts";
 
 export function defineBlocks(): void {
 
+    defineSystemBlocks();
     defineVariableBlocks();
     defineEventBlocks();
     defineLoopBlocks();
