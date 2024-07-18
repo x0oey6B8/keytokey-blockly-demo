@@ -167,12 +167,12 @@ function getToolBoxXml(): string {
         <block type="event_cancel_input"></block>
     </category>
 
-    <!--
+    
     <category name="システム">
         <label text="強制終了"></label>
         <block type="interrupt"></block>
     </category>
-    -->
+    
 
 
     <category name="javascript">
