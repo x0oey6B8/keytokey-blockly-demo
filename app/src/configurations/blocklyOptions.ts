@@ -70,7 +70,7 @@ function getToolBoxXml(): string {
 
         <label text="数値"></label>
         <block type="math_number" gap="32">
-            <field name="NUM">123</field>
+            <field name="NUM">0</field>
         </block>
 
         <label text="真理値"></label>
@@ -147,7 +147,7 @@ function getToolBoxXml(): string {
 
 
     <category name="変数（KeyToKey）" categorystyle="variable_category">
-        <block type="set_value_to_variable"><field name="TYPE">GLOBAL</field><value name="NAME"><block type="text"><field name="TEXT">変数名</field></block></value><value name="VALUE"><block type="math_number"><field name="NUM">123</field></block></value></block>
+        <block type="set_value_to_variable"><field name="TYPE">GLOBAL</field><value name="NAME"><block type="text"><field name="TEXT">変数名</field></block></value><value name="VALUE"><block type="math_number"><field name="NUM">0</field></block></value></block>
         <block type="get_value_from_variable"><field name="TYPE">GLOBAL</field><value name="NAME"><block type="text"><field name="TEXT">変数名</field></block></value></block>
         <block type="variable_exists"><field name="TYPE">GLOBAL</field><value name="NAME"><block type="text"><field name="TEXT">変数名</field></block></value></block>
         <block type="clear_local_variables"></block>
@@ -176,12 +176,12 @@ function getToolBoxXml(): string {
 
 
     <category name="javascript">
-    <block type="json_stringify"></block>
-    <block type="formatted_json_stringify"></block>
-    <block type="json_parse"></block>
-    <label text="非推奨"></label>
-    <block type="embedded_multiline_javascript"></block>
-    <block type="embedded_singleline_javascript"></block>
+        <block type="json_stringify"></block>
+        <block type="formatted_json_stringify"></block>
+        <block type="json_parse"></block>
+        <label text="非推奨"></label>
+        <block type="embedded_multiline_javascript"></block>
+        <block type="embedded_singleline_javascript"></block>
     </category>
 
 
@@ -200,8 +200,9 @@ function getToolBoxXml(): string {
         <block type="logic_null" disabled="true"></block>
         <block type="logic_ternary"></block>
         -->
-        <label text="〇〇の値がAキーだった場合"></label>
-        <block xmlns="https://developers.google.com/blockly/xml" type="controls_if"><value name="IF0"><block type="logic_expression"><field name="operator">EQUAL</field><value name="RIGHT_VALUE"><block type="keys"><field name="VALUE">A</field></block></value></block></value></block>
+        <label text="〇〇の値が〇〇だった場合"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_if"><value name="IF0"><block type="logic_expression"><field name="operator">EQUAL</field></block></value></block>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_if"><value name="IF0"><block type="logic_expression"><field name="operator">EQUAL</field><value name="LEFT_VALUE"><block type="variables_get"><field name="VAR" id="FZsg;c(SgVN5U2$-z$cW">変数</field></block></value><value name="RIGHT_VALUE"><block type="math_number"><field name="NUM">0</field></block></value></block></value></block>
     </category>
 
 
@@ -239,6 +240,9 @@ function getToolBoxXml(): string {
         <block type="controls_flow_statements"></block>
 
         <label text="テンプレート"></label>
+        <label text="無限ループ"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_whileUntil"><field name="MODE">WHILE</field><value name="BOOL"><block type="logic_boolean"><field name="BOOL">TRUE</field></block></value></block>
+
         <label text="トリガーが押されている間ループ"></label>
         <block xmlns="https://developers.google.com/blockly/xml" type="controls_whileUntil">
             <field name="MODE">WHILE</field>
@@ -1011,6 +1015,10 @@ function getToolBoxXml(): string {
 
         <label text="コントローラーの入力を待つ"></label>
         <block xmlns="https://developers.google.com/blockly/xml" type="wait_for_input"><value name="INPUT"><block type="controller_buttons"><field name="VALUE">ControllerButtons.A</field></block></value></block>
+
+        <label text="テンプレート"></label>
+        <label text="無限待機"></label>
+        <block xmlns="https://developers.google.com/blockly/xml" type="controls_whileUntil"><field name="MODE">WHILE</field><value name="BOOL"><block type="logic_boolean"><field name="BOOL">TRUE</field></block></value><statement name="DO"><block type="wait"><field name="UNIT">MILLISECONDS</field><value name="WAIT_TIME"><block type="math_number"><field name="NUM">15</field></block></value></block></statement></block>
     </category>
 
 
@@ -1585,35 +1593,6 @@ function getToolBoxXml(): string {
         <label text="ウィンドウの表示／非表示"></label>
         <block type="window_set_visibility"></block>
 
-        <label text="テンプレート"></label>
-        <label text="テンプレート"></label>
-        <block xmlns="https://developers.google.com/blockly/xml" type="variables_set">
-            <field name="VAR" id="W;=5~p}vbgVJ(Ah$.BT2">ウィンドウ</field>
-            <value name="VALUE">
-                <block type="create_window_by_window_handle">
-                    <value name="WINDOW_HANDLE">
-                        <block type="math_number">
-                            <field name="NUM">0</field>
-                        </block>
-                    </value>
-                </block>
-            </value>
-            <next>
-                <block type="variables_set">
-                    <field name="VAR" id="]ZrGM3]S_n]O##+emxQ]">値</field>
-                    <value name="VALUE">
-                        <block type="window_get_property">
-                            <field name="DROPDOWN">POINT</field>
-                            <value name="WINDOW">
-                                <block type="variables_get">
-                                    <field name="VAR" id="W;=5~p}vbgVJ(Ah$.BT2">ウィンドウ</field>
-                                </block>
-                            </value>
-                        </block>
-                    </value>
-                </block>
-            </next>
-        </block>
 
     </category>
 
