@@ -268,8 +268,7 @@ class Wait {
         return _globals.WaitForInput(key, true);
     }
 
-    waitForController = (controllerButtonName) => {
-        const button = controllerButtonName.toClrControllerButtons();
+    waitForController = (button) => {
         return _globals.WaitForInput(button, true);
     }
 }
@@ -943,8 +942,7 @@ class Controller {
         return this._i_controller.DeviceType === clr.KeyToKey.Enums.ControllerTypes.DirectInput;
     }
 
-    isPressed = (buttonName) => {
-        const button = buttonName.toClrControllerButtons();
+    isPressed = (button) => {
         return this._i_controller.GetState(button);
     }
 
