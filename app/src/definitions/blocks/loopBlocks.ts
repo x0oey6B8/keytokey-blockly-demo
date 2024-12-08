@@ -23,4 +23,21 @@ export function defineLoopBlocks() {
             this.setHelpUrl("");
         }
     } as BlockSvg;
+
+    Blockly.Blocks['controls_flow_statements'] = {
+        init: function () {
+
+            const menus: Blockly.MenuGenerator = [
+                ["ループから抜ける", "BREAK"], ["次のループへ", "CONTINUE"]
+            ]
+            this.appendDummyInput()
+                // @ts-ignore
+                .appendField(new Blockly.FieldDropdown(menus), "FLOW");
+            this.setPreviousStatement(true);
+            this.setNextStatement(false);
+            this.setColour(120);
+            this.setTooltip("");
+            this.setHelpUrl("");
+        }
+    } as BlockSvg;
 }
