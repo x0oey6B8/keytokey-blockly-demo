@@ -45,6 +45,7 @@ export function defineLoopBlocks() {
             const that = this;
 
             // onchangeイベントで不正配置をチェック
+            // @ts-ignore
             this.onchange = function (event) {
                 if (!workspace) {
                     return; // ワークスペース外では処理をしない
