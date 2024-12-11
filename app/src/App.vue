@@ -97,7 +97,7 @@ onMounted(async () => {
     const container = document.getElementById('blocklyDiv') as HTMLElement;
     blockly.registerNewWorkspaceSession(container, async (event, session) => {
         // console.log("[event]", event);
-        
+
         // @ts-ignore
         if (event.type === "bubble_open" && !event.isOpen) {
             if (editing.macro?.hasParameterChanged) {
@@ -150,8 +150,8 @@ onUpdated(() => {
                                 id="tabs"
                                 draggable
                                 outside-arrows
-                                v-model="tabStore.selectedTab" 
-                                indicator-color="green" 
+                                v-model="tabStore.selectedTab"
+                                indicator-color="green"
                                 class="tabs text-white full-height">
                                 <!-- マクロが選択されてないときに表示するタブ -->
                                 <q-tab class="tab" name="no-macro-selected" label="マクロが選択されていません" no-caps v-if="!editing.hasMacro()">
@@ -159,9 +159,9 @@ onUpdated(() => {
                                 </q-tab>
                                 <!-- タブ -->
                                 <div ref="tabs" class="flex no-wrap">
-                                    <Tab 
-                                        v-for="tab in tabStore.items" 
-                                        :key="tab.id" 
+                                    <Tab
+                                        v-for="tab in tabStore.items"
+                                        :key="tab.id"
                                         :id="tab.id"
                                         :header="tab.header"
                                         :icon-name="tab.iconName"
@@ -175,24 +175,24 @@ onUpdated(() => {
                             <!-- タブ横ボタン -->
                             <div id="tab-side-content" class="flex no-wrap">
                                 <div v-if="editing.hasMacro()">
-                                    <q-btn flat icon="add" size="sm" class="side-button q-px-md full-height" @click="appStore.openMenuToAddFile"/>
+                                    <q-btn flat icon="add" size="sm" class="side-button q-px-md full-height" @click="appStore.openMenuToAddFile" />
                                     <q-tooltip>イベントを追加</q-tooltip>
                                 </div>
                                 <q-separator vertical inset class="" />
                                 <div v-if="editing.hasMacro()">
-                                    <q-btn flat icon="settings" size="sm" class="side-button q-px-md full-height" @click="appStore.openMacroSetting"/>
+                                    <q-btn flat icon="settings" size="sm" class="side-button q-px-md full-height" @click="appStore.openMacroSetting" />
                                     <q-tooltip>マクロの設定</q-tooltip>
                                 </div>
                                 <div>
-                                    <q-btn flat icon="menu" size="sm" class="open-menu-button side-button q-px-md full-height" @click="appStore.openDropdownMenus"/>
+                                    <q-btn flat icon="menu" size="sm" class="open-menu-button side-button q-px-md full-height" @click="appStore.openDropdownMenus" />
                                     <q-tooltip>省略されたメニューを表示</q-tooltip>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div id="menus" class="flex">
-                        <q-btn 
-                            color="green-6" label="マクロ一覧" 
+                        <q-btn
+                            color="green-6" label="マクロ一覧"
                             class="full-height override-button-icon-margin font-size-12 q-my-none"
                             @click="appStore.openMacroMenu()" />
                         <!-- ドロップダウンメニュー -->
@@ -223,7 +223,7 @@ onUpdated(() => {
     </div>
     <Teleport to="body">
         <ModalEditor :modal-state="editor.modalState"></ModalEditor>
-        <ModalCommandPalette 
+        <ModalCommandPalette
             :modal-state="commandPalette.modalState"
             :items="commandPalette.commandItems"
             :hint="commandPalette.hint"
@@ -241,7 +241,6 @@ onUpdated(() => {
 </template>
 
 <style>
-
 :root {
     --tab-height: 35px;
 }
@@ -319,7 +318,7 @@ button:hover {
     display: none !important;
 }
 
-@media (width <= 1200px) {
+@media (width <=1200px) {
     .menu {
         display: none;
     }
