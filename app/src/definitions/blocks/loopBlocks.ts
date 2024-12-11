@@ -1,5 +1,6 @@
 import Blockly, { BlockSvg } from "blockly";
 import { BlockColors } from "../../configurations/blockColors.ts";
+import { useBlocklyStore } from "../../stores/blocklyStore.ts";
 
 export function defineLoopBlocks() {
     Blockly.Blocks['for_of'] = {
@@ -27,6 +28,8 @@ export function defineLoopBlocks() {
     Blockly.Blocks['controls_flow_statements'] = {
         init: function () {
 
+            const blocklyStore = useBlocklyStore();
+            const workspace = blocklyStore.getCurrentWorkspaceSession()?.workspace;
             const menus: Blockly.MenuGenerator = [
                 ["ループから抜ける", "BREAK"], ["次のループへ", "CONTINUE"]
             ]
@@ -38,6 +41,35 @@ export function defineLoopBlocks() {
             this.setColour(120);
             this.setTooltip("");
             this.setHelpUrl("");
+
+            const that = this;
+
+            // onchangeイベントで不正配置をチェック
+            this.onchange = function (event) {
+                if (!workspace) {
+                    return; // ワークスペース外では処理をしない
+                }
+
+                const loopBlockTypes = ['for_of', 'controls_repeat_ext', 'controls_for', 'controls_whileUntil'];
+                let isInsideLoop = false;
+                let parentBlock = that.getSurroundParent();
+
+                // 親ブロックをたどってループブロックを探す
+                while (parentBlock) {
+                    if (loopBlockTypes.includes(parentBlock.type)) {
+                        isInsideLoop = true;
+                        console.log(parentBlock.type)
+                        console.log("is inside")
+                        break;
+                    }
+                    parentBlock = parentBlock.getSurroundParent();
+                }
+
+                // ループブロック外なら接続を解除
+                if (!isInsideLoop) {
+                    that.unplug();
+                }
+            }
         }
     } as BlockSvg;
 }
